@@ -1,0 +1,10 @@
+mod = {comp};
+comp = 'comp', ID, '{', {stmt}, '}';
+stmt = decl | assign;
+decl = {'in' | 'out'}, 'bit', ID, ';';
+assign = ID, '=', expr, ';';
+expr = ID, op, ID, ';';
+op = 'not' | 'and' | 'or' | 'xor' | 'nand' | 'nor' | 'xnor';
+
+(* Lexical rules *)
+ID = ? [a-zA-Z_][a-zA-Z0-9_]* ?;
