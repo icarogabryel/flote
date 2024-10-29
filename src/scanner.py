@@ -5,6 +5,7 @@ IGNORED_CHARS = [' ', '\t', '\n']
 END_OF_FILE = '\0'
 END_OF_COMMENT = ['\n', END_OF_FILE]
 KEY_WORDS_DICT = {
+    'main': 'main',
     'comp': 'comp',
     'in': 'in',
     'out': 'out',
@@ -59,9 +60,10 @@ class Scanner():
             while self.get_char() in IGNORED_CHARS:  # Skip ignored characters
                 self.advance()
 
-            if self.get_char() == '#':  # Skip ignored comments
-                while self.get_char() not in END_OF_COMMENT:
-                    self.advance()
+            if self.get_char() == '/':  # Skip line comments
+                if self.code[self.index + 1] == '/':  # Prevent self.index + 1 out of range
+                    while self.get_char() not in END_OF_COMMENT:
+                        self.advance()
             else:  # If it's not an ignored character, break the loop
                 break
 

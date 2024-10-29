@@ -1,5 +1,5 @@
-# simple bit operations
-comp halfAdder {
+// simple bit operations
+main comp halfAdder {
     in bit a;
     in bit b;
 
