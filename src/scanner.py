@@ -1,31 +1,57 @@
-IGNORED_CHARS = [' ', '\t', '\n', '\r']
+import re
+
+
+IGNORED_CHARS = [' ', '\t', '\n']
 END_OF_FILE = '\0'
 END_OF_COMMENT = ['\n', END_OF_FILE]
+KEY_WORDS_DICT = {
+    'comp': 'comp',
+    'in': 'in',
+    'out': 'out',
+    'bit': 'bit',
+    'and': 'and',
+    'or': 'or'
+}
+SYMBOLS_DICT = {
+    ';': 'semicolon',
+    '{': 'l_brace',
+    '}': 'r_brace',
+    '=': 'assign'
+}
 
-class Token():
-    def __init__(self, type, value):
-        self.type = type
-        self.value = value
+
+class LexicalError(Exception):
+    def __init__(self, message):
+        self.message = message
 
     def __str__(self):
-        return f"Token({self.type}, {self.value})"
+        return f"Lexical Error: {self.message}"
+
+
+class Token():
+    def __init__(self, label, lexeme):
+        self.label = label
+        self.lexeme = lexeme
+
+    def __str__(self):
+        return f'({self.label}, "{self.lexeme}")'
 
     def __repr__(self):
         return self.__str__()
 
 
 class Scanner():
-    def __init__(self, code):
+    def __init__(self, code: str):
         self.code = code + END_OF_FILE
         self.index = 0
 
     def advance(self):
         self.index += 1
 
-    def get_char(self):
+    def get_char(self) -> str:
         return self.code[self.index]
 
-    def is_eof(self):
+    def is_eof(self) -> bool:
         return True if self.get_char() == END_OF_FILE else False
 
     def skip_ignored(self):
@@ -39,14 +65,46 @@ class Scanner():
             else:  # If it's not an ignored character, break the loop
                 break
 
-    def get_token(self):
-        self.skip_ignored()
+    def read(self):  # Read the next lexeme
+        lexeme = ''
 
+        while not self.is_eof():  # While don't reach the end of the string
+            if (char := self.get_char()) in SYMBOLS_DICT: # If it's a symbol, stop reading and return the lexeme
+                return lexeme
+            elif char in IGNORED_CHARS: # If it's an ignored character, stop reading and return the lexeme
+                return lexeme
+            else:  # If it's not an ignored character or a symbol, keep reading
+                lexeme += char
+                self.advance()
+
+        return lexeme
+
+    def make_token(self):
         if self.is_eof():
             return Token('EOF', END_OF_FILE)
-        
-        if self.get_char() in ['+', '-', '*', '/']:
-            token = Token('OPERATOR', self.get_char())
+
+        elif (char := self.get_char()) in SYMBOLS_DICT:
+            token = Token(SYMBOLS_DICT[char], char)
             self.advance()
-        
+
+            return token
+
+        elif re.match(r'[a-zA-Z_\d]', char):  # Check if the character can be the start of a word
+            lexeme = self.read()
+
+            if lexeme in KEY_WORDS_DICT:
+                return Token(KEY_WORDS_DICT[lexeme], lexeme)
+
+            elif re.match(r'^[a-zA-Z]\w*$', lexeme):  # Check if the lexeme is a valid identifier
+                return Token('id', lexeme)
+
+            raise LexicalError(f'Invalid lexeme: {lexeme}')
+
+        else:
+            raise LexicalError(f"Invalid character: {char}")
+
+    def get_token(self):
+        self.skip_ignored()
+        token = self.make_token()
+
         return token
