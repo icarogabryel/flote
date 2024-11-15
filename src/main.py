@@ -1,4 +1,5 @@
 from scanner import Scanner
+from parser import Parser
 
 def main():
     with open('..\\test\\halfAdder.ft', 'r') as f:
@@ -7,14 +8,9 @@ def main():
     print(code)
 
     scanner = Scanner(code)
+    parser = Parser(scanner)
 
-    token = scanner.get_token()
-    print(token)
-
-    while token.label != 'EOF':
-        token = scanner.get_token()
-        print(token)
-
+    print(parser.ast)
 
 if __name__ == '__main__':
     main()
