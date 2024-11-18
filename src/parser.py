@@ -2,10 +2,12 @@ from scanner import Scanner
 
 
 FIRST_SETS = {
-    'stmt': ['in', 'out', 'bit']
+    'comp': ['main', 'comp'],
+    'stmt': ['in', 'out', 'bit'],
 }
 
 
+# begin AST classes
 class Node:
     def __init__(self) -> None:
         self.children = []
@@ -33,7 +35,7 @@ class Signal(Node):
         super().__init__()
         self.id = ''
         self.type = 0
-
+# end AST classes
 
 class SyntacticalError(Exception):
     def __init__(self, message):
@@ -70,7 +72,7 @@ class Parser:
     def mod(self) -> Node:
         mod = Mod()
 
-        while self.get_current_token().label in ['main', 'comp']:  #todo change to accept multiple components
+        while self.get_current_token().label in FIRST_SETS['comp']:
             mod.add_child(self.comp())
 
         return mod
