@@ -37,6 +37,7 @@ class Signal(Node):
         self.type = 0
 # end AST classes
 
+
 class SyntacticalError(Exception):
     def __init__(self, message):
         self.message = message
@@ -74,6 +75,8 @@ class Parser:
 
         while self.get_current_token().label in FIRST_SETS['comp']:
             mod.add_child(self.comp())
+
+        self.match_label('EOF')
 
         return mod
 
