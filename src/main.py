@@ -2,7 +2,7 @@ from scanner import Scanner
 from parser import Parser
 
 def main():
-    with open('..\\test\\halfAdder.ft', 'r') as f:
+    with open('..\\tests\\halfAdder.ft', 'r') as f:
         code = f.read()
 
     print(code)

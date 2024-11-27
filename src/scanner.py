@@ -11,7 +11,8 @@ KEY_WORDS_DICT = {
     'out': 'out',
     'bit': 'bit',
     'and': 'and',
-    'or': 'or'
+    'or': 'or',
+    'xor': 'xor',
 }
 SYMBOLS_DICT = {
     ';': 'semicolon',

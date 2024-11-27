@@ -3,38 +3,71 @@ from scanner import Scanner
 
 FIRST_SETS = {
     'comp': ['main', 'comp'],
-    'stmt': ['in', 'out', 'bit'],
+    'stmt': ['in', 'out', 'bit', 'id'],
+    'decl': ['in', 'out', 'bit'],
+    'assign': ['id'],
 }
 
 
 # begin AST classes
-class Node:
+class Mod:
     def __init__(self) -> None:
-        self.children = []
+        self.comps = []
 
-    def __repr__(self) -> str:  #todo improve this method - json?
-        return f'{self.__class__.__name__} -> {self.children}'
-    
-    def add_child(self, child):
-        self.children.append(child)
+    def add_comp(self, comp):
+        self.comps.append(comp)
+
+    def __repr__(self) -> str:
+        repr = ''
+
+        for comp in self.comps:  #todo alter to json
+            repr += f'{comp} '
+            
+        return f'Mod({self.comps})'
 
 
-class Mod(Node):
-    pass
-
-
-class Comp(Node):
+class Comp:
     def __init__(self) -> None:
-        super().__init__()
         self.id = ''
         self.isMain = False
+        self.stmts = []
+
+    def add_stmt(self, stmt):
+        self.stmts.append(stmt)
+
+    def __repr__(self) -> str:
+        repr = ''
+
+        for stmt in self.stmts:  #todo alter to json
+            repr += f'{stmt} '
+
+        return f'Comp({self.id}, {self.isMain}, {self.stmts})'
 
 
-class Signal(Node):
+class Signal:
     def __init__(self) -> None:
-        super().__init__()
         self.id = ''
         self.type = 0
+
+    def __repr__(self) -> str:
+        return f'Signal({self.id}, {self.type})'
+
+class Assign:
+    def __init__(self) -> None:
+        self.dt = None
+        self.expr = None
+
+    def __repr__(self) -> str:
+        return f'Assign({self.dt}, {self.expr})'
+
+class Expr:
+    def __init__(self) -> None:
+        self.op = None
+        self.l_expr = None
+        self.r_expr = None
+
+    def __repr__(self) -> str:
+        return f'Expr({self.l_expr}, {self.r_expr})'
 # end AST classes
 
 
@@ -70,11 +103,11 @@ class Parser:
         self.ast = self.mod()
 
     # mod = {comp};
-    def mod(self) -> Node:
+    def mod(self):
         mod = Mod()
 
         while self.get_current_token().label in FIRST_SETS['comp']:
-            mod.add_child(self.comp())
+            mod.add_comp(self.comp())
 
         self.match_label('EOF')
 
@@ -97,7 +130,7 @@ class Parser:
         self.advance()
 
         while self.get_current_token().label in FIRST_SETS['stmt']:
-            comp.add_child(self.stmt())
+            comp.add_stmt(self.stmt())
 
         self.match_label('r_brace')
         self.advance()
@@ -105,8 +138,11 @@ class Parser:
         return comp
 
     # stmt = decl | assign;
-    def stmt(self):  #todo add assign
-        return self.decl()
+    def stmt(self):
+        if (label := self.get_current_token().label) in FIRST_SETS['decl']:
+            return self.decl()
+        elif label in FIRST_SETS['assign']:
+            return self.assign()
 
     # decl = {'in' | 'out'}, 'bit', ID, ';';
     def decl(self):  #todo improve this algorithm
@@ -128,3 +164,48 @@ class Parser:
         self.advance()
 
         return signal
+    
+    # assign = ID, '=', expr, ';';
+    def assign(self):
+        assign = Assign()
+
+        self.match_label('id')
+        assign.dt = self.get_current_token().lexeme
+        self.advance()
+        self.match_label('assign')
+        self.advance()
+        assign.expr = self.expr()
+        self.match_label('semicolon')
+        self.advance()
+
+        return assign
+
+    # expr = ID, op, ID, ';';
+    def expr(self):
+        expr = Expr()
+
+        self.match_label('id')
+        expr.l_expr = self.get_current_token().lexeme
+        self.advance()
+
+        expr.op = self.op()
+
+        self.match_label('id')
+        expr.r_expr = self.get_current_token().lexeme
+        self.advance()
+
+        return expr
+
+    # op = 'and' | 'or';
+    def op(self):
+        if self.get_current_token().label == 'and':
+            self.advance()
+            return 'and'
+        elif self.get_current_token().label == 'or':
+            self.advance()
+            return 'or'
+        elif self.get_current_token().label == 'xor':
+            self.advance()
+            return 'xor'
+        else:
+            raise SyntacticalError('Unexpected Token. Expected \'and\' or \'or\'.')

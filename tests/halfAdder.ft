@@ -6,7 +6,7 @@ main comp halfAdder {
     out bit sum;
     out bit cOut;
 
-    // sum = a xor b;
-    // cOut = a and b;
+    sum = a xor b;
+    cOut = a and b;
 
 }
