@@ -1,0 +1,47 @@
+// Simple bit operations
+main comp halfAdder {
+    in bit a;
+    in bit b;
+
+    out bit sum;
+    out bit cOut;
+
+    sum = a xor b;
+    cOut = a and b;
+
+}
+
+// Block comments are not implemented yet
+
+/* Direct assignment to output ports (like bellow) is not implemented yet
+
+comp fullAdder {
+    in bit a;
+    in bit b;
+    in bit cin;
+
+    out bit sum = a xor b xor cIn;
+    out bit carry = (a and b) or (cIn and a) or (cIn and b);
+
+} */
+
+/*
+Sub-components and arrays are not implemented yet
+
+comp fourBitAdder {
+    in bit a[4];
+    in bit b[4];
+
+    out bit sum[4];
+    out bit cOut;
+
+    bit carry[3];
+
+    ha = halfAdder(a = a[0], b = b[0], sum = sum[0], cOut = carry[0]);
+    fa0 = fullAdder(a = a[1], b = b[1], cIn = carry[0], sum = sum[1], cOut = carry[1]);
+    fa1 = fullAdder(a = a[2], b = b[2], cIn = carry[1], sum = sum[2], cOut = carry[2]);
+    fa2 = fullAdder();
+
+    fa2(a = a[3], b = b[3], cIn = carry[2], sum = sum[3], cOut = cOut) // Alternative syntax
+
+} */
