@@ -29,7 +29,7 @@ class Mod:
 class Comp:
     def __init__(self) -> None:
         self.id = ''
-        self.isMain = False
+        self.is_main = False
         self.stmts = []
 
     def add_stmt(self, stmt):
@@ -41,7 +41,7 @@ class Comp:
         for stmt in self.stmts:  #todo alter to json
             repr += f'{stmt} '
 
-        return f'Comp({self.id}, {self.isMain}, {self.stmts})'
+        return f'Comp({self.id}, {self.is_main}, {self.stmts})'
 
 
 class Signal:
@@ -54,20 +54,22 @@ class Signal:
 
 class Assign:
     def __init__(self) -> None:
-        self.dt = None
-        self.expr = None
+        self.dt: str = None
+        self.expr: Expr = None
 
     def __repr__(self) -> str:
         return f'Assign({self.dt}, {self.expr})'
 
 class Expr:
     def __init__(self) -> None:
-        self.op = None
+        self.op = 'none'
         self.l_expr = None
         self.r_expr = None
+        self.l_value_sensitivity_list = []
+        self.r_value_sensitivity_list = []
 
     def __repr__(self) -> str:
-        return f'Expr({self.l_expr}, {self.r_expr})'
+        return f'Expr({self.l_expr} {self.op} {self.r_expr})'
 # end AST classes
 
 
@@ -98,7 +100,7 @@ class Parser:
 
         if token.label != expected_label:
             raise SyntacticalError(f'Unexpected Token. Expected \'{expected_label}\'. Got \'{token.label}\'.')
-        
+
     def parse(self):
         self.ast = self.mod()
 
@@ -118,7 +120,7 @@ class Parser:
         comp = Comp()
 
         if self.get_current_token().label == 'main':
-            comp.isMain = True
+            comp.is_main = True
             self.advance()
 
         self.match_label('comp')

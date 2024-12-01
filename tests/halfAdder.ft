@@ -1,4 +1,3 @@
-// simple bit operations
 main comp halfAdder {
     in bit a;
     in bit b;

@@ -47,7 +47,7 @@ class Scanner():
         self.code = code + END_OF_FILE
         self.index = 0
 
-    def advance(self):
+    def advance(self):  #todo change to keep the line number
         self.index += 1
 
     def get_char(self) -> str:
