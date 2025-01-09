@@ -3,8 +3,16 @@ comp = ['main'], 'comp', ID, '{', {stmt}, '}';
 stmt = decl | assign;
 decl = {'in' | 'out'}, 'bit', ID, ';';
 assign = ID, '=', expr, ';';
-expr = ID, op, ID, ';';
-op = 'not' | 'and' | 'or' | 'xor' | 'nand' | 'nor' | 'xnor';
+
+(* Expression rules *)
+expr = term, expr*
+expr* = ('or' | 'nor'), term, expr* | ε;
+term = factor, term*
+term* = ('xor' | 'xnor'), factor, term* | ε;
+factor = primary, factor*
+factor* = ('and' | 'nand'), primary, factor* | ε;
+primary = 'not', primary | '(', expr, ')' | ID | BIN ;
 
 (* Lexical rules *)
 ID = ? [a-zA-Z_][a-zA-Z0-9_]* ?;
+BIN = ? [01]+ ?;
