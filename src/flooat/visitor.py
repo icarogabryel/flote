@@ -1,5 +1,5 @@
-from parser import Parser, Assign, Expr
-from component import Component, Bit
+from .parser import Parser, Assign
+from .component import Component, Bit
 
 
 def match_class_name(obj, class_name):
@@ -18,20 +18,21 @@ class Visitor:
     def __init__(self, parser: Parser) -> None:
         self.parser = parser
 
-    def get_component(self) -> Component:
+    def get_component(self):
         return self.vst_mod(self.parser.ast)
     
-    def get_sensitivity_list(self, expr: Expr) -> list[str]:  #todo make it recursive
+    def get_sensitivity_list(self, expr) -> list[str]:  #todo make it recursive
         sensitivity_list = []
 
         if expr.l_expr:
             sensitivity_list.append(expr.l_expr)
         if expr.r_expr:
-            sensitivity_list.append(expr.r_expr)
+            if expr.r_expr != 'place': #! take off!
+                sensitivity_list.append(expr.r_expr)
 
         return sensitivity_list
 
-    def vst_mod(self, mod) -> Component:
+    def vst_mod(self, mod):
         is_main_comp_found = False
 
         for comp in mod.comps:  # Search for the main component
@@ -48,7 +49,7 @@ class Visitor:
         else:
             return component
 
-    def vst_comp(self, comp) -> Component:
+    def vst_comp(self, comp):
         component = Component(comp.id)
 
         for stmt in comp.stmts:
@@ -60,7 +61,7 @@ class Visitor:
 
         return component
 
-    def vst_assign(self, comp: Component, assign: Assign) -> None:
+    def vst_assign(self, comp, assign: Assign) -> None:
                 comp.bits_dict[assign.dt] = self.visit_expr(assign.expr)
 
     def visit_expr(self, expr) -> Bit:
@@ -70,5 +71,5 @@ class Visitor:
 
         return bit
 
-    def vst_signal(self, comp: Component, signal) -> None:
+    def vst_signal(self, comp, signal) -> None:
         comp.bits_dict[signal.id] = Bit()

@@ -7,7 +7,7 @@
         {
             "name": "Python Debugger: Current File",
             "type": "debugpy",
-            "cwd": "${workspaceFolder}/src",
+            "cwd": "${workspaceFolder}/tests",
             "request": "launch",
             "program": "${file}",
             "console": "integratedTerminal"

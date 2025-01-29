@@ -4,6 +4,7 @@ with open('..\\tests\\halfAdder.ft', 'r') as f:
     code = f.read()
 
 comp = ft.make_comp(code)
+print(comp.bits_dict)
 
 comp.input({'a': False, 'b': False})
 comp.input({'a': False, 'b': True})

@@ -8,4 +8,7 @@ main comp halfAdder {
     sum = a xor b;
     cOut = a and b;
 
+    out bit test;
+    test = 1 nand 0 or sum;
+
 }
