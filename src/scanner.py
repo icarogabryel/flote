@@ -10,12 +10,17 @@ KEY_WORDS_DICT = {
     'in': 'in',
     'out': 'out',
     'bit': 'bit',
+    'not': 'not',
+    'nor': 'nor',
     'and': 'and',
-    'or': 'or',
+    'nand': 'nand',
     'xor': 'xor',
+    'or': 'or',
 }
 SYMBOLS_DICT = {
     ';': 'semicolon',
+    '(': 'l_paren',
+    ')': 'r_paren',
     '{': 'l_brace',
     '}': 'r_brace',
     '=': 'assign'
@@ -100,6 +105,9 @@ class Scanner():
 
             elif re.match(r'^[a-zA-Z]\w*$', lexeme):  # Check if the lexeme is a valid identifier
                 return Token('id', lexeme)
+            
+            elif re.match(r'^[01]+$', lexeme):  # Check if the lexeme is a valid binary number
+                return Token('bin', lexeme)
 
             raise LexicalError(f'Invalid lexeme: {lexeme}')
 
