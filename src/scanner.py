@@ -106,7 +106,7 @@ class Scanner():
             elif re.match(r'^[a-zA-Z]\w*$', lexeme):  # Check if the lexeme is a valid identifier
                 return Token('id', lexeme)
             
-            elif re.match(r'^[01]+$', lexeme):  # Check if the lexeme is a valid binary number
+            elif lexeme in ['0', '1']:  # Check if the lexeme is a valid binary number
                 return Token('bin', lexeme)
 
             raise LexicalError(f'Invalid lexeme: {lexeme}')
