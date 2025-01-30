@@ -10,8 +10,8 @@ def main():
     with open('halfAdder.ft', 'r') as file:
         code = file.read()
 
+    print("Token Stream:\n")
     scanner = Scanner(code)
-
     for token in scanner.token_stream:  # Print the token stream
         print(token)
 

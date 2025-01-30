@@ -113,6 +113,7 @@ class UnaryOp:
         value_str = str(self.value).replace('\n', '\n|  ')
         return f'{self.op}\n|-- {value_str}'
 
+
 class BinaryOp:
     def __init__(self, l_expr: str, op: str, r_expr: str) -> None:
         self.l_expr = l_expr
@@ -128,13 +129,15 @@ class BinaryOp:
         return f'{self.op}\n|-- {l_expr_str}\n|-- {r_expr_str}'
 
 
-class Primary:
-    def __init__(self, type:str,  value: str) -> None:
-        self.type = type
-        self.value = value
+class Signal:
+    def __init__(self, id: str) -> None:
+        self.id = id
 
     def __repr__(self) -> str:
-        return f'{self.value}'
+        return f'Signal {self.id}'
+    
+    def __str__(self) -> str:
+        return f'Signal {self.id}'
 # end AST classes
 
 
@@ -357,18 +360,17 @@ class Parser:
     # primary = 'not', primary | '(', expr, ')' | ID | BIN ;
     def primary(self):
         if (token_label := self.get_current_token().label) == 'id':
-            type = 'id'
-            value = self.get_current_token().lexeme
+            signal = Signal(self.get_current_token().lexeme)
             self.advance()
 
-            return Primary(type, value)
+            return signal
 
-        elif token_label == 'bin': #! fix
-            type = 'bin'
-            value = self.get_current_token().lexeme
-            self.advance()
+        # elif token_label == 'bin':
+        #     type = 'bin'
+        #     value = self.get_current_token().lexeme
+        #     self.advance()
 
-            return Primary(type, value)
+        #     return Primary(type, value)
 
         elif token_label == 'not':  #todo change to own rule
             op = self.get_current_token().lexeme
