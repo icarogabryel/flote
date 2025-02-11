@@ -1,9 +1,0 @@
-comp incrementor {
-    int bit input;
-    out bit sum;
-    out bit carry;
-
-    sum = a or 1;
-    carry = a and 1;
-
-}

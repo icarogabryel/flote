@@ -1,0 +1,10 @@
+main comp incrementor {
+    in bit input;
+
+    out bit sum;
+    out bit carry;
+
+    sum = input xor 1;
+    carry = input and 1;
+
+}
