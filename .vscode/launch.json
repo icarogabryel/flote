@@ -1,13 +1,12 @@
+// Description: Debugging configuration (for VS Code) to launch the current file in the test folder
+
 {
-    // Use o IntelliSense para saber mais sobre os atributos possíveis.
-    // Focalizar para exibir as descrições dos atributos existentes.
-    // Para obter mais informações, acesse: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
         {
             "name": "Python Debugger: Current File",
             "type": "debugpy",
-            "cwd": "${workspaceFolder}/tests",
+            "cwd": "${workspaceFolder}/test",
             "request": "launch",
             "program": "${file}",
             "console": "integratedTerminal"
