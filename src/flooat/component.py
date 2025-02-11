@@ -7,7 +7,7 @@ class Bit:  #todo create constructor
     sensitivity_list: list[str] = []
 
     def __repr__(self):
-        return f'Bit({self.assignment}, v{self.value}, s{self.is_stabilized}, c{self.is_changed}, sl{self.sensitivity_list})'
+        return f'Bit({self.assignment}, v{self.value}, sl{self.sensitivity_list})'
 
 
 class RawComponent:
@@ -53,6 +53,30 @@ class RawComponent:
 
         return influence_list
 
+    def get_value(self, assign: Assign) -> bool:
+        if (type := assign.__class__.__name__) == 'Signal':
+            return self.bits_dict[assign.id].value
+        elif type == 'UnaryOp':
+            if assign.op == 'not':
+                return not self.get_value(assign.expr)
+        elif type == 'BinaryOp':
+            if assign.op == 'and':
+                return self.get_value(assign.l_expr) and self.get_value(assign.r_expr)
+            elif assign.op == 'or':
+                return self.get_value(assign.l_expr) or self.get_value(assign.r_expr)
+            elif assign.op == 'xor':
+                return self.get_value(assign.l_expr) ^ self.get_value(assign.r_expr)
+            elif assign.op == 'nand':
+                return not (self.get_value(assign.l_expr) and self.get_value(assign.r_expr))
+        else:
+            raise NotImplementedError(f'{assign.__class__.__name__} Operation {type} not implemented') #! resolve this
+        
+    def assign(self, bit: Bit) -> None:
+        if bit.assignment is None:
+            print(f'{bit} is none')
+        else:  #! fix this
+            bit.value = self.get_value(bit.assignment)
+
     def stabilize(self):
         adj_list = self.make_adj_list(self.bits_dict)
         queue = list(self.bits_dict.keys())
@@ -72,8 +96,8 @@ class RawComponent:
     def input(self, new_values: dict[str, bool]) -> None:
         for value in new_values.keys():
             self.bits_dict[value].value = new_values[value]
-            self.bits_dict[value].is_stabilized = True
-            self.bits_dict[value].is_changed = True
+            # self.bits_dict[value].is_stabilized = True
+            # self.bits_dict[value].is_changed = True
 
         self.stabilize()
         
@@ -94,7 +118,10 @@ class RawComponent:
 
         self.vcd += vcd
 
-    def save_vcd(self):
+    def save_vcd(self, file_name: str = None) -> None:
+        if file_name is None:
+            file_name = self.id
+        
         #make vcd header
         vcd = f'$timescale 1 ns $end\n\n$scope module {self.id} $end\n'
 
@@ -107,7 +134,7 @@ class RawComponent:
 
         self.vcd = vcd + self.vcd
 
-        with open(f'{self.id}.vcd', 'w') as f:
+        with open(f'{file_name}.vcd', 'w') as f:
             f.write(self.vcd)
 
     # add inputs and get outputs
@@ -118,9 +145,6 @@ class RawComponent:
 class Component(RawComponent):
     def __init__(self, id) -> None:
         super().__init__(id)
-
-        self.token_stream
-        self.AST
 
     def get_token_stream(self):
         return self.token_stream

@@ -102,12 +102,12 @@ class Assign:
 
 
 class UnaryOp:
-    def __init__(self, op: str, value: str) -> None:
+    def __init__(self, op: str, expr: str) -> None:
         self.op = op
-        self.value = value
+        self.expr = expr
 
     def __repr__(self) -> str:
-        return f'({self.op} {self.value})'
+        return f'({self.op} {self.expr})'
     
     def __str__(self) -> str:
         value_str = str(self.value).replace('\n', '\n|  ')

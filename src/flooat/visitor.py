@@ -1,4 +1,4 @@
-from .parser import Parser, Assign
+from .parser import Assign, UnaryOp, BinaryOp, Signal
 from .component import Component, Bit
 
 
@@ -15,20 +15,24 @@ class SemanticalError(Exception):
 
 
 class Visitor:
-    def __init__(self, parser: Parser) -> None:
-        self.parser = parser
+    def __init__(self, ast) -> None:
+        self.ast = ast
 
     def get_component(self):
-        return self.vst_mod(self.parser.ast)
-    
-    def get_sensitivity_list(self, expr) -> list[str]:  #todo make it recursive
+        return self.vst_mod(self.ast)
+
+    def get_sensitivity_list(self, expr: Assign) -> list[str]:  #todo make it recursive
         sensitivity_list = []
 
-        if expr.l_expr:
-            sensitivity_list.append(expr.l_expr)
-        if expr.r_expr:
-            if expr.r_expr != 'place': #! take off!
-                sensitivity_list.append(expr.r_expr)
+        if match_class_name(expr, 'Signal'):
+            sensitivity_list.append(expr.id)
+        
+        elif match_class_name(expr, 'UnaryOp'):
+            sensitivity_list.extend(self.get_sensitivity_list(expr.expr))
+
+        elif match_class_name(expr, 'BinaryOp'):
+            sensitivity_list.extend(self.get_sensitivity_list(expr.l_expr))
+            sensitivity_list.extend(self.get_sensitivity_list(expr.r_expr))
 
         return sensitivity_list
 
@@ -56,8 +60,8 @@ class Visitor:
             if match_class_name(stmt, 'Assign'):
                 self.vst_assign(component, stmt)
 
-            elif match_class_name(stmt, 'Signal'):
-                self.vst_signal(component, stmt)
+            elif match_class_name(stmt, 'Decl'):
+                self.vst_decl(component, stmt)
 
         return component
 
@@ -71,5 +75,5 @@ class Visitor:
 
         return bit
 
-    def vst_signal(self, comp, signal) -> None:
+    def vst_decl(self, comp, signal) -> None:
         comp.bits_dict[signal.id] = Bit()
