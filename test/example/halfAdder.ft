@@ -1,0 +1,11 @@
+main comp halfAdder {
+    in bit a;
+    in bit b;
+
+    out bit sum;
+    out bit cOut;
+
+    sum = a xor b;
+    cOut = a and b;
+
+}
