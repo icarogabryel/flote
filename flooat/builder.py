@@ -1,4 +1,4 @@
-from .parser import Assign, UnaryOp, BinaryOp, Signal
+from .parser import Assign
 from .component import Component, Bit
 
 
@@ -14,17 +14,17 @@ class SemanticalError(Exception):
         return f'Semantical Error: {self.message}'
 
 
-class Visitor:
+class Builder:
     def __init__(self, ast) -> None:
         self.ast = ast
 
-    def get_component(self):
+    def get_component(self, name = None) -> Component:  #todo Make return specific component, if not, main or unique file component
         return self.vst_mod(self.ast)
 
-    def get_sensitivity_list(self, expr: Assign) -> list[str]:  #todo make it recursive
+    def get_sensitivity_list(self, expr: Assign) -> list[str]:
         sensitivity_list = []
 
-        if match_class_name(expr, 'Signal'):
+        if match_class_name(expr, 'Identifier'):
             sensitivity_list.append(expr.id)
         
         elif match_class_name(expr, 'UnaryOp'):
@@ -66,7 +66,7 @@ class Visitor:
         return component
 
     def vst_assign(self, comp, assign: Assign) -> None:
-                comp.bits_dict[assign.dt] = self.visit_expr(assign.expr)
+                comp.bits_dict[assign.dt.id] = self.visit_expr(assign.expr)
 
     def visit_expr(self, expr) -> Bit:
         bit = Bit()
