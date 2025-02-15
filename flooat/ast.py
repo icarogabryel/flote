@@ -1,3 +1,5 @@
+from abc import ABC, abstractmethod
+
 class Mod:
     def __init__(self) -> None:
         self.comps = []
@@ -89,32 +91,65 @@ class Assign:
         return f'Assign\n|  |-- {self.dt}\n|-- {expr_str}'
 
 
-class UnaryOp:
-    def __init__(self, op: str, expr: str) -> None:
-        self.op = op
+class UnaryOp(ABC):
+    def __init__(self, expr) -> None:
         self.expr = expr
 
+    @abstractmethod
     def __repr__(self) -> str:
-        return f'({self.op} {self.expr})'
-    
+        pass
+
     def __str__(self) -> str:
-        value_str = str(self.value).replace('\n', '\n|  ')
-        return f'{self.op}\n|-- {value_str}'
+        return self.__repr__()
 
 
-class BinaryOp:
-    def __init__(self, l_expr: str, op: str, r_expr: str) -> None:
-        self.l_expr = l_expr
-        self.op = op
-        self.r_expr = r_expr
+class BinaryOp(ABC):
+    l_expr = None
+    r_expr = None
 
+    @abstractmethod
     def __repr__(self) -> str:
-        return f'{self.op}\n|-- {self.l_expr}\n|-- {self.r_expr}'
-    
+        pass
+
     def __str__(self) -> str:
-        l_expr_str = str(self.l_expr).replace('\n', '\n|  ')
-        r_expr_str = str(self.r_expr).replace('\n', '\n|  ')
-        return f'{self.op}\n|-- {l_expr_str}\n|-- {r_expr_str}'
+        str = f'{self.__class__.__name__}\n|  |-- {self.l_expr}\n|-- {self.r_expr}'
+
+        return str
+
+
+class Not(UnaryOp):
+    def __repr__(self) -> str:
+        return f'Not {self.expr}'
+
+
+class And(BinaryOp):
+    def __repr__(self) -> str:
+        return f'And {self.l_expr} {self.r_expr}'
+
+
+class Or(BinaryOp):
+    def __repr__(self) -> str:
+        return f'Or {self.l_expr} {self.r_expr}'
+
+
+class Xor(BinaryOp):
+    def __repr__(self) -> str:
+        return f'Xor {self.l_expr} {self.r_expr}'
+
+
+class Nand(BinaryOp):
+    def __repr__(self) -> str:
+        return f'Nand {self.l_expr} {self.r_expr}'
+
+
+class Nor(BinaryOp):
+    def __repr__(self) -> str:
+        return f'Nor {self.l_expr} {self.r_expr}'
+
+
+class Xnor(BinaryOp):
+    def __repr__(self) -> str:
+        return f'Xnor {self.l_expr} {self.r_expr}'
 
 
 class Identifier:
