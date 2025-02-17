@@ -1,45 +1,33 @@
-from .parser import Assign
-
-
-class Bit:  #todo create constructor
-    assignment: Assign = None
+class Bit:
+    assignment = None
     value: bool = False
     sensitivity_list: list[str] = []
+
+    def __invert__(self) -> bool:
+        return not self.value
+
+    def __and__(self, other: 'Bit') -> bool:
+        return self.value and other.value
+
+    def __or__(self, other: 'Bit') -> bool:
+        return self.value or other.value
+
+    def __xor__(self, other: 'Bit') -> bool:
+        return self.value ^ other.value
 
     def __repr__(self):
         return f'Bit({self.assignment}, v{self.value}, sl{self.sensitivity_list})'
 
 
-class RawComponent:
+class Component:
     def __init__(self, id) -> None:
         self.id: str = id
         self.bits_dict: dict[str, Bit] = {}  #todo change to mark inputs and outputs
         self.time = -1  #todo improve this
-        self.vcd = ''
+        self.vcd = ''  #todo make a class for this
 
     def __repr__(self):
         return f'Component({self.id}, {self.bits_dict})'
-
-    # def stabilize(self):
-    #     are_all_bits_stabilized = False
-
-    #     while not are_all_bits_stabilized:
-    #         for bit in self.bits_dict.values(): # Check if all bits are stabilized
-    #             if not bit.is_stabilized:
-
-    #                 self.assign(bit)
-
-    #         for bit in self.bits_dict.values(): # Check if the sensibility list has changed values
-    #             for sensibility_bit in bit.sensitivity_list:
-    #                 if self.bits_dict[sensibility_bit].is_changed:
-    #                     bit.is_stabilized = False
-                        
-    #                     break
-            
-    #         are_all_bits_stabilized = all(bit.is_stabilized for bit in self.bits_dict.values())
-
-    #         for bit in self.bits_dict.values():
-    #             bit.is_changed = False
 
     def make_adj_list(self, bits_dict: dict[str, Bit]) -> dict[str, list[str]]:
         influence_list: dict[str, list[str]] = {}
@@ -53,7 +41,7 @@ class RawComponent:
 
         return influence_list
 
-    def get_value(self, assign: Assign) -> bool:
+    def get_value(self, assign) -> bool:  #! delete this
         if (type := assign.__class__.__name__) == 'Signal':
             return self.bits_dict[assign.id].value
         elif type == 'UnaryOp':
@@ -71,15 +59,15 @@ class RawComponent:
         else:
             raise NotImplementedError(f'{assign.__class__.__name__} Operation {type} not implemented') #! resolve this
         
-    def assign(self, bit: Bit) -> None:
+    def assign(self, bit: Bit) -> None:  #! delete this
         if bit.assignment is None:
             print(f'{bit} is none')
-        else:  #! fix this
-            bit.value = self.get_value(bit.assignment)
+        else:
+            bit.value = bit.assignment()
 
     def stabilize(self):
         adj_list = self.make_adj_list(self.bits_dict)
-        queue = list(self.bits_dict.keys())
+        queue = list(self.bits_dict.keys()) 
 
         while queue:
             bit_name = queue.pop(0)
@@ -93,7 +81,7 @@ class RawComponent:
                     if bit_influenced not in queue:
                         queue.append(bit_influenced)
 
-    def input(self, new_values: dict[str, bool]) -> None:
+    def input(self, new_values: dict[str, bool]) -> None:  #todo improve: make only inputs
         for value in new_values.keys():
             self.bits_dict[value].value = new_values[value]
             # self.bits_dict[value].is_stabilized = True
@@ -140,11 +128,3 @@ class RawComponent:
     # add inputs and get outputs
     def get_bits(self):
         return self.bits_dict
-
-
-class Component(RawComponent):
-    def __init__(self, id) -> None:
-        super().__init__(id)
-
-    def get_token_stream(self):
-        return self.token_stream
