@@ -1,8 +1,9 @@
 from abc import ABC, abstractmethod
+from typing import Union
 
 class Mod:
     def __init__(self) -> None:
-        self.comps = []
+        self.comps: list[Comp] = []
 
     def add_comp(self, comp):
         self.comps.append(comp)
@@ -78,9 +79,12 @@ class Decl:
         return string
 
 
+ExprElem = Union['Identifier', 'Binary', 'UnaryOp', 'BinaryOp']
+
+
 class Assign:
     def __init__(self) -> None:
-        self.dt: str = None
+        self.dt: Identifier = None
         self.expr = None
 
     def __repr__(self) -> str:
@@ -100,7 +104,8 @@ class UnaryOp(ABC):
         pass
 
     def __str__(self) -> str:
-        return self.__repr__()
+        expr = f'{self.expr}'.replace('\n', '\n|  ')
+        return f'{self.__class__.__name__}\n|-- {expr}'
 
 
 class BinaryOp(ABC):
@@ -112,7 +117,10 @@ class BinaryOp(ABC):
         pass
 
     def __str__(self) -> str:
-        str = f'{self.__class__.__name__}\n|  |-- {self.l_expr}\n|-- {self.r_expr}'
+        l_expr = f'{self.l_expr}'.replace('\n', '\n|  ')
+        r_expr = f'{self.r_expr}'.replace('\n', '\n|  ')
+
+        str = f'{self.__class__.__name__}\n|  |-- {l_expr}\n  |-- {r_expr}'
 
         return str
 
