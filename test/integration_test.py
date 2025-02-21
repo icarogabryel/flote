@@ -9,7 +9,7 @@ from flooat.parser import Parser
 from flooat.builder import Builder
 
 # 1 for Scanner, 2 for Parser, 3 for Builder
-TEST_MODE = 1
+TEST_MODE = 2
 
 
 def main():
@@ -28,7 +28,8 @@ def main():
 
 
     if TEST_MODE > 1:
-        parser = Parser(scanner.token_stream)
+        scanner = Scanner(code)
+        parser = Parser(scanner)
 
         print("\nAST:\n")
         print(parser.ast)
