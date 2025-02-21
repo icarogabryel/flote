@@ -53,7 +53,6 @@ class Scanner():
         self.code = code + END_OF_FILE
         self.line_number = 1
         self.index = 0
-        self.token_stream = []
 
     def advance(self):
         if self.get_char() == '\n':
@@ -93,49 +92,37 @@ class Scanner():
 
         return lexeme
 
-    def make_token(self):
+    def get_token(self):
+        self.skip_ignored()
+        token = None
+
         if self.is_eof():
-            return Token('EOF', END_OF_FILE)
+            token = Token('EOF', END_OF_FILE)
 
         elif (char := self.get_char()) in SYMBOLS_DICT:
             token = Token(SYMBOLS_DICT[char], char)
             self.advance()
 
-            return token
-
         elif re.match(r'[a-zA-Z_\d]', char):  # Check if the character can be the start of a word
             lexeme = self.read()
 
             if lexeme in KEY_WORDS_DICT:
-                return Token(KEY_WORDS_DICT[lexeme], lexeme)
+                token = Token(KEY_WORDS_DICT[lexeme], lexeme)
 
             elif re.match(r'^[a-zA-Z]\w*$', lexeme):  # Check if the lexeme is a valid identifier
-                return Token('id', lexeme)
-            
-            elif lexeme in ['0', '1']:  # Check if the lexeme is a valid binary number  #todo change to accept more than one bit
-                return Token('bin', lexeme)
+                token = Token('id', lexeme)
 
-            raise LexicalError(self.line_number, f'Invalid lexeme: {lexeme}')
+            elif lexeme in ['0', '1']:  # Check if the lexeme is a valid binary number  #todo change to accept more than one bit
+                token = Token('bin', lexeme)
+
+            else:
+                raise LexicalError(self.line_number, f'Invalid lexeme: {lexeme}')
 
         else:
             raise LexicalError(self.line_number, f"Invalid character: {char}")
 
-    def get_token(self):  #todo Can i remove this?
-        self.skip_ignored()
-        token = self.make_token()
-        self.token_stream.append(token)
-
         return token
 
-    def make_token_stream(self):
-        """
-        Make the token stream from the code.
-        Used for debug not for parser use.
-        """
-
-        if self.token_stream:
-            raise Exception(self.line_number, 'Token Stream is not empty.')
-
-        else:
-            while not self.is_eof():
-                self.get_token()
+    def get_token_stream(self):
+        while not self.is_eof():
+            yield self.get_token()
