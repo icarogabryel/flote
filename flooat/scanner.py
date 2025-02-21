@@ -28,11 +28,12 @@ SYMBOLS_DICT = {
 
 
 class LexicalError(Exception):
-    def __init__(self, message):
+    def __init__(self, line_number, message):
         self.message = message
+        self.line_number = line_number
 
     def __str__(self):
-        return f"Lexical Error: {self.message}"
+        return f"Lexical Error at line {self.line_number}: {self.message}"
 
 
 class Token():
@@ -50,12 +51,14 @@ class Token():
 class Scanner():
     def __init__(self, code: str):
         self.code = code + END_OF_FILE
+        self.line_number = 1
         self.index = 0
         self.token_stream = []
-        
-        self.make_token_stream()
 
-    def advance(self):  #todo change to keep the line number
+    def advance(self):
+        if self.get_char() == '\n':
+            self.line_number += 1
+
         self.index += 1
 
     def get_char(self) -> str:
@@ -112,17 +115,27 @@ class Scanner():
             elif lexeme in ['0', '1']:  # Check if the lexeme is a valid binary number  #todo change to accept more than one bit
                 return Token('bin', lexeme)
 
-            raise LexicalError(f'Invalid lexeme: {lexeme}')
+            raise LexicalError(self.line_number, f'Invalid lexeme: {lexeme}')
 
         else:
-            raise LexicalError(f"Invalid character: {char}")
+            raise LexicalError(self.line_number, f"Invalid character: {char}")
 
-    def get_token(self):
+    def get_token(self):  #todo Can i remove this?
         self.skip_ignored()
         token = self.make_token()
+        self.token_stream.append(token)
 
         return token
 
     def make_token_stream(self):
-        while not self.is_eof():
-            self.token_stream.append(self.get_token())
+        """
+        Make the token stream from the code.
+        Used for debug not for parser use.
+        """
+
+        if self.token_stream:
+            raise Exception(self.line_number, 'Token Stream is not empty.')
+
+        else:
+            while not self.is_eof():
+                self.get_token()
