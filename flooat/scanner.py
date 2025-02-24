@@ -49,9 +49,9 @@ class Token():
 
 
 class Scanner():
-    def __init__(self, code: str):
-        """The Scanner class receives a string of code, make lexical analysis and returns a token stream."""
+    """Lexical Scanner for Flooat Language. The Scanner class receives a string of code, make lexical analysis and returns a token stream."""
 
+    def __init__(self, code: str):
         self.code = code + END_OF_FILE
         self.line_number = 1
         self.index = 0
