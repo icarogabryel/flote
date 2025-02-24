@@ -13,7 +13,7 @@ FIRST_SETS = {
 }
 
 
-class SyntacticalError(Exception):
+class SyntacticalError(Exception):  #todo Add line number
     def __init__(self, message):
         self.message = message
 
@@ -36,6 +36,8 @@ class Parser:
         self.parse()
 
     def advance(self):
+        """ Move to the next token in the token stream on demand. """
+
         self.current_token = next(self.token_stream)
 
     def get_current_token(self):
@@ -48,6 +50,8 @@ class Parser:
             raise SyntacticalError(f'Unexpected Token. Expected \'{expected_label}\'. Got \'{token.label}\'.')
 
     def parse(self):
+        """ Start the parsing process  by entering the first rule of the grammar. """
+
         self.ast = self.mod()
 
     # Syntactical Rules:
