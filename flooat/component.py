@@ -1,7 +1,12 @@
+from typing import Optional
+from .ast import *
+
+
 class Bit:
-    assignment = None
-    value: bool = False
-    sensitivity_list: list[str] = []
+    def __init__(self):
+        self.assignment: Optional[ExprElem] = None
+        self.value: bool = False
+        self.sensitivity_list: list[str] = []
 
     def __invert__(self) -> bool:
         return not self.value
@@ -16,10 +21,26 @@ class Bit:
         return self.value ^ other.value
 
     def __repr__(self):
-        return f'Bit({self.assignment}, v{self.value}, sl{self.sensitivity_list})'
+        return f'Assign: {self.assignment}, Current Value: {self.value}, SL: {self.sensitivity_list}'
+    
+    def assign(self):
+        """Do the assignment of the bit when not None."""
+
+        if self.assignment:
+            self.value = self.assignment()
 
 
 class Component:
+    """
+    This class represents a circuit component.
+    
+    Attributes:
+        id (str): The component id.
+        bits_dict (dict[str, Bit]): A dictionary with the bits of the component.
+        time (int): The current time of the simulation.
+        vcd (str): The vcd file of the simulation.
+    """
+
     def __init__(self, id) -> None:
         self.id: str = id
         self.bits_dict: dict[str, Bit] = {}  #todo change to mark inputs and outputs
@@ -30,40 +51,24 @@ class Component:
         return f'Component({self.id}, {self.bits_dict})'
 
     def make_adj_list(self, bits_dict: dict[str, Bit]) -> dict[str, list[str]]:
+        """
+        This method creates an adjacency list of the bits of the component.
+        The adjacency list is used to make the bits stabilization. If a bit is changed, all bits that depend on it are added to the queue.
+
+        Args:
+        bits_dict (dict[str, Bit]): A dictionary with the bits of the component.
+        """
+
         influence_list: dict[str, list[str]] = {}
 
         for bit in bits_dict:
             influence_list[bit] = []
 
-        for bit in bits_dict:
-            for sensibility in bits_dict[bit].sensitivity_list:
-                influence_list[sensibility].append(bit)
+        for bit in bits_dict:  # For each bit in the component
+            for sensibility in bits_dict[bit].sensitivity_list:  # For each bit that the current bit depends on
+                influence_list[sensibility].append(bit)  # Add the current bit to the list of bits that the sensibility bit influences
 
         return influence_list
-
-    def get_value(self, assign) -> bool:  #! delete this
-        if (type := assign.__class__.__name__) == 'Signal':
-            return self.bits_dict[assign.id].value
-        elif type == 'UnaryOp':
-            if assign.op == 'not':
-                return not self.get_value(assign.expr)
-        elif type == 'BinaryOp':
-            if assign.op == 'and':
-                return self.get_value(assign.l_expr) and self.get_value(assign.r_expr)
-            elif assign.op == 'or':
-                return self.get_value(assign.l_expr) or self.get_value(assign.r_expr)
-            elif assign.op == 'xor':
-                return self.get_value(assign.l_expr) ^ self.get_value(assign.r_expr)
-            elif assign.op == 'nand':
-                return not (self.get_value(assign.l_expr) and self.get_value(assign.r_expr))
-        else:
-            raise NotImplementedError(f'{assign.__class__.__name__} Operation {type} not implemented') #! resolve this
-        
-    def assign(self, bit: Bit) -> None:  #! delete this
-        if bit.assignment is None:
-            print(f'{bit} is none')
-        else:
-            bit.value = bit.assignment()
 
     def stabilize(self):
         adj_list = self.make_adj_list(self.bits_dict)
@@ -72,8 +77,9 @@ class Component:
         while queue:
             bit_name = queue.pop(0)
             bit = self.bits_dict[bit_name]
+
             p_value = bit.value
-            self.assign(bit)
+            bit.assign()
             a_value = bit.value
 
             if p_value != a_value:
@@ -81,17 +87,14 @@ class Component:
                     if bit_influenced not in queue:
                         queue.append(bit_influenced)
 
-    def input(self, new_values: dict[str, bool]) -> None:  #todo improve: make only inputs
+    def input(self, new_values: dict[str, bool]) -> None:
         for value in new_values.keys():
             self.bits_dict[value].value = new_values[value]
-            # self.bits_dict[value].is_stabilized = True
-            # self.bits_dict[value].is_changed = True
-
         self.stabilize()
-        
+
         for bit in self.bits_dict:
             print(f'{bit}: {self.bits_dict[bit].value}')
-        
+
         print('\n\n')
         self.update_vcd()
 
