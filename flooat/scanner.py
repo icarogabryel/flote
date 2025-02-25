@@ -49,7 +49,11 @@ class Token():
 
 
 class Scanner():
-    """Lexical Scanner for Flooat Language. The Scanner class receives a string of code, make lexical analysis and returns a token stream."""
+    """
+    Lexical Scanner for Flooat Language.
+
+    The Scanner class receives a string of code, make lexical analysis and returns a token stream.
+    """
 
     def __init__(self, code: str):
         self.code = code + END_OF_FILE
@@ -130,7 +134,7 @@ class Scanner():
         else:
             raise LexicalError(self.line_number, f"Invalid character: {char}")
 
-        assert token is not None  #* Here I am another day. Under the bloodthirsty eye of the debugger
+        assert token is not None  #. Here I am another day. Under the bloodthirsty eye of the debugger
 
         return token
 
