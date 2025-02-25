@@ -9,7 +9,7 @@ from flooat.parser import Parser
 from flooat.builder import Builder
 
 # 1 for Scanner, 2 for Parser, 3 for Builder
-TEST_MODE = 2
+TEST_MODE = 0
 
 
 def main():
