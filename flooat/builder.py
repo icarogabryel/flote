@@ -93,31 +93,31 @@ class Builder:
 
     def vst_expr(self, comp_inst: Component, expr_elem: ExprElem) -> str:
         if isinstance(expr_elem, Identifier):
-            return lambda: comp_inst.bits_dict[expr_elem.id]
+            return lambda: comp_inst.bits_dict[expr_elem.id].value
 
         elif isinstance(expr_elem, Binary):
             return lambda: expr_elem.value
 
         elif isinstance(expr_elem, Not):
-            return lambda: not self.vst_expr(expr_elem.expr)()
+            return lambda: not self.vst_expr(comp_inst, expr_elem.expr)()
 
         elif isinstance(expr_elem, And):
-            return lambda: self.vst_expr(expr_elem.l_expr)() and self.vst_expr(expr_elem.r_expr)()
+            return lambda: self.vst_expr(comp_inst, expr_elem.l_expr)() and self.vst_expr(comp_inst, expr_elem.r_expr)()
 
         elif isinstance(expr_elem, Or):
-            return lambda: self.vst_expr(expr_elem.l_expr)() or self.vst_expr(expr_elem.r_expr)()
+            return lambda: self.vst_expr(comp_inst, expr_elem.l_expr)() or self.vst_expr(comp_inst, expr_elem.r_expr)()
 
         elif isinstance(expr_elem, Xor):
-            return lambda: self.vst_expr(expr_elem.l_expr)() ^ self.vst_expr(expr_elem.r_expr)()
+            return lambda: self.vst_expr(comp_inst, expr_elem.l_expr)() ^ self.vst_expr(comp_inst, expr_elem.r_expr)()
 
         elif isinstance(expr_elem, Nand):
-            return lambda: not (self.vst_expr(expr_elem.l_expr)() and self.vst_expr(expr_elem.r_expr)())
+            return lambda: not (self.vst_expr(comp_inst, expr_elem.l_expr)() and self.vst_expr(comp_inst, expr_elem.r_expr)())
 
         elif isinstance(expr_elem, Nor):
-            return lambda: not (self.vst_expr(expr_elem.l_expr)() or self.vst_expr(expr_elem.r_expr)())
+            return lambda: not (self.vst_expr(comp_inst, expr_elem.l_expr)() or self.vst_expr(comp_inst, expr_elem.r_expr)())
 
         elif isinstance(expr_elem, Xnor):
-            return lambda: not (self.vst_expr(expr_elem.l_expr)() ^ self.vst_expr(expr_elem.r_expr)())
+            return lambda: not (self.vst_expr(comp_inst, expr_elem.l_expr)() ^ self.vst_expr(comp_inst, expr_elem.r_expr)())
 
         else:
             raise SemanticalError(f'Invalid expression element: {expr_elem}')

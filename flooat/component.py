@@ -105,8 +105,8 @@ class Component:
         self.time += 1  #todo make custom
         vcd = f'#{self.time}\n\n'
 
-        for bit in self.bits_dict.keys():
-            vcd += f'b{int(self.bits_dict[bit].value)} {bit}\n'
+        for id, bit in self.bits_dict.items():
+            vcd += f'{int(bit.value)} {id}\n'
 
         vcd += '\n'
 
