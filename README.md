@@ -19,7 +19,10 @@ Flooat is in development and is not ready for production.
 - [X] Make Builder
 - [X] Make accept expressions
 - [X] Improve the algorithm of simulation
-- [ ] Improve structure and error messages
+- [X] Improve structure
+- [ ] Improve declaration and assignment
+- [ ] Create waveform class
+- [ ] Improve Semantic Analysis
 - [ ] Add multi-bit signals support
 - [ ] Add multi-bit signals addressing support
 - [ ] Add sub-components support
