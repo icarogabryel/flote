@@ -15,6 +15,7 @@ class Builder:
 
     def __init__(self, ast) -> None:  #todo Add signal list to error handling
         self.ast = ast
+        self.symbol_table: dict[tuple[int, bool, bool]]= {}  # bit: (type, has been declared, has been assigned)
 
     def get_component(self, name = None) -> Component:  #todo Make return specific component, if not, main or unique file component
         return self.vst_mod(self.ast)
@@ -78,46 +79,46 @@ class Builder:
 
         return component
 
-    def vst_assign(self, comp_inst: Component, assign: Assign) -> None:
-        comp_inst.bits_dict[assign.dt.id] = self.visit_expr(comp_inst, assign.expr)
+    def vst_assign(self, component: Component, assign: Assign) -> None:
+        component.bits_dict[assign.dt.id] = self.visit_expr(component, assign.expr)
 
-    def visit_expr(self, comp_inst, expr) -> Bit:
+    def visit_expr(self, component, expr) -> Bit:
         bit = Bit()
-        bit.assignment = self.vst_expr(comp_inst, expr)
+        bit.assignment = self.vst_expr(component, expr)
         bit.sensitivity_list = self.get_sensitivity_list(expr)
 
         return bit
 
-    def vst_decl(self, comp_inst: Component, bit: Decl) -> None:
-        comp_inst.bits_dict[bit.id] = Bit()
+    def vst_decl(self, component: Component, bit: Decl) -> None:
+        component.bits_dict[bit.id] = Bit()
 
-    def vst_expr(self, comp_inst: Component, expr_elem: ExprElem) -> str:
+    def vst_expr(self, component: Component, expr_elem: ExprElem) -> str:
         if isinstance(expr_elem, Identifier):
-            return lambda: comp_inst.bits_dict[expr_elem.id].value
+            return lambda: component.bits_dict[expr_elem.id].value
 
         elif isinstance(expr_elem, Binary):
             return lambda: expr_elem.value
 
         elif isinstance(expr_elem, Not):
-            return lambda: not self.vst_expr(comp_inst, expr_elem.expr)()
+            return lambda: not self.vst_expr(component, expr_elem.expr)()
 
         elif isinstance(expr_elem, And):
-            return lambda: self.vst_expr(comp_inst, expr_elem.l_expr)() and self.vst_expr(comp_inst, expr_elem.r_expr)()
+            return lambda: self.vst_expr(component, expr_elem.l_expr)() and self.vst_expr(component, expr_elem.r_expr)()
 
         elif isinstance(expr_elem, Or):
-            return lambda: self.vst_expr(comp_inst, expr_elem.l_expr)() or self.vst_expr(comp_inst, expr_elem.r_expr)()
+            return lambda: self.vst_expr(component, expr_elem.l_expr)() or self.vst_expr(component, expr_elem.r_expr)()
 
         elif isinstance(expr_elem, Xor):
-            return lambda: self.vst_expr(comp_inst, expr_elem.l_expr)() ^ self.vst_expr(comp_inst, expr_elem.r_expr)()
+            return lambda: self.vst_expr(component, expr_elem.l_expr)() ^ self.vst_expr(component, expr_elem.r_expr)()
 
         elif isinstance(expr_elem, Nand):
-            return lambda: not (self.vst_expr(comp_inst, expr_elem.l_expr)() and self.vst_expr(comp_inst, expr_elem.r_expr)())
+            return lambda: not (self.vst_expr(component, expr_elem.l_expr)() and self.vst_expr(component, expr_elem.r_expr)())
 
         elif isinstance(expr_elem, Nor):
-            return lambda: not (self.vst_expr(comp_inst, expr_elem.l_expr)() or self.vst_expr(comp_inst, expr_elem.r_expr)())
+            return lambda: not (self.vst_expr(component, expr_elem.l_expr)() or self.vst_expr(component, expr_elem.r_expr)())
 
         elif isinstance(expr_elem, Xnor):
-            return lambda: not (self.vst_expr(comp_inst, expr_elem.l_expr)() ^ self.vst_expr(comp_inst, expr_elem.r_expr)())
+            return lambda: not (self.vst_expr(component, expr_elem.l_expr)() ^ self.vst_expr(component, expr_elem.r_expr)())
 
         else:
             raise SemanticalError(f'Invalid expression element: {expr_elem}')
