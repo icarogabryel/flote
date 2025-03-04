@@ -60,8 +60,9 @@ class Comp:
 class Decl:
     def __init__(self) -> None:
         self.id = ''
-        self.conn = 0
+        self.conn = 0  # -1 - input, 0 - internal, 1 - output
         self.type = 'bit'
+        self.assign = None
 
     def __repr__(self) -> str:
         return f'Decl({self.id}, {self.type})'
@@ -75,6 +76,10 @@ class Decl:
             string += ', output)'
         else:
             string += ', internal)'
+
+        if self.assign:
+            assign_str = str(self.assign).replace('\n', '\n|    ')
+            string += f'\n|  |-- {assign_str}'
 
         return string
 

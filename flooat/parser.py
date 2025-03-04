@@ -99,28 +99,35 @@ class Parser:
         elif label in FIRST_SETS['assign']:
             return self.assign()
 
-    #* decl = {'in' | 'out'}, 'bit', ID, ';';
+        assert False, f'Unexpected Token: {label}'
+
+    #* decl = {'in' | 'out'}, 'bit', ID, {'=', expr}, ';';
     def decl(self):
-        declaration = ast.Decl()
+        decl = ast.Decl()
 
         if self.get_current_token().label == 'in':
-            declaration.conn = -1
+            decl.conn = -1
             self.advance()
         elif self.get_current_token().label == 'out':
-            declaration.conn = 1
+            decl.conn = 1
             self.advance()
 
         self.match_label('bit')
-        declaration.type = 'bit'
+        decl.type = 'bit'
         self.advance()
         self.match_label('id')
-        declaration.id = self.get_current_token().lexeme
+        decl.id = self.get_current_token().lexeme
         self.advance()
+
+        if self.get_current_token().label == 'assign':
+            self.advance()
+            decl.assign = self.expr()
+
         self.match_label('semicolon')
         self.advance()
 
-        return declaration
-    
+        return decl
+
     #* assign = ID, '=', expr, ';';
     def assign(self):
         assign = ast.Assign()
