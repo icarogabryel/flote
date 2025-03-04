@@ -1,6 +1,6 @@
 mod = {comp};
 comp = ['main'], 'comp', ID, '{', {stmt}, '}';
-stmt = def;
+stmt = decl | assign;
 decl = {'in'| 'out'}, 'bit', ID, {'=', expr}, ';';
 assign = ID, '=', expr, ';';
 
