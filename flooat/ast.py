@@ -1,6 +1,12 @@
 from abc import ABC, abstractmethod
 from typing import Union
 
+
+INTERNAL = 0
+INPUT = -1
+OUTPUT = 1
+
+
 class Mod:
     def __init__(self) -> None:
         self.comps: list[Comp] = []
@@ -60,7 +66,7 @@ class Comp:
 class Decl:
     def __init__(self) -> None:
         self.id = ''
-        self.conn = 0  # -1 - input, 0 - internal, 1 - output
+        self.conn = INTERNAL  # -1 - input, 0 - internal, 1 - output
         self.type = 'bit'
         self.assign = None
 
