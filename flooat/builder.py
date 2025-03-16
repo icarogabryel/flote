@@ -166,68 +166,51 @@ class Builder:
             return lambda: component.bus_dict[expr_elem.id].value
 
         elif isinstance(expr_elem, Binary):
-            # Valida o valor do elemento binário
             if not isinstance(expr_elem.value, bool):
-                raise SemanticalError(f'Binary value {expr_elem.value} is not a valid boolean.')
-    
-            # Retorna o valor convertido para booleano
+                raise SemanticalError(f'Binary value {expr_elem.value} is not a valid bit.')
+
             return lambda: bool(expr_elem.value)
 
         elif isinstance(expr_elem, Not):
-            # Valida a subexpressão
             self.vst_expr_elem(component, expr_elem.expr)
-    
-            # Retorna a operação NOT
+
             return lambda: not self.vst_expr_elem(component, expr_elem.expr)()
     
         elif isinstance(expr_elem, And):
-            # Valida as subexpressões
             self.vst_expr_elem(component, expr_elem.l_expr)
             self.vst_expr_elem(component, expr_elem.r_expr)
-    
-            # Retorna a operação AND
+
             return lambda: self.vst_expr_elem(component, expr_elem.l_expr)() and self.vst_expr_elem(component, expr_elem.r_expr)()
     
         elif isinstance(expr_elem, Or):
-            # Valida as subexpressões
             self.vst_expr_elem(component, expr_elem.l_expr)
             self.vst_expr_elem(component, expr_elem.r_expr)
-    
-            # Retorna a operação OR
+
             return lambda: self.vst_expr_elem(component, expr_elem.l_expr)() or self.vst_expr_elem(component, expr_elem.r_expr)()
-    
+
         elif isinstance(expr_elem, Xor):
-            # Valida as subexpressões
             self.vst_expr_elem(component, expr_elem.l_expr)
             self.vst_expr_elem(component, expr_elem.r_expr)
-    
-            # Retorna a operação XOR
+
             return lambda: self.vst_expr_elem(component, expr_elem.l_expr)() ^ self.vst_expr_elem(component, expr_elem.r_expr)()
-    
+
         elif isinstance(expr_elem, Nand):
-            # Valida as subexpressões
             self.vst_expr_elem(component, expr_elem.l_expr)
             self.vst_expr_elem(component, expr_elem.r_expr)
-    
-            # Retorna a operação NAND
+
             return lambda: not (self.vst_expr_elem(component, expr_elem.l_expr)() and self.vst_expr_elem(component, expr_elem.r_expr)())
-    
+
         elif isinstance(expr_elem, Nor):
-            # Valida as subexpressões
             self.vst_expr_elem(component, expr_elem.l_expr)
             self.vst_expr_elem(component, expr_elem.r_expr)
-    
-            # Retorna a operação NOR
+
             return lambda: not (self.vst_expr_elem(component, expr_elem.l_expr)() or self.vst_expr_elem(component, expr_elem.r_expr)())
     
         elif isinstance(expr_elem, Xnor):
-            # Valida as subexpressões
             self.vst_expr_elem(component, expr_elem.l_expr)
             self.vst_expr_elem(component, expr_elem.r_expr)
-    
-            # Retorna a operação XNOR
+
             return lambda: not (self.vst_expr_elem(component, expr_elem.l_expr)() ^ self.vst_expr_elem(component, expr_elem.r_expr)())
-    
+
         else:
-            # Lança um erro se o elemento da expressão for inválido
             raise SemanticalError(f'Invalid expression element: {expr_elem}')
