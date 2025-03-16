@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Union
+from typing import Union, Optional
 
 
 INTERNAL = 0
@@ -68,7 +68,7 @@ class Decl:
         self.id = ''
         self.conn = INTERNAL  # -1 - input, 0 - internal, 1 - output
         self.type = 'bit'
-        self.assign = None
+        self.assign: Optional[ExprElem] = None
 
     def __repr__(self) -> str:
         return f'Decl({self.id}, {self.type})'
@@ -95,7 +95,7 @@ ExprElem = Union['Identifier', 'Binary', 'UnaryOp', 'BinaryOp']
 
 class Assign:
     def __init__(self) -> None:
-        self.dt: Identifier = None
+        self.dt: Optional[Identifier] = None
         self.expr = None
 
     def __repr__(self) -> str:
