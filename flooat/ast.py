@@ -47,9 +47,9 @@ class Comp:
             repr += f'{stmt} '
 
         return f'Comp({self.id}, {self.is_main}, {self.stmts})'
-    
+
     def __str__(self) -> str:
-        string = f'|-- Comp: {self.id}'
+        string = f'|- Comp: {self.id}'
 
         if self.is_main:
             string += ' (main)'
@@ -58,7 +58,7 @@ class Comp:
 
         for stmt in self.stmts:
             stmt_str = str(stmt).replace('\n', '\n|  ')
-            string += f'|  |-- {stmt_str}\n'
+            string += f'|  |- {stmt_str}\n'
 
         return string
 
@@ -72,7 +72,7 @@ class Decl:
 
     def __repr__(self) -> str:
         return f'Decl({self.id}, {self.type})'
-    
+
     def __str__(self) -> str:
         string = f'Decl: {self.id} ({self.type}'
 
@@ -84,8 +84,8 @@ class Decl:
             string += ', internal)'
 
         if self.assign:
-            assign_str = str(self.assign).replace('\n', '\n|    ')
-            string += f'\n|  |-- {assign_str}'
+            assign_str = str(self.assign).replace('\n', '\n|  ')
+            string += f'\n|  |- assign:\n|  |  |- {assign_str}'
 
         return string
 
@@ -102,8 +102,8 @@ class Assign:
         return f'Assign({self.dt}, {self.expr})'
     
     def __str__(self) -> str:
-        expr_str = str(self.expr).replace('\n', '\n|    ')
-        return f'Assign\n|  |-- {self.dt}\n|-- {expr_str}'
+        expr_str = str(self.expr).replace('\n', '\n|  ')
+        return f'Assign\n|  |- dt: {self.dt}\n|  |- expr:\n|  |  |- {expr_str}'
 
 
 class UnaryOp(ABC):
@@ -116,7 +116,7 @@ class UnaryOp(ABC):
 
     def __str__(self) -> str:
         expr = f'{self.expr}'.replace('\n', '\n|  ')
-        return f'{self.__class__.__name__}\n|-- {expr}'
+        return f'{self.__class__.__name__}\n|  |- {expr}'
 
 
 class BinaryOp(ABC):
@@ -131,7 +131,7 @@ class BinaryOp(ABC):
         l_expr = f'{self.l_expr}'.replace('\n', '\n|  ')
         r_expr = f'{self.r_expr}'.replace('\n', '\n|  ')
 
-        str = f'{self.__class__.__name__}\n|  |-- {l_expr}\n  |-- {r_expr}'
+        str = f'{self.__class__.__name__}\n|  |- {l_expr}\n|  |- {r_expr}'
 
         return str
 
@@ -176,8 +176,8 @@ class Identifier:
         self.id = id
 
     def __repr__(self) -> str:
-        return f'Identifier {self.id}'
-    
+        return f'Id: {self.id}'
+
     def __str__(self) -> str:
         return self.__repr__()
 
@@ -187,7 +187,7 @@ class Binary:
         self.value = value
 
     def __repr__(self) -> str:
-        return f'Binary {self.value}'
-    
+        return f'Binary {int(self.value)}'  #todo change  to show binary value
+
     def __str__(self) -> str:
         return self.__repr__()
