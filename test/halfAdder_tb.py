@@ -8,7 +8,7 @@ with open('src\\halfAdder.ft', 'r') as f:
     code = f.read()
 
 comp = ft.make_comp(code)
-print(comp.bits_dict)
+print(comp.bus_dict)
 
 comp.input({'a': False, 'b': False})
 comp.input({'a': False, 'b': True})

@@ -13,8 +13,7 @@ TEST_MODE = 0
 
 
 def main():
-
-    with open('src/incrementor.ft', 'r') as file:
+    with open('src/halfAdder.ft', 'r') as file:
         code = file.read()
 
     if TEST_MODE > 0:
