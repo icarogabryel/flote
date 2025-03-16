@@ -281,7 +281,11 @@ class Parser:
             return binary
 
         elif token_label == 'bin':
-            value = self.get_current_token().lexeme
+            try:
+                value = bool(self.get_current_token().lexeme)
+            except:
+                raise SyntacticalError(f'Invalid binary value: {self.get_current_token().lexeme}')
+
             self.advance()
 
             return ast.Binary(value)
@@ -290,7 +294,7 @@ class Parser:
             op = self.get_current_token().lexeme
             self.advance()
 
-            return ast.Not(op, self.primary())
+            return ast.Not(self.primary())
 
         elif token_label == 'l_paren':
             self.advance()
