@@ -1,5 +1,10 @@
-from .component import Component, Bit
+from .component import Component, BitBus
 from .ast import *
+from typing import Optional
+
+
+NOT_ASSIGNED = False
+IS_ASSIGNED = True
 
 
 class SemanticalError(Exception):
@@ -10,12 +15,23 @@ class SemanticalError(Exception):
         return f'Semantical Error: {self.message}'
 
 
+class BusSymbol:
+    """Class that represents a signal symbol in the symbol table."""
+
+    def __init__(self, type, assigned):
+        self.type: Optional[str] = type
+        self.is_assigned = assigned
+
+    def __repr__(self):
+        return f'({self.type}, {self.is_assigned})'  #todo Improve
+
+
 class Builder:
     """Class that builds the component from the AST."""
 
     def __init__(self, ast) -> None:  #todo Add signal list to error handling
         self.ast = ast
-        self.symbol_table: dict[tuple[int, bool, bool]]= {}  # bit: (type, has been declared, has been assigned)
+        self.bus_symbol_table: dict[str, dict[str, BusSymbol]] = {}  # component: bus: (type, is_assigned)
 
     def get_component(self, name = None) -> Component:  #todo Make return specific component, if not, main or unique file component
         return self.vst_mod(self.ast)
@@ -26,7 +42,7 @@ class Builder:
 
         if isinstance(expr_elem, Identifier):
             sensitivity_list.append(expr_elem.id)
-        
+
         elif isinstance(expr_elem, Binary):  # Constant value don't need to be in the sensitivity list
             pass
 
@@ -42,9 +58,38 @@ class Builder:
 
         return sensitivity_list
 
+    def get_components_bus_table(self, comp: Comp) -> dict[str, BusSymbol]:
+        """Get the component's bus symbol table."""
+
+        components_bus_table: dict[str, BusSymbol] = {}
+
+        for stmt in comp.stmts:
+            if isinstance(stmt, Decl):
+                decl = stmt  # Name change for better readability
+
+                if decl.id in components_bus_table:
+                    raise SemanticalError(f'Identifier {decl.id} has already been declared.')
+
+                elif decl.assign is not None:
+                    if decl.conn == INPUT:
+                        raise SemanticalError(f'Input identifier {decl.id} cannot be assigned.')
+
+                    else:
+                        components_bus_table[decl.id] = BusSymbol(decl.type, IS_ASSIGNED)
+
+                else:
+                    components_bus_table[decl.id] = BusSymbol(decl.type, NOT_ASSIGNED)
+
+        return components_bus_table
+
+    # def validate_symbol_table(self):
+    #     for id, bus in self.bus_symbol_table.items():
+    #         if not bus.assigned:
+    #             raise SemanticalError(f'Bus {id} has not been assigned.')
+
     def vst_mod(self, mod: Mod):
         is_main_comp_found = False
-        component = None
+        component = None  #todo add multiple components
 
         for comp in mod.comps:  # Search for the main component
             if comp.is_main:
@@ -58,16 +103,18 @@ class Builder:
         if not is_main_comp_found:  #todo change to 'main' be obligatory only if there is multiple components
             raise SemanticalError('Main component not found.')
         
-        assert component is not None
-
-        component.make_influence_list()
+        assert component is not None  #todo see if this make sense?
 
         return component
-    
-    def vst_comp(self, comp_node: Comp) -> Component:
-        component = Component(comp_node.id)
 
-        for stmt in comp_node.stmts:
+    def vst_comp(self, comp: Comp) -> Component:
+        if comp.id in self.bus_symbol_table:
+            raise SemanticalError(f'Component {comp.id} has already been declared.')
+
+        component = Component(comp.id)
+        self.bus_symbol_table[comp.id] = self.get_components_bus_table(comp)
+
+        for stmt in comp.stmts:
             if isinstance(stmt, Assign):
                 self.vst_assign(component, stmt)
 
@@ -77,48 +124,110 @@ class Builder:
             else:
                 raise SemanticalError(f'Invalid statement in a component: {stmt}')
 
+        component.make_influence_list()
+
         return component
 
+    def vst_decl(self, component: Component, decl: Decl) -> None:
+        bit_bus = BitBus()
+
+        if decl.conn == INPUT:
+            component.inputs.append(decl.id)
+
+        if decl.assign is not None:
+            bit_bus.assignment = self.vst_expr(component, decl.assign)
+            bit_bus.sensitivity_list = self.get_sensitivity_list(decl.assign)
+
+        component.bus_dict[decl.id] = bit_bus
+
     def vst_assign(self, component: Component, assign: Assign) -> None:
-        component.bits_dict[assign.dt.id] = self.visit_expr(component, assign.expr)
+        if assign.dt.id not in self.bus_symbol_table[component.id]:
+            raise SemanticalError(f'Identifier {assign.dt.id} has not been declared.')  # All destiny signals must be declared previously
 
-    def visit_expr(self, component, expr) -> Bit:
-        bit = Bit()
-        bit.assignment = self.vst_expr(component, expr)
-        bit.sensitivity_list = self.get_sensitivity_list(expr)
-
-        return bit
-
-    def vst_decl(self, component: Component, bit: Decl) -> None:
-        component.bits_dict[bit.id] = Bit()
-
-    def vst_expr(self, component: Component, expr_elem: ExprElem) -> str:
-        if isinstance(expr_elem, Identifier):
-            return lambda: component.bits_dict[expr_elem.id].value
-
-        elif isinstance(expr_elem, Binary):
-            return lambda: expr_elem.value
-
-        elif isinstance(expr_elem, Not):
-            return lambda: not self.vst_expr(component, expr_elem.expr)()
-
-        elif isinstance(expr_elem, And):
-            return lambda: self.vst_expr(component, expr_elem.l_expr)() and self.vst_expr(component, expr_elem.r_expr)()
-
-        elif isinstance(expr_elem, Or):
-            return lambda: self.vst_expr(component, expr_elem.l_expr)() or self.vst_expr(component, expr_elem.r_expr)()
-
-        elif isinstance(expr_elem, Xor):
-            return lambda: self.vst_expr(component, expr_elem.l_expr)() ^ self.vst_expr(component, expr_elem.r_expr)()
-
-        elif isinstance(expr_elem, Nand):
-            return lambda: not (self.vst_expr(component, expr_elem.l_expr)() and self.vst_expr(component, expr_elem.r_expr)())
-
-        elif isinstance(expr_elem, Nor):
-            return lambda: not (self.vst_expr(component, expr_elem.l_expr)() or self.vst_expr(component, expr_elem.r_expr)())
-
-        elif isinstance(expr_elem, Xnor):
-            return lambda: not (self.vst_expr(component, expr_elem.l_expr)() ^ self.vst_expr(component, expr_elem.r_expr)())
+        elif self.bus_symbol_table[component.id][assign.dt.id].is_assigned:
+            raise SemanticalError(f'Identifier {assign.dt.id} has already been assigned.')  # Destiny signal cannot be assigned more than once
 
         else:
+            self.bus_symbol_table[component.id][assign.dt.id].is_assigned = IS_ASSIGNED
+            component.bus_dict[assign.dt.id].assignment = self.vst_expr(component, assign.expr)
+
+    def vst_expr(self, component, expr) -> callable:
+        assignment = self.vst_expr_elem(component, expr)
+
+        return assignment
+
+    def vst_expr_elem(self, component: Component, expr_elem: ExprElem) -> callable:
+        """Visit an expression element, validate it, and return a callable for evaluation."""
+        
+        if isinstance(expr_elem, Identifier):
+            if expr_elem.id not in self.bus_symbol_table[component.id]:
+                raise SemanticalError(f'Identifier {expr_elem.id} has not been declared.')
+
+            return lambda: component.bus_dict[expr_elem.id].value
+
+        elif isinstance(expr_elem, Binary):
+            # Valida o valor do elemento binário
+            if not isinstance(expr_elem.value, bool):
+                raise SemanticalError(f'Binary value {expr_elem.value} is not a valid boolean.')
+    
+            # Retorna o valor convertido para booleano
+            return lambda: bool(expr_elem.value)
+
+        elif isinstance(expr_elem, Not):
+            # Valida a subexpressão
+            self.vst_expr_elem(component, expr_elem.expr)
+    
+            # Retorna a operação NOT
+            return lambda: not self.vst_expr_elem(component, expr_elem.expr)()
+    
+        elif isinstance(expr_elem, And):
+            # Valida as subexpressões
+            self.vst_expr_elem(component, expr_elem.l_expr)
+            self.vst_expr_elem(component, expr_elem.r_expr)
+    
+            # Retorna a operação AND
+            return lambda: self.vst_expr_elem(component, expr_elem.l_expr)() and self.vst_expr_elem(component, expr_elem.r_expr)()
+    
+        elif isinstance(expr_elem, Or):
+            # Valida as subexpressões
+            self.vst_expr_elem(component, expr_elem.l_expr)
+            self.vst_expr_elem(component, expr_elem.r_expr)
+    
+            # Retorna a operação OR
+            return lambda: self.vst_expr_elem(component, expr_elem.l_expr)() or self.vst_expr_elem(component, expr_elem.r_expr)()
+    
+        elif isinstance(expr_elem, Xor):
+            # Valida as subexpressões
+            self.vst_expr_elem(component, expr_elem.l_expr)
+            self.vst_expr_elem(component, expr_elem.r_expr)
+    
+            # Retorna a operação XOR
+            return lambda: self.vst_expr_elem(component, expr_elem.l_expr)() ^ self.vst_expr_elem(component, expr_elem.r_expr)()
+    
+        elif isinstance(expr_elem, Nand):
+            # Valida as subexpressões
+            self.vst_expr_elem(component, expr_elem.l_expr)
+            self.vst_expr_elem(component, expr_elem.r_expr)
+    
+            # Retorna a operação NAND
+            return lambda: not (self.vst_expr_elem(component, expr_elem.l_expr)() and self.vst_expr_elem(component, expr_elem.r_expr)())
+    
+        elif isinstance(expr_elem, Nor):
+            # Valida as subexpressões
+            self.vst_expr_elem(component, expr_elem.l_expr)
+            self.vst_expr_elem(component, expr_elem.r_expr)
+    
+            # Retorna a operação NOR
+            return lambda: not (self.vst_expr_elem(component, expr_elem.l_expr)() or self.vst_expr_elem(component, expr_elem.r_expr)())
+    
+        elif isinstance(expr_elem, Xnor):
+            # Valida as subexpressões
+            self.vst_expr_elem(component, expr_elem.l_expr)
+            self.vst_expr_elem(component, expr_elem.r_expr)
+    
+            # Retorna a operação XNOR
+            return lambda: not (self.vst_expr_elem(component, expr_elem.l_expr)() ^ self.vst_expr_elem(component, expr_elem.r_expr)())
+    
+        else:
+            # Lança um erro se o elemento da expressão for inválido
             raise SemanticalError(f'Invalid expression element: {expr_elem}')
