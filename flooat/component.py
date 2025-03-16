@@ -1,33 +1,37 @@
-class Bit:
-    """This class represents a bit signal in the circuit."""
+class Bus:
+    """This class represents a bus in the circuit."""
 
     def __init__(self):
         self.assignment = None  # The assignment of the bit. It can be an expression or None.
-        self.value: bool = False  # The binary value of the bit.
+        self.value: bool = False  # The binary value of the bit. #todo change to generic
         self.sensitivity_list: list[str] = []  # The list of bits that the current bit value depends on.
+
+    def assign(self):
+        """Do the assignment of the bus when not None."""
+
+        if self.assignment:
+            self.value = self.assignment()
+
+
+class BitBus(Bus):
+    """This class represents a bit bus in the circuit."""
 
     #* Operators overloading
     def __invert__(self) -> bool:
         return not self.value
-
-    def __and__(self, other: 'Bit') -> bool:
+ 
+    def __and__(self, other: 'BitBus') -> bool:
         return self.value and other.value
 
-    def __or__(self, other: 'Bit') -> bool:
+    def __or__(self, other: 'BitBus') -> bool:
         return self.value or other.value
 
-    def __xor__(self, other: 'Bit') -> bool:
+    def __xor__(self, other: 'BitBus') -> bool:
         return self.value ^ other.value
     #* End of operators overloading
 
     def __repr__(self):
         return f'Assign: {self.assignment}, Current Value: {self.value}, SL: {self.sensitivity_list}'
-    
-    def assign(self):
-        """Do the assignment of the bit when not None."""
-
-        if self.assignment:
-            self.value = self.assignment()
 
 
 class Component:
@@ -44,13 +48,14 @@ class Component:
 
     def __init__(self, id) -> None:
         self.id: str = id
-        self.bits_dict: dict[str, Bit] = {}  #todo change to mark inputs and outputs
+        self.bus_dict: dict[str, BitBus] = {}  #todo change to mark inputs and outputs
+        self.inputs: list[str] = []  #todo remove
         self.influence_list: dict[str, list[str]] = {}
         self.time = -1  #todo improve this
         self.vcd = ''  #todo make a class for this
 
     def __repr__(self):
-        return f'Component {self.id}: {self.bits_dict}'
+        return f'Component {self.id}: {self.bus_dict}'
 
     def make_influence_list(self):
         """
@@ -61,11 +66,11 @@ class Component:
         all bits that depend on it are added to the queue.
         """
 
-        for bit in self.bits_dict:  # Create a list in the dict for each bit
+        for bit in self.bus_dict:  # Create a list in the dict for each bit
             self.influence_list[bit] = []
 
-        for bit in self.bits_dict:  # For each bit in the component
-            for sensibility_signal in self.bits_dict[bit].sensitivity_list:  # For each bit that the current bit are influenced by
+        for bit in self.bus_dict:  # For each bit in the component
+            for sensibility_signal in self.bus_dict[bit].sensitivity_list:  # For each bit that the current bit are influenced by
                 self.influence_list[sensibility_signal].append(bit)  # Add the current bit to the list of bits that the sensibility bit influences
 
     def stabilize(self):
@@ -75,11 +80,11 @@ class Component:
         It is wanted new values (an input stimulus) to the component.
         """
 
-        queue = list(self.bits_dict.keys())  #todo make dont add inputs
+        queue = list(self.bus_dict.keys())  #todo make dont add inputs
 
         while queue:
             bit_name = queue.pop(0)
-            bit = self.bits_dict[bit_name]
+            bit = self.bus_dict[bit_name]
 
             p_value = bit.value
             bit.assign()
@@ -92,8 +97,8 @@ class Component:
 
     def input(self, new_values: dict[str, bool]) -> None:
         for id, new_value in new_values.items():
-            if id in self.bits_dict:
-                self.bits_dict[id].value = new_value
+            if id in self.bus_dict:
+                self.bus_dict[id].value = new_value
             else:
                 raise KeyError(f"Bit signal '{id}' not found in the component.")
 
@@ -105,7 +110,7 @@ class Component:
         self.time += 1  #todo make custom
         vcd = f'#{self.time}\n\n'
 
-        for id, bit in self.bits_dict.items():
+        for id, bit in self.bus_dict.items():
             vcd += f'{int(bit.value)} {id}\n'
 
         vcd += '\n'
@@ -119,7 +124,7 @@ class Component:
         #make vcd header
         vcd = f'$timescale 1 ns $end\n\n$scope module {self.id} $end\n'
 
-        for bit in self.bits_dict:
+        for bit in self.bus_dict:
             vcd += f'$var wire 1 {bit} {bit} $end\n'
 
         self.update_vcd()
