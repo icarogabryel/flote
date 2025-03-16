@@ -31,7 +31,7 @@ class BitBus(Bus):
     #* End of operators overloading
 
     def __repr__(self):
-        return f'Assign: {self.assignment}, Current Value: {self.value}, SL: {self.sensitivity_list}'
+        return f'Assigned: {'Yes' if self.assignment else 'No'}, Current Value: {self.value}, SL: {self.sensitivity_list}'
 
 
 class Component:
