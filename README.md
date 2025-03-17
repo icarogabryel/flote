@@ -1,5 +1,9 @@
 # Flooat
 
+<div align="center">
+  <img src="doc/logo.png" width="40%" alt="Flooat logo" />
+</div>
+
 ## Introduction
 
 Flooat is a hardware description language and python framework for simulation. It is designed to be **friendly, simple, light and productive**. More easy to use and learn than Verilog and VHDL. Using Flooat, you can create integrated circuits component by using it's HDL or Python framework (or both) that work by the HLS (High Level Synthesis) concept.
@@ -20,9 +24,9 @@ Flooat is in development and is not ready for production.
 - [X] Make accept expressions
 - [X] Improve the algorithm of simulation
 - [X] Improve structure
-- [ ] Improve declaration and assignment
+- [X] Improve declaration and assignment
 - [ ] Create waveform class
-- [ ] Improve Semantic Analysis
+- [X] Improve Semantic Analysis
 - [ ] Add multi-bit signals support
 - [ ] Add multi-bit signals addressing support
 - [ ] Add sub-components support
