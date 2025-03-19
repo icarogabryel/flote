@@ -2,7 +2,7 @@ import os
 import sys
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-import flooat as ft
+import flote as ft
 
 with open('src\\halfAdder.ft', 'r') as f:
     code = f.read()
