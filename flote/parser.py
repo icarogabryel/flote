@@ -30,9 +30,9 @@ class Parser:
     """
 
     def __init__(self, scanner: Scanner) -> None:
-        self.token_stream = scanner.get_token_stream()
+        self.token_stream = scanner.get_token_stream()  # Get the generator token stream from the scanner
         self.ast = None
-        self.current_token = next(self.token_stream)
+        self.current_token = next(self.token_stream)  # Get the first token from the stream
 
         self.parse()
 
@@ -55,7 +55,7 @@ class Parser:
 
         self.ast = self.mod()
 
-    # Syntactical Rules:
+    # Syntactical Rules
 
     #* mod = {comp};
     def mod(self):
@@ -112,7 +112,7 @@ class Parser:
             decl.conn = 1
             self.advance()
 
-        self.match_label('bit')
+        self.match_label('bit')  #todo adjust to accept other types
         decl.type = 'bit'
         self.advance()
         self.match_label('id')
@@ -281,17 +281,12 @@ class Parser:
             return binary
 
         elif token_label == 'bin':
-            try:
-                value = bool(self.get_current_token().lexeme)
-            except:
-                raise SyntacticalError(f'Invalid binary value: {self.get_current_token().lexeme}')
-
+            value = bool(self.get_current_token().lexeme)
             self.advance()
 
             return ast.Binary(value)
 
         elif token_label == 'not':
-            op = self.get_current_token().lexeme
             self.advance()
 
             return ast.Not(self.primary())

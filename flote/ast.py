@@ -21,7 +21,7 @@ class Mod:
             repr += f'{comp} '
 
         return f'Mod({self.comps})'
-    
+
     def __str__(self) -> str:
         string = ''
 
