@@ -1,7 +1,7 @@
-mod = {comp};
+mod = comp {comp};
 comp = ['main'], 'comp', ID, '{', {stmt}, '}';
 stmt = decl | assign;
-decl = {'in'| 'out'}, 'bit', ID, {'=', expr}, ';';
+decl = ['in'| 'out'], 'bit', ID, ['=', expr], ';';
 assign = ID, '=', expr, ';';
 
 (* Expression rules *)

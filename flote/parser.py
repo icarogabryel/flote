@@ -63,6 +63,8 @@ class Parser:
     def mod(self):
         mod = ast.Mod()
 
+        mod.add_comp(self.comp())
+
         while self.get_current_token().label in FIRST_SETS['comp']:
             mod.add_comp(self.comp())
 
