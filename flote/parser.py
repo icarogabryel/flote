@@ -14,11 +14,12 @@ FIRST_SETS = {
 
 
 class SyntacticalError(Exception):  #todo Add line number
-    def __init__(self, message):
+    def __init__(self, line_number, message):
+        self.line_number = line_number
         self.message = message
 
     def __str__(self):
-        return f'Syntactical Error: {self.message}'
+        return f'Syntactical Error at line {self.line_number}: {self.message}'
 
 
 class Parser:
@@ -30,7 +31,8 @@ class Parser:
     """
 
     def __init__(self, scanner: Scanner) -> None:
-        self.token_stream = scanner.get_token_stream()  # Get the generator token stream from the scanner
+        self.scanner = scanner
+        self.token_stream = self.scanner.get_token_stream()  # Get the generator token stream from the scanner
         self.ast = None
         self.current_token = next(self.token_stream)  # Get the first token from the stream
 
@@ -48,7 +50,7 @@ class Parser:
         token = self.get_current_token()
 
         if token.label != expected_label:
-            raise SyntacticalError(f'Unexpected Token. Expected \'{expected_label}\'. Got \'{token.label}\'.')
+            raise SyntacticalError(self.scanner.line_number, f'Unexpected Token. Expected \'{expected_label}\'. Got \'{token.label}\'.')
 
     def parse(self):
         """Start the parsing process  by entering the first rule of the grammar."""
@@ -169,7 +171,7 @@ class Parser:
             self.advance()
         
         else:
-            raise SyntacticalError('Expected "or" or "nor".')
+            raise SyntacticalError(self.scanner.line_number, 'Expected "or" or "nor".')
 
         term = self.term()
 
@@ -212,7 +214,7 @@ class Parser:
             self.advance()
         
         else:
-            raise SyntacticalError('Expected "xor" or "xnor".')
+            raise SyntacticalError(self.scanner.line_number, 'Expected "xor" or "xnor".')
 
         factor = self.factor()
 
@@ -255,7 +257,7 @@ class Parser:
             self.advance()
         
         else:
-            raise SyntacticalError('Expected "and" or "nand".')
+            raise SyntacticalError(self.scanner.line_number, 'Expected "and" or "nand".')  #todo maybe change to assert
 
         primary = self.primary()
 
