@@ -275,7 +275,7 @@ class Parser:
             return current_node  # the current note returns with empty left expr to be filled by the top routine
 
     #* primary = 'not', primary | '(', expr, ')' | ID | BIN ;
-    def primary(self):
+    def primary(self) -> ast.ExprElem:
         if (token_label := self.get_current_token().label) == 'id':
             binary = ast.Identifier(self.get_current_token().lexeme)
             self.advance()
@@ -300,3 +300,6 @@ class Parser:
             self.advance()
 
             return expr
+
+        else:
+            raise SyntacticalError(self.scanner.line_number, 'Expected primary.')
