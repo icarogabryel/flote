@@ -16,7 +16,7 @@ class SemanticalError(Exception):
 
 
 class BusSymbol:
-    """Class that represents a signal symbol in the symbol table."""
+    """Class that represents a bus symbol in the symbol table."""
 
     def __init__(self, type, assigned):
         self.type: Optional[str] = type
