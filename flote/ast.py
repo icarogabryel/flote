@@ -131,7 +131,7 @@ class BinaryOp(ABC):
         l_expr = f'{self.l_expr}'.replace('\n', '\n|  ')
         r_expr = f'{self.r_expr}'.replace('\n', '\n|  ')
 
-        str = f'{self.__class__.__name__}\n|  |- {l_expr}\n|  |- {r_expr}'
+        str = f'{self.__class__.__name__}\n|  |  |- {l_expr}\n|  |  |- {r_expr}'
 
         return str
 
