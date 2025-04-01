@@ -126,7 +126,7 @@ class Scanner():
                 token = Token('id', lexeme)
 
             elif lexeme in ['0', '1']:  # Check if the lexeme is a valid binary number  #todo change to accept more than one bit
-                token = Token('bin', lexeme)
+                token = Token('bit_field', lexeme)
 
             else:
                 raise LexicalError(self.line_number, f'Invalid lexeme: {lexeme}')

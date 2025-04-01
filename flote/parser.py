@@ -280,7 +280,7 @@ class Parser:
 
             return binary
 
-        elif token_label == 'bin':
+        elif token_label == 'bit_field':
             value = bool(self.get_current_token().lexeme)
             self.advance()
 
