@@ -7,9 +7,9 @@ FIRST_SETS = {
     'stmt': ['in', 'out', 'bit', 'id'],
     'decl': ['in', 'out', 'bit'],
     'assign': ['id'],
-    'expr\'': ['or', 'nor'],
-    'term\'': ['xor', 'xnor'],
-    'factor\'': ['and', 'nand'],
+    'expr_dash': ['or', 'nor'],
+    'term_dash': ['xor', 'xnor'],
+    'fact_dash': ['and', 'nand'],
 }
 
 
@@ -59,7 +59,7 @@ class Parser:
 
     # Syntactical Rules
 
-    #* mod = {comp};
+    #* mod = {comp}
     def mod(self):
         mod = ast.Mod()
 
@@ -70,7 +70,7 @@ class Parser:
 
         return mod
 
-    #* comp = ['main'], 'comp', ID, '{', {stmt}, '}';
+    #* comp = ['main'], 'comp', ID, '{', {stmt}, '}'
     def comp(self):
         comp = ast.Comp()
 
@@ -94,7 +94,7 @@ class Parser:
 
         return comp
 
-    #* stmt = decl | assign;
+    #* stmt = decl | assign
     def stmt(self):
         if (label := self.get_current_token().label) in FIRST_SETS['decl']:
             return self.decl()
@@ -103,7 +103,7 @@ class Parser:
 
         assert False, f'Unexpected Token: {label}'
 
-    #* decl = {'in' | 'out'}, 'bit', ID, {'=', expr}, ';';
+    #* decl = {'in' | 'out'}, 'bit', ID, {'=', expr}, ';'
     def decl(self):
         decl = ast.Decl()
 
@@ -130,7 +130,7 @@ class Parser:
 
         return decl
 
-    #* assign = ID, '=', expr, ';';
+    #* assign = ID, '=', expr, ';'
     def assign(self):
         assign = ast.Assign()
 
@@ -145,11 +145,11 @@ class Parser:
 
         return assign
 
-    #* expr = term, expr_dash;
+    #* expr = term, exprDash
     def expr(self):
         term = self.term()
 
-        if self.get_current_token().label in FIRST_SETS['expr\'']:  # If expr' is not an empty production (there are more operators)
+        if self.get_current_token().label in FIRST_SETS['expr_dash']:  # If expr' is not an empty production (there are more operators)
             current_node = self.expr_dash()  # the coming node is the father of term
             current_node.l_expr = term  # and term will be his left son
 
@@ -158,7 +158,7 @@ class Parser:
         else:
             return term
         
-    #* expr_dash = ('or' | 'nor'), term, expr_dash | ε;
+    #* exprDash = ('or' | 'nor'), term, exprDash | ε
     def expr_dash(self):
         token = self.get_current_token().label
 
@@ -175,7 +175,7 @@ class Parser:
 
         term = self.term()
 
-        if self.get_current_token().label in FIRST_SETS['expr\'']:  # If there are more operators
+        if self.get_current_token().label in FIRST_SETS['expr_dash']:  # If there are more operators
             son_node = self.expr_dash()  # the coming son node is the father of term
             son_node.l_expr = term  # and term will be his left son. the son node is complete now
 
@@ -188,11 +188,11 @@ class Parser:
 
             return current_node  # the current note returns with empty left expr to be filled by the top routine
         
-    #* term = factor, term*;
+    #* term = factor, termDash
     def term(self):
-        factor = self.factor()
+        factor = self.fact()
 
-        if self.get_current_token().label in FIRST_SETS['term\'']:  # If term_dash is not an empty production (there are more operators)
+        if self.get_current_token().label in FIRST_SETS['term_dash']:  # If term_dash is not an empty production (there are more operators)
             current_node = self.term_dash()  # the coming node is the father of factor
             current_node.l_expr = factor  # and factor will be his left son
 
@@ -201,7 +201,7 @@ class Parser:
         else:
             return factor
 
-    #* term_dash = ('xor' | 'xnor'), factor, term_dash | ε;
+    #* termDash = ('xor' | 'xnor'), factor, termDash | ε
     def term_dash(self):
         token = self.get_current_token().label
 
@@ -216,9 +216,9 @@ class Parser:
         else:
             raise SyntacticalError(self.scanner.line_number, 'Expected "xor" or "xnor".')
 
-        factor = self.factor()
+        factor = self.fact()
 
-        if self.get_current_token().label in FIRST_SETS['term\'']:  # If there are more operators
+        if self.get_current_token().label in FIRST_SETS['term_dash']:  # If there are more operators
             son_node = self.term_dash()  # the coming son node is the father of factor
             son_node.l_expr = factor  # and factor will be his left son. the son node is complete now
 
@@ -231,12 +231,12 @@ class Parser:
 
             return current_node  # the current note returns with empty left expr to be filled by the top routine
 
-    #* factor = primary, factor*;
-    def factor(self):
+    #* fact = primary, factDash
+    def fact(self):
         primary = self.primary()
 
-        if self.get_current_token().label in FIRST_SETS['factor\'']:  # If factor_dash is not an empty production (there are more operators)
-            current_node = self.factor_dash()  # the coming node is the father of primary
+        if self.get_current_token().label in FIRST_SETS['fact_dash']:  # If fact_dash is not an empty production (there are more operators)
+            current_node = self.fact_dash()  # the coming node is the father of primary
             current_node.l_expr = primary  # and primary will be his left son
 
             return current_node  # a complete node is returned to the top routine
@@ -244,8 +244,8 @@ class Parser:
         else:
             return primary
 
-    #* factor_dash = ('and' | 'nand'), primary, factor_dash | ε;
-    def factor_dash(self):
+    #* factDash = ('and' | 'nand'), primary, factDash | ε
+    def fact_dash(self):
         token = self.get_current_token().label
 
         if token == 'and':
@@ -261,8 +261,8 @@ class Parser:
 
         primary = self.primary()
 
-        if self.get_current_token().label in FIRST_SETS['factor\'']:  # If there are more operators
-            son_node = self.factor_dash()  # the coming son node is the father of primary
+        if self.get_current_token().label in FIRST_SETS['fact_dash']:  # If there are more operators
+            son_node = self.fact_dash()  # the coming son node is the father of primary
             son_node.l_expr = primary  # and primary will be his left son. the son node is complete now
 
             current_node.r_expr = son_node  # then, the son node will be the right son of the current node
@@ -274,7 +274,7 @@ class Parser:
 
             return current_node  # the current note returns with empty left expr to be filled by the top routine
 
-    #* primary = 'not', primary | '(', expr, ')' | ID | BIN ;
+    #* primary = 'not', primary | '(', expr, ')' | ID | BIN
     def primary(self) -> ast.ExprElem:
         if (token_label := self.get_current_token().label) == 'id':
             binary = ast.Identifier(self.get_current_token().lexeme)
