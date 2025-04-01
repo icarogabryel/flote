@@ -214,7 +214,7 @@ class Parser:
         elif token == 'xnor':
             current_node = ast.Xnor()
             self.advance()
-        
+
         else:
             raise SyntacticalError(self.scanner.line_number, 'Expected "xor" or "xnor".')
 

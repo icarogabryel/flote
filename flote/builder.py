@@ -88,22 +88,23 @@ class Builder:
     #             raise SemanticalError(f'Bus {id} has not been assigned.')
 
     def vst_mod(self, mod: Mod):
-        is_main_comp_found = False
-        component = None  #todo add multiple components
+        if len(mod.comps) == 1:
+            return self.vst_comp(comp)
 
-        for comp in mod.comps:  # Search for the main component
-            if comp.is_main:
-                if is_main_comp_found:
-                    raise SemanticalError('Only one main component is allowed.')
-                else:
-                    is_main_comp_found = True
+        else:
+            is_main_comp_found = False
+            component: Optional[Component] = None
 
-                    component = self.vst_comp(comp)
+            for comp in mod.comps:  # Search for the main component
+                if comp.is_main:
+                    if is_main_comp_found:
+                        raise SemanticalError('Only one main component is allowed.')
+                    else:
+                        is_main_comp_found = True
+                        component = self.vst_comp(comp)
 
-        if not is_main_comp_found:  #todo change to 'main' be obligatory only if there is multiple components
-            raise SemanticalError('Main component not found.')
-        
-        assert component is not None  #todo see if this make sense?
+            if not is_main_comp_found:
+                raise SemanticalError('Main component not found.')
 
         return component
 
@@ -158,7 +159,7 @@ class Builder:
 
     def vst_expr_elem(self, component: Component, expr_elem: ExprElem) -> callable:
         """Visit an expression element, validate it, and return a callable for evaluation."""
-        
+
         if isinstance(expr_elem, Identifier):
             if expr_elem.id not in self.bus_symbol_table[component.id]:
                 raise SemanticalError(f'Identifier {expr_elem.id} has not been declared.')
@@ -181,7 +182,7 @@ class Builder:
             self.vst_expr_elem(component, expr_elem.r_expr)
 
             return lambda: self.vst_expr_elem(component, expr_elem.l_expr)() and self.vst_expr_elem(component, expr_elem.r_expr)()
-    
+
         elif isinstance(expr_elem, Or):
             self.vst_expr_elem(component, expr_elem.l_expr)
             self.vst_expr_elem(component, expr_elem.r_expr)
