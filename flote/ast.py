@@ -21,7 +21,7 @@ class Mod:
             repr += f'{comp} '
 
         return f'Mod({self.comps})'
-
+    
     def __str__(self) -> str:
         string = ''
 
@@ -35,7 +35,7 @@ class Comp:
     def __init__(self) -> None:
         self.id = ''
         self.is_main = False
-        self.stmts = []
+        self.stmts: list[Union[Decl, Assign]] = []
 
     def add_stmt(self, stmt):
         self.stmts.append(stmt)
@@ -66,7 +66,7 @@ class Comp:
 class Decl:
     def __init__(self) -> None:
         self.id = ''
-        self.conn = INTERNAL  # -1 - input, 0 - internal, 1 - output
+        self.conn = INTERNAL
         self.type = 'bit'
         self.assign: Optional[ExprElem] = None
 
@@ -96,7 +96,7 @@ ExprElem = Union['Identifier', 'Binary', 'UnaryOp', 'BinaryOp']
 class Assign:
     def __init__(self) -> None:
         self.dt: Optional[Identifier] = None
-        self.expr = None
+        self.expr: Optional[ExprElem] = None
 
     def __repr__(self) -> str:
         return f'Assign({self.dt}, {self.expr})'
@@ -107,8 +107,7 @@ class Assign:
 
 
 class UnaryOp(ABC):
-    def __init__(self, expr) -> None:
-        self.expr = expr
+    expr:  Optional[ExprElem] = None
 
     @abstractmethod
     def __repr__(self) -> str:
@@ -116,12 +115,12 @@ class UnaryOp(ABC):
 
     def __str__(self) -> str:
         expr = f'{self.expr}'.replace('\n', '\n|  ')
-        return f'{self.__class__.__name__}\n|  |- {expr}'
+        return f'{self.__class__.__name__}\n|  |  |- {expr}'
 
 
 class BinaryOp(ABC):
-    l_expr = None
-    r_expr = None
+    l_expr: Optional[ExprElem] = None
+    r_expr: Optional[ExprElem] = None
 
     @abstractmethod
     def __repr__(self) -> str:
