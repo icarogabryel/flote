@@ -21,14 +21,15 @@ class Mod:
             repr += f'{comp} '
 
         return f'Mod({self.comps})'
-    
+
     def __str__(self) -> str:
-        string = ''
+        desc = '|- Mod:'
 
         for comp in self.comps:
-            string += f'{comp}\n\n'
+            comp_desc = str(comp).replace('\n', '\n|  ')
+            desc += f'\n|  |- {comp_desc}'
 
-        return string
+        return desc
 
 
 class Comp:
@@ -49,18 +50,17 @@ class Comp:
         return f'Comp({self.id}, {self.is_main}, {self.stmts})'
 
     def __str__(self) -> str:
-        string = f'|- Comp: {self.id}'
+        desc = f'Comp: {self.id}'
 
         if self.is_main:
-            string += ' (main)'
-
-        string += '\n'
+            desc += ' (main)'
 
         for stmt in self.stmts:
-            stmt_str = str(stmt).replace('\n', '\n|  ')
-            string += f'|  |- {stmt_str}\n'
+            desc += '\n'
+            desc_stmt = str(stmt).replace('\n', '\n|  ')
+            desc += f'|  |- {desc_stmt}'
 
-        return string
+        return desc
 
 
 class Decl:
@@ -74,20 +74,20 @@ class Decl:
         return f'Decl({self.id}, {self.type})'
 
     def __str__(self) -> str:
-        string = f'Decl: "{self.id}" ({self.type}'
+        desc = f'Decl: "{self.id}" ({self.type}'
 
         if self.conn == -1:
-            string += ', input)'
+            desc += ', input)'
         elif self.conn == 1:
-            string += ', output)'
+            desc += ', output)'
         else:
-            string += ', internal)'
+            desc += ', internal)'
 
         if self.assign:
-            assign_str = str(self.assign).replace('\n', '\n|  ')
-            string += f'\n|  |- assign: {assign_str}'
+            desc_assign = str(self.assign).replace('\n', '\n|  ')
+            desc += f'\n|  |- assign: {desc_assign}'
 
-        return string
+        return desc
 
 
 ExprElem = Union['Identifier', 'Binary', 'UnaryOp', 'BinaryOp']
@@ -102,8 +102,8 @@ class Assign:
         return f'Assign({self.dt}, {self.expr})'
 
     def __str__(self) -> str:
-        expr_str = str(self.expr).replace('\n', '\n|  ')
-        return f'Assign\n|  |- dt: {self.dt}\n|  |- expr: {expr_str}'
+        desc_expr = str(self.expr).replace('\n', '\n|  ')
+        return f'Assign:\n|  |- dt: {self.dt}\n|  |- expr: {desc_expr}'
 
 
 class UnaryOp(ABC):
@@ -114,8 +114,8 @@ class UnaryOp(ABC):
         pass
 
     def __str__(self) -> str:
-        expr = f'{self.expr}'.replace('\n', '\n|  ')
-        return f'{self.__class__.__name__}\n|  |  |- {expr}'
+        desc_expr = f'{self.expr}'.replace('\n', '\n|  ')
+        return f'{self.__class__.__name__}\n|  |  |- {desc_expr}'
 
 
 class BinaryOp(ABC):
@@ -130,9 +130,9 @@ class BinaryOp(ABC):
         l_expr = f'{self.l_expr}'.replace('\n', '\n|  ')
         r_expr = f'{self.r_expr}'.replace('\n', '\n|  ')
 
-        str = f'{self.__class__.__name__}\n|  |  |- l_expr: {l_expr}\n|  |  |- r_expr: {r_expr}'
+        desc = f'{self.__class__.__name__}\n|  |- l_expr: {l_expr}\n|  |- r_expr: {r_expr}'
 
-        return str
+        return desc
 
 
 class Not(UnaryOp):
@@ -186,7 +186,7 @@ class Binary:
         self.value = value
 
     def __repr__(self) -> str:
-        return f'Binary {int(self.value)}'
+        return f'BitField: {int(self.value)}'
 
     def __str__(self) -> str:
         return self.__repr__()
