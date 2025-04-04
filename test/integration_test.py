@@ -1,4 +1,4 @@
-# Tests for the scanner module
+# Tests for the integration of Scanner, Parser, and Builder classes in the Flote project.
 
 import os
 import sys
