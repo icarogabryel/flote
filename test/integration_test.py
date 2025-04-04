@@ -19,7 +19,7 @@ def main():
     if TEST_MODE > 0:
         scanner = Scanner(code)
         
-        print("Token Stream:\n")
+        print('Token Stream:\n')
 
         tokens = scanner.get_token_stream()
         for token in tokens:
@@ -30,13 +30,13 @@ def main():
         scanner = Scanner(code)
         parser = Parser(scanner)
 
-        print("\nAST:\n")
+        print('\nAST:\n')
         print(parser.ast)
 
     if TEST_MODE > 2:
         builder = Builder(parser.ast)
 
-        print("Component:\n")
+        print('\nComponent:\n')
         print(builder.get_component())
 
 
