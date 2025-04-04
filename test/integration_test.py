@@ -4,9 +4,9 @@ import os
 import sys
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from flooat.scanner import Scanner
-from flooat.parser import Parser
-from flooat.builder import Builder
+from flote.scanner import Scanner
+from flote.parser import Parser
+from flote.builder import Builder
 
 # 1 for Scanner, 2 for Parser, 3 for Builder
 TEST_MODE = 0

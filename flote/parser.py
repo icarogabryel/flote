@@ -279,10 +279,10 @@ class Parser:
     #* primary = 'not', primary | '(', expr, ')' | ID | BIN
     def primary(self) -> ast.ExprElem:
         if (token_label := self.get_current_token().label) == 'id':
-            binary = ast.Identifier(self.get_current_token().lexeme)
+            identifier = ast.Identifier(self.get_current_token().lexeme)
             self.advance()
 
-            return binary
+            return identifier
 
         elif token_label == 'bit_field':
             value = bool(self.get_current_token().lexeme)
@@ -293,7 +293,10 @@ class Parser:
         elif token_label == 'not':
             self.advance()
 
-            return ast.Not(self.primary())
+            node = ast.Not()
+            node.expr = self.primary()
+
+            return node
 
         elif token_label == 'l_paren':
             self.advance()
