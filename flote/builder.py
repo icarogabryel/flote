@@ -89,7 +89,7 @@ class Builder:
 
     def vst_mod(self, mod: Mod):
         if len(mod.comps) == 1:
-            return self.vst_comp(comp)
+            return self.vst_comp(mod.comps[0])
 
         else:
             is_main_comp_found = False
