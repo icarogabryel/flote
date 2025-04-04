@@ -74,7 +74,7 @@ class Decl:
         return f'Decl({self.id}, {self.type})'
 
     def __str__(self) -> str:
-        string = f'Decl: {self.id} ({self.type}'
+        string = f'Decl: "{self.id}" ({self.type}'
 
         if self.conn == -1:
             string += ', input)'
@@ -85,7 +85,7 @@ class Decl:
 
         if self.assign:
             assign_str = str(self.assign).replace('\n', '\n|  ')
-            string += f'\n|  |- assign:\n|  |  |- {assign_str}'
+            string += f'\n|  |- assign: {assign_str}'
 
         return string
 
@@ -100,10 +100,10 @@ class Assign:
 
     def __repr__(self) -> str:
         return f'Assign({self.dt}, {self.expr})'
-    
+
     def __str__(self) -> str:
         expr_str = str(self.expr).replace('\n', '\n|  ')
-        return f'Assign\n|  |- dt: {self.dt}\n|  |- expr:\n|  |  |- {expr_str}'
+        return f'Assign\n|  |- dt: {self.dt}\n|  |- expr: {expr_str}'
 
 
 class UnaryOp(ABC):
@@ -131,7 +131,7 @@ class BinaryOp(ABC):
         l_expr = f'{self.l_expr}'.replace('\n', '\n|  ')
         r_expr = f'{self.r_expr}'.replace('\n', '\n|  ')
 
-        str = f'{self.__class__.__name__}\n|  |  |- {l_expr}\n|  |  |- {r_expr}'
+        str = f'{self.__class__.__name__}\n|  |  |- l_expr: {l_expr}\n|  |  |- r_expr: {r_expr}'
 
         return str
 
@@ -176,7 +176,7 @@ class Identifier:
         self.id = id
 
     def __repr__(self) -> str:
-        return f'Id: {self.id}'
+        return f'Id: "{self.id}"'
 
     def __str__(self) -> str:
         return self.__repr__()
@@ -187,7 +187,7 @@ class Binary:
         self.value = value
 
     def __repr__(self) -> str:
-        return f'Binary {int(self.value)}'  #todo change  to show binary value
+        return f'Binary {int(self.value)}'
 
     def __str__(self) -> str:
         return self.__repr__()
