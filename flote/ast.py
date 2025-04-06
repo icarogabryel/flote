@@ -90,7 +90,7 @@ class Decl:
         return desc
 
 
-ExprElem = Union['Identifier', 'Binary', 'UnaryOp', 'BinaryOp']
+ExprElem = Union['Identifier', 'BitField', 'UnaryOp', 'BinaryOp']
 
 
 class Assign:
@@ -181,7 +181,7 @@ class Identifier:
         return self.__repr__()
 
 
-class Binary:
+class BitField:
     def __init__(self, value: str) -> None:
         self.value = value
 

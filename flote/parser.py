@@ -288,7 +288,7 @@ class Parser:
             value = bool(self.get_current_token().lexeme)
             self.advance()
 
-            return ast.Binary(value)
+            return ast.BitField(value)
 
         elif token_label == 'not':
             self.advance()

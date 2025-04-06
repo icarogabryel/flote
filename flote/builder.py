@@ -43,7 +43,7 @@ class Builder:
         if isinstance(expr_elem, Identifier):
             sensitivity_list.append(expr_elem.id)
 
-        elif isinstance(expr_elem, Binary):  # Constant value don't need to be in the sensitivity list
+        elif isinstance(expr_elem, BitField):  # Constant value don't need to be in the sensitivity list
             pass
 
         elif isinstance(expr_elem, UnaryOp):
@@ -166,7 +166,7 @@ class Builder:
 
             return lambda: component.bus_dict[expr_elem.id].value
 
-        elif isinstance(expr_elem, Binary):
+        elif isinstance(expr_elem, BitField):
             if not isinstance(expr_elem.value, bool):
                 raise SemanticalError(f'Binary value {expr_elem.value} is not a valid bit.')
 
