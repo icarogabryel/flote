@@ -33,7 +33,7 @@ class LexicalError(Exception):
         self.message = message
 
     def __str__(self):
-        return f"Lexical Error at line {self.line_number}: {self.message}"
+        return f"Lexical error at line {self.line_number}: {self.message}"
 
 
 class Token():
