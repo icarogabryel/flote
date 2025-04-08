@@ -3,7 +3,7 @@ from datetime import datetime
 
 VERSION = '0.1.0'
 CODENAME = 'Gambiarra'
-VALID_UNITS = ['ns', 'us', 'ms', 's', 'ps', 'fs']
+VALID_UNITS = ['fs', 'ps', 'ns', 'us', 'ms', 's']
 
 
 class Sample:
