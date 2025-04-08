@@ -47,8 +47,8 @@ Using the HLS side, you can create the component by hand. Also with the use of t
 - [X] Improve structure
 - [X] Improve declaration and assignment
 - [X] Improve Semantic Analysis
-- [ ] Create waveform class
-- [ ] Add line number in semantic errors
+- [X] Create waveform class
+- [X] Add line number in semantic errors
 - [ ] Add multi-bit signals support
 - [ ] Add multi-bit signals addressing support
 - [ ] Add sub-components support
