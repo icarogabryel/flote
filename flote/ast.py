@@ -37,6 +37,7 @@ class Comp:
         self.id = ''
         self.is_main = False
         self.stmts: list[Union[Decl, Assign]] = []
+        self.line_number = 0
 
     def add_stmt(self, stmt):
         self.stmts.append(stmt)
@@ -69,6 +70,7 @@ class Decl:
         self.conn = INTERNAL
         self.type = 'bit'
         self.assign: Optional[ExprElem] = None
+        self.line_number = 0
 
     def __repr__(self) -> str:
         return f'Decl({self.id}, {self.type})'
@@ -173,6 +175,7 @@ class Xnor(BinaryOp):
 class Identifier:
     def __init__(self, id: str) -> None:
         self.id = id
+        self.line_number = None
 
     def __repr__(self) -> str:
         return f'Id: "{self.id}"'

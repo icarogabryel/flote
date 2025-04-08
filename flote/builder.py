@@ -1,6 +1,6 @@
 from .component import Component, BitBus
 from .ast import *
-from typing import Optional
+from typing import Optional, Union
 
 
 NOT_ASSIGNED = False
@@ -8,11 +8,12 @@ IS_ASSIGNED = True
 
 
 class SemanticalError(Exception):
-    def __init__(self, message):
+    def __init__(self, line_number : Union[None, int, str], message):
+        self.line_number = line_number
         self.message = message
 
     def __str__(self):
-        return f'Semantical Error: {self.message}'
+        return f'Semantical error at line {self.line_number}: {self.message}'
 
 
 class BusSymbol:
@@ -54,7 +55,7 @@ class Builder:
             sensitivity_list.extend(self.get_sensitivity_list(expr_elem.r_expr))
 
         else:
-            raise SemanticalError(f'Invalid expression element: {expr_elem}')
+            assert False, f'Invalid expression element: {expr_elem}'
 
         return sensitivity_list
 
@@ -68,11 +69,11 @@ class Builder:
                 decl = stmt  # Name change for better readability
 
                 if decl.id in components_bus_table:
-                    raise SemanticalError(f'Identifier {decl.id} has already been declared.')
+                    raise SemanticalError(decl.line_number ,f'Bus \'{decl.id}\' has already been declared.')
 
                 elif decl.assign is not None:
                     if decl.conn == INPUT:
-                        raise SemanticalError(f'Input identifier {decl.id} cannot be assigned.')
+                        raise SemanticalError(decl.line_number, f'Input Buses like {decl.id} cannot be assigned.')
 
                     else:
                         components_bus_table[decl.id] = BusSymbol(decl.type, IS_ASSIGNED)
@@ -93,24 +94,27 @@ class Builder:
 
         else:
             is_main_comp_found = False
-            component: Optional[Component] = None
+            main_component: Optional[Component] = None
 
             for comp in mod.comps:  # Search for the main component
                 if comp.is_main:
                     if is_main_comp_found:
-                        raise SemanticalError('Only one main component is allowed.')
+                        raise SemanticalError(comp.line_number, f'{comp.id} can\'t be main. Only one main component is allowed.')
                     else:
                         is_main_comp_found = True
-                        component = self.vst_comp(comp)
+                        main_component = self.vst_comp(comp)
+
+                else:
+                    self.vst_comp(comp)
 
             if not is_main_comp_found:
-                raise SemanticalError('Main component not found.')
+                raise SemanticalError('_', 'Main component not found in a multiple component module.')
 
-        return component
+        return main_component
 
     def vst_comp(self, comp: Comp) -> Component:
-        if comp.id in self.bus_symbol_table:
-            raise SemanticalError(f'Component {comp.id} has already been declared.')
+        if comp.id in self.bus_symbol_table.keys():
+            raise SemanticalError(comp.line_number, f'Component {comp.id} has already been declared.')
 
         component = Component(comp.id)
         self.bus_symbol_table[comp.id] = self.get_components_bus_table(comp)
@@ -123,7 +127,7 @@ class Builder:
                 self.vst_decl(component, stmt)
 
             else:
-                raise SemanticalError(f'Invalid statement in a component: {stmt}')
+                assert False, f'Invalid statement: {stmt}'
 
         component.make_influence_list()
 
@@ -143,10 +147,10 @@ class Builder:
 
     def vst_assign(self, component: Component, assign: Assign) -> None:
         if assign.dt.id not in self.bus_symbol_table[component.id]:
-            raise SemanticalError(f'Identifier {assign.dt.id} has not been declared.')  # All destiny signals must be declared previously
+            raise SemanticalError(assign.dt.line_number, f'Identifier \'{assign.dt.id}\' has not been declared.')  # All destiny signals must be declared previously
 
         elif self.bus_symbol_table[component.id][assign.dt.id].is_assigned:
-            raise SemanticalError(f'Identifier {assign.dt.id} has already been assigned.')  # Destiny signal cannot be assigned more than once
+            raise SemanticalError(assign.dt.line_number, f'Identifier \'{assign.dt.id}\' has already been assigned.')  # Destiny signal cannot be assigned more than once
 
         else:
             self.bus_symbol_table[component.id][assign.dt.id].is_assigned = IS_ASSIGNED
@@ -162,13 +166,13 @@ class Builder:
 
         if isinstance(expr_elem, Identifier):
             if expr_elem.id not in self.bus_symbol_table[component.id]:
-                raise SemanticalError(f'Identifier {expr_elem.id} has not been declared.')
+                raise SemanticalError(expr_elem.line_number, f'Identifier \'{expr_elem.id}\' has not been declared.')
 
             return lambda: component.bus_dict[expr_elem.id].value
 
         elif isinstance(expr_elem, BitField):
-            if not isinstance(expr_elem.value, bool):
-                raise SemanticalError(f'Binary value {expr_elem.value} is not a valid bit.')
+            if not isinstance(expr_elem.value, bool):  #todo change here for vectorial format
+                assert False, f'Invalid bit field value: {expr_elem.value}'
 
             return lambda: bool(expr_elem.value)
 
@@ -214,4 +218,4 @@ class Builder:
             return lambda: not (self.vst_expr_elem(component, expr_elem.l_expr)() ^ self.vst_expr_elem(component, expr_elem.r_expr)())
 
         else:
-            raise SemanticalError(f'Invalid expression element: {expr_elem}')
+            assert False, f'Invalid expression element: {expr_elem}'

@@ -13,7 +13,7 @@ FIRST_SETS = {
 }
 
 
-class SyntacticalError(Exception):  #todo Add line number
+class SyntacticalError(Exception):
     def __init__(self, line_number, message):
         self.line_number = line_number
         self.message = message
@@ -75,6 +75,7 @@ class Parser:
     #* comp = ['main'], 'comp', ID, '{', {stmt}, '}'
     def comp(self):
         comp = ast.Comp()
+        comp.line_number = self.scanner.line_number
 
         if self.get_current_token().label == 'main':
             comp.is_main = True
@@ -108,6 +109,7 @@ class Parser:
     #* decl = {'in' | 'out'}, 'bit', ID, {'=', expr}, ';'
     def decl(self):
         decl = ast.Decl()
+        decl.line_number = self.scanner.line_number
 
         if self.get_current_token().label == 'in':
             decl.conn = -1
@@ -137,7 +139,11 @@ class Parser:
         assign = ast.Assign()
 
         self.match_label('id')
-        assign.dt = ast.Identifier(self.get_current_token().lexeme)
+
+        identifier = ast.Identifier(self.get_current_token().lexeme)
+        identifier.line_number = self.scanner.line_number
+        assign.dt = identifier
+
         self.advance()
         self.match_label('assign')
         self.advance()
@@ -280,6 +286,8 @@ class Parser:
     def primary(self) -> ast.ExprElem:
         if (token_label := self.get_current_token().label) == 'id':
             identifier = ast.Identifier(self.get_current_token().lexeme)
+            identifier.line_number = self.scanner.line_number
+
             self.advance()
 
             return identifier
