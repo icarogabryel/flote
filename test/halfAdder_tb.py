@@ -7,12 +7,18 @@ import flote as ft
 with open('src\\halfAdder.ft', 'r') as f:
     code = f.read()
 
-comp = ft.make_comp(code)
+comp = ft.elaborate(code)
 print(comp.bus_dict)
 
-comp.input({'a': False, 'b': False})
-comp.input({'a': False, 'b': True})
-comp.input({'a': True, 'b': False})
-comp.input({'a': True, 'b': True})
+comp.stimulate({'a': False, 'b': False})
+comp.wait(10)
+comp.stimulate({'a': False, 'b': True})
+comp.wait(10)
+comp.stimulate({'a': True, 'b': False})
+comp.wait(10)
+comp.stimulate({'a': True, 'b': True})
+comp.wait(10)
 
-comp.save_vcd()
+result = comp.dump_vcd()
+
+print(result)
