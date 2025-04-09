@@ -22,3 +22,7 @@ comp.wait(10)
 result = comp.dump_vcd()
 
 print(result)
+
+with open('waves/halfAdder.vcd', 'w') as f:
+    f.write(result)
+    f.close()
