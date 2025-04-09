@@ -73,8 +73,8 @@ class Builder:
                 if decl.id in components_bus_table:
                     raise SemanticalError(decl.line_number ,f'Bus \'{decl.id}\' has already been declared.')
 
-                elif decl.assign is not None:
-                    if decl.conn == INPUT:
+                elif decl.conn == INPUT:
+                    if decl.assign is not None:
                         raise SemanticalError(decl.line_number, f'Input Buses like {decl.id} cannot be assigned.')
 
                     else:
@@ -85,11 +85,11 @@ class Builder:
 
         return components_bus_table
 
-    def validate_symbol_table(self):
-        for comp_bus_list in self.bus_symbol_table.values():
+    def validate_bus_symbol_table(self):
+        for comp_id, comp_bus_list in self.bus_symbol_table.items():
             for bus_id, bus in comp_bus_list.items():
-                if not bus.is_assigned:
-                    warn(f'Bus {bus_id} has not been assigned.', UserWarning)
+                if (not bus.is_assigned) and (bus.conn != INPUT):
+                    warn(f'Bus \'{bus_id}\' has not been assigned.', UserWarning)
 
     def vst_mod(self, mod: Mod):
         if len(mod.comps) == 1:
@@ -113,7 +113,7 @@ class Builder:
             if not is_main_comp_found:
                 raise SemanticalError('_', 'Main component not found in a multiple component module.')
 
-        self.validate_symbol_table()
+        self.validate_bus_symbol_table()
 
         return main_component
 
@@ -145,6 +145,8 @@ class Builder:
             component.inputs.append(decl.id)
 
         if decl.assign is not None:
+            self.bus_symbol_table[component.id][decl.id].is_assigned = IS_ASSIGNED
+
             bit_bus.assignment = self.vst_expr(component, decl.assign)
             bit_bus.sensitivity_list = self.get_sensitivity_list(decl.assign)
 
