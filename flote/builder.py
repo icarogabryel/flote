@@ -24,6 +24,7 @@ class BusSymbol:
         self.type: Optional[str] = type
         self.is_assigned = is_assigned
         self.conn = conn
+        self.is_read = False
 
     def __repr__(self):
         return f'({self.type}, {self.is_assigned})'  #todo Improve
@@ -88,8 +89,11 @@ class Builder:
     def validate_bus_symbol_table(self):
         for comp_id, comp_bus_list in self.bus_symbol_table.items():
             for bus_id, bus in comp_bus_list.items():
-                if (not bus.is_assigned) and (bus.conn != INPUT):
+                if (bus.conn != INPUT) and (not bus.is_assigned):
                     warn(f'Bus \'{bus_id}\' has not been assigned.', UserWarning)
+
+                if (bus.conn != OUTPUT) and (not bus.is_read):
+                    warn(f'Bus \'{bus_id}\' is never read', UserWarning)
 
     def vst_mod(self, mod: Mod):
         if len(mod.comps) == 1:
@@ -177,6 +181,8 @@ class Builder:
         if isinstance(expr_elem, Identifier):
             if expr_elem.id not in self.bus_symbol_table[component.id]:
                 raise SemanticalError(expr_elem.line_number, f'Identifier \'{expr_elem.id}\' has not been declared.')
+
+            self.bus_symbol_table[component.id][expr_elem.id].is_read = True
 
             return lambda: component.bus_dict[expr_elem.id].value
 
