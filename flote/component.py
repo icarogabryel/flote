@@ -65,8 +65,8 @@ class Component:
 
     def __init__(self, id) -> None:
         self.id: str = id
-        self.bus_dict: dict[str, BitBus] = {}  #todo change to mark inputs and outputs
-        self.inputs: list[str] = []  #todo remove
+        self.bus_dict: dict[str, BitBus] = {}
+        self.inputs: list[str] = []
         self.influence_list: dict[str, list[str]] = {}
         self.s_time = 0
         self.time_unit: str = 'ns'
@@ -113,9 +113,9 @@ class Component:
                     if bit_influenced not in queue:
                         queue.append(bit_influenced)
 
-    def input(self, new_values: dict[str, bool]) -> None:
+    def stimulate(self, new_values: dict[str, bool]) -> None:
         for id, new_value in new_values.items():
-            if id in self.bus_dict:
+            if id in self.inputs:
                 self.bus_dict[id].value = new_value
             else:
                 raise KeyError(f"Bit signal '{id}' not found in the component.")
