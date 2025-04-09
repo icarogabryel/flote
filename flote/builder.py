@@ -1,6 +1,7 @@
 from .component import Component, BitBus
 from .ast import *
 from typing import Optional, Union
+from warnings import warn
 
 
 NOT_ASSIGNED = False
@@ -19,9 +20,10 @@ class SemanticalError(Exception):
 class BusSymbol:
     """Class that represents a bus symbol in the symbol table."""
 
-    def __init__(self, type, assigned):
+    def __init__(self, type, is_assigned, conn):
         self.type: Optional[str] = type
-        self.is_assigned = assigned
+        self.is_assigned = is_assigned
+        self.conn = conn
 
     def __repr__(self):
         return f'({self.type}, {self.is_assigned})'  #todo Improve
@@ -76,17 +78,18 @@ class Builder:
                         raise SemanticalError(decl.line_number, f'Input Buses like {decl.id} cannot be assigned.')
 
                     else:
-                        components_bus_table[decl.id] = BusSymbol(decl.type, IS_ASSIGNED)
+                        components_bus_table[decl.id] = BusSymbol(decl.type, IS_ASSIGNED, decl.conn)
 
                 else:
-                    components_bus_table[decl.id] = BusSymbol(decl.type, NOT_ASSIGNED)
+                    components_bus_table[decl.id] = BusSymbol(decl.type, NOT_ASSIGNED, decl.conn)
 
         return components_bus_table
 
-    # def validate_symbol_table(self):
-    #     for id, bus in self.bus_symbol_table.items():
-    #         if not bus.assigned:
-    #             raise SemanticalError(f'Bus {id} has not been assigned.')
+    def validate_symbol_table(self):
+        for comp_bus_list in self.bus_symbol_table.values():
+            for bus_id, bus in comp_bus_list.items():
+                if not bus.is_assigned:
+                    warn(f'Bus {bus_id} has not been assigned.', UserWarning)
 
     def vst_mod(self, mod: Mod):
         if len(mod.comps) == 1:
@@ -109,6 +112,8 @@ class Builder:
 
             if not is_main_comp_found:
                 raise SemanticalError('_', 'Main component not found in a multiple component module.')
+
+        self.validate_symbol_table()
 
         return main_component
 
@@ -151,6 +156,9 @@ class Builder:
 
         elif self.bus_symbol_table[component.id][assign.dt.id].is_assigned:
             raise SemanticalError(assign.dt.line_number, f'Identifier \'{assign.dt.id}\' has already been assigned.')  # Destiny signal cannot be assigned more than once
+        
+        elif self.bus_symbol_table[component.id][assign.dt.id].conn == INPUT:
+            raise SemanticalError(assign.dt.line_number, f'Input Buses like {assign.dt.id} cannot be assigned.')
 
         else:
             self.bus_symbol_table[component.id][assign.dt.id].is_assigned = IS_ASSIGNED
