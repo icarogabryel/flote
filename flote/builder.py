@@ -169,6 +169,7 @@ class Builder:
         else:
             self.bus_symbol_table[component.id][assign.dt.id].is_assigned = IS_ASSIGNED
             component.bus_dict[assign.dt.id].assignment = self.vst_expr(component, assign.expr)
+            component.bus_dict[assign.dt.id].sensitivity_list = self.get_sensitivity_list(assign.expr)
 
     def vst_expr(self, component, expr) -> callable:
         assignment = self.vst_expr_elem(component, expr)
