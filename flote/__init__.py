@@ -1,6 +1,7 @@
 from .scanner import Scanner
 from .parser import Parser
 from .builder import Builder
+from .component import Component, BitBus
 
 def elaborate(code):
     scanner = Scanner(code)
