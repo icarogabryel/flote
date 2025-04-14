@@ -1,15 +1,9 @@
 main comp RSLatch {
-    in bit s;
-    in bit r;
+    in bit set;
+    in bit rst;
     out bit q;
     out bit not_q;
 
-    bit i1;
-    bit i2;
-
-    q = r nor i2;
-    not_q = s nor i1;
-
-    i1 = q null place;
-    i2 = not_q null place;
+    q = rst nor not_q;
+    not_q = set nor q;
 }

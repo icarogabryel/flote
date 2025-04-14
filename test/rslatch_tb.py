@@ -1,23 +1,42 @@
 import sys
 import os
 
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'src')))
-import src as ft
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+import flote as ft
 
 def test_rslatch():
-    with open('RSLatch.ft', 'r') as f:
-        comp = ft.make_comp(f.read())
+    with open('src/RSLatch.ft', 'r') as f:
+        comp = ft.elaborate(f.read())
 
-    comp.input({'s': False, 'r': True})
-    comp.input({'s': False, 'r': False})
-    comp.input({'s': True, 'r': False})
-    comp.input({'s': False, 'r': False})
-    comp.input({'s': True, 'r': False})
-    comp.input({'s': False, 'r': False})
-    comp.input({'s': False, 'r': True})
-    comp.input({'s': False, 'r': False})
+    print(comp)
 
-    comp.save_vcd()
+    comp.stimulate({'set': False, 'rst': True})
+    comp.wait(1)
+    comp.stimulate({'set': False, 'rst': False})
+    comp.wait(1)
+    comp.stimulate({'set': True, 'rst': False})
+    comp.wait(1)
+    comp.stimulate({'set': False, 'rst': False})
+    comp.wait(1)
+    comp.stimulate({'set': True, 'rst': False})
+    comp.wait(1)
+    comp.stimulate({'set': False, 'rst': False})
+    comp.wait(1)
+    comp.stimulate({'set': False, 'rst': True})
+    comp.wait(1)
+    comp.stimulate({'set': False, 'rst': False})
+    comp.wait(1)
+    comp.stimulate({'set': True, 'rst': False})
+    comp.wait(1)
+    comp.stimulate({'set': False, 'rst': False})
+    comp.wait(1)
+    comp.stimulate({'set': False, 'rst': True})
+    comp.wait(1)
+    comp.stimulate({'set': False, 'rst': False})
+    comp.wait(1)
+
+    with open('waves/RSLatch.vcd', 'w') as f:
+        f.write(comp.dump_vcd())
 
 test_rslatch()
 print('ok')
