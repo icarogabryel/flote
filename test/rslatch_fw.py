@@ -6,8 +6,6 @@ import flote as ft
 
 latch = ft.Component('latch')
 
-latch.inputs = ['set', 'rst']
-
 set = ft.BitBus()
 rst = ft.BitBus()
 
@@ -26,6 +24,8 @@ i1.sensitivity_list = ['not_q']
 i2 = ft.BitBus()
 i2.assignment = lambda: latch.bus_dict['q'].value
 i2.sensitivity_list = ['q']
+
+latch.inputs = ['set', 'rst']
 
 latch.bus_dict = {
     'set': set,
@@ -60,4 +60,3 @@ print(result)
 
 with open ('waves/RSLatch_FW.vcd', 'w') as f:
     f.write(result)
-
