@@ -58,6 +58,7 @@ Flote is in beta development. You can see the latest releases in [the GitHub rep
 - [X] Improve Semantic Analysis
 - [X] Create waveform class
 - [X] Add line number in semantic errors
+- [X] Improve testbench methods
 - [ ] Add multi-bit signals support
 - [ ] Add multi-bit signals addressing support
 - [ ] Add sub-components support
