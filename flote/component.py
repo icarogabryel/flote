@@ -1,4 +1,5 @@
 from datetime import datetime
+from abc import ABC, abstractmethod
 
 
 VERSION = '0.1.0'
@@ -15,13 +16,18 @@ class Sample:
         self.signals: list[tuple[str, str]] = signals
 
 
-class Bus:
+class Bus(ABC):
     """This class represents a bus in the circuit."""
 
     def __init__(self):
-        self.assignment = None  # The assignment of the bit. It can be an expression or None.
-        self.value: bool = False  # The binary value of the bit. #todo change to generic
-        self.sensitivity_list: list[str] = []  # The list of bits that the current bit value depends on.
+        self.assignment = None  # The assignment of the bus. It can be an expression or None.
+        self.value = False  # The value of the bus.
+        self.sensitivity_list: list[str] = []  # The list of buses that the current bus depends on.
+
+    @abstractmethod
+    def insert_value(self, value) -> None:
+        """This method inserts a value into the bus if it is valid"""
+        pass
 
     def assign(self):
         """Do the assignment of the bus when not None."""
@@ -32,6 +38,12 @@ class Bus:
 
 class BitBus(Bus):
     """This class represents a bit bus in the circuit."""
+
+    def insert_value(self, value) -> None:
+        if value not in ['0', '1']:
+            raise ValueError(f"Invalid value '{value}'. Valid values are: True, False")
+
+        self.value = bool(int(value))
 
     #* Operators overloading
     def __invert__(self) -> bool:
@@ -116,7 +128,7 @@ class Component:
     def stimulate(self, new_values: dict[str, bool]) -> None:
         for id, new_value in new_values.items():
             if id in self.inputs:
-                self.bus_dict[id].value = new_value
+                self.bus_dict[id].insert_value(new_value)  # Insert the new value into the bus
             else:
                 raise KeyError(f"Bit signal '{id}' not found in the component.")
 
@@ -169,3 +181,9 @@ class Component:
                 datasec += f"{int(signal[0])}{signal[1]}\n"
 
         return header + datasec + f'\n#{self.s_time}\n'
+
+    def save_vcd(self, file_path: str) -> None:
+        """This method saves the vcd file."""
+        with open(file_path, 'w') as f:
+            f.write(self.dump_vcd())
+            f.close()
