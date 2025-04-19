@@ -25,8 +25,15 @@ class Bus(ABC):
         self.sensitivity_list: list[str] = []  # The list of buses that the current bus depends on.
 
     @abstractmethod
+    def get_valid_values(self) -> list[str]:
+        """This method returns the valid values for the bus."""
+
+        pass
+
+    @abstractmethod
     def insert_value(self, value) -> None:
         """This method inserts a value into the bus if it is valid"""
+
         pass
 
     def assign(self):
@@ -39,9 +46,12 @@ class Bus(ABC):
 class BitBus(Bus):
     """This class represents a bit bus in the circuit."""
 
+    def get_valid_values(self):
+        return ['0', '1']
+
     def insert_value(self, value) -> None:
-        if value not in ['0', '1']:
-            raise ValueError(f"Invalid value '{value}'. Valid values are: True, False")
+        if value not in self.get_valid_values():
+            raise ValueError(f"Invalid value '{value}'. Valid values are: {self.get_valid_values()}")
 
         self.value = bool(int(value))
 
