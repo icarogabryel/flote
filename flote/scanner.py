@@ -139,5 +139,9 @@ class Scanner():
         return token
 
     def get_token_stream(self):
-        while not self.is_eof():
-            yield self.get_token()
+        while True:
+            token = self.get_token()
+            yield token
+
+            if token.label == 'EOF':
+                break
