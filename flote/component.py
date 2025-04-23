@@ -2,7 +2,7 @@ from datetime import datetime
 from abc import ABC, abstractmethod
 
 
-VERSION = '0.1.0'
+VERSION = '0.1.1'
 CODENAME = 'Gambiarra'
 VALID_UNITS = ['fs', 'ps', 'ns', 'us', 'ms', 's']
 
