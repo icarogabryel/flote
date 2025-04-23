@@ -4,6 +4,7 @@ It is used to package and distribute the Flote library.
 """
 
 from setuptools import setup
+from flote.component import VERSION
 
 
 with open('README.md', 'r', encoding='utf-8') as f:
@@ -12,7 +13,7 @@ with open('README.md', 'r', encoding='utf-8') as f:
 
 setup(
     name='flote',
-    version='0.1.1',
+    version=VERSION,
     author='Ícaro Gabryel',
     author_email='icarogabryel2001@gmail.com',
     packages=['flote'],
