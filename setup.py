@@ -24,5 +24,5 @@ setup(
     long_description_content_type='text/markdown',
     url='https://github.com/icarogabryel/flote',
     license='GPL-3.0',
-    keywords='HDL, simulation, Python, framework, friendly, simple, productive',
+    keywords=['HDL', 'simulation', 'Python', 'framework', 'friendly', 'simple', 'productive'],
 )
