@@ -113,7 +113,7 @@ class Builder:
     def validate_bus_symbol_table(self):
         """
         Validate the bus symbol table to ensure all buses are assigned and
-        read
+        read.
         """
         for comp_id, comp_bus_list in self.bus_symbol_table.items():
             for bus_id, bus in comp_bus_list.items():
