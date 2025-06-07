@@ -1,6 +1,7 @@
 from .scanner import Scanner
 from . import ast
 
+
 # Dict of First Sets used to enter syntactical rules
 FIRST_SETS = {
     'comp': ['main', 'comp'],
@@ -24,23 +25,23 @@ class SyntacticalError(Exception):
 
 class Parser:
     """
-    Syntactical Parser for Flooat Language.
+    Syntactical Parser for Flote Language.
 
     Args:
         scanner (Scanner): Scanner object that will provide the token stream.
     """
-
     def __init__(self, scanner: Scanner) -> None:
         self.scanner = scanner
-        self.token_stream = self.scanner.get_token_stream()  # Get the generator token stream from the scanner
+        # Get the generator token stream from the scanner
+        self.token_stream = self.scanner.get_token_stream()
         self.ast = None
-        self.current_token = next(self.token_stream)  # Get the first token from the stream
+        # Get the first token from the stream
+        self.current_token = next(self.token_stream)
 
         self.parse()
 
     def advance(self):
         """Move to the next token in the token stream on demand."""
-
         self.current_token = next(self.token_stream)
 
     def get_current_token(self):
@@ -50,16 +51,23 @@ class Parser:
         token = self.get_current_token()
 
         if token.label != expected_label:
-            raise SyntacticalError(self.scanner.line_number, f'Unexpected Token. Expected \'{expected_label}\'. Got \'{token.label}\'.')
+            raise SyntacticalError(
+                self.scanner.line_number,
+                (
+                    f'Unexpected Token. Expected \'{expected_label}\'. Got'
+                    '\'{token.label}\'.'
+                )
+            )
 
     def parse(self):
-        """Start the parsing process  by entering the first rule of the grammar."""
-
+        """
+        Start the parsing process  by entering the first rule of the grammar.
+        """
         self.ast = self.mod()
 
     # Syntactical Rules
 
-    #* mod = {comp}
+    # * mod = {comp}
     def mod(self):
         mod = ast.Mod()
 
@@ -72,7 +80,7 @@ class Parser:
 
         return mod
 
-    #* comp = ['main'], 'comp', ID, '{', {stmt}, '}'
+    # * comp = ['main'], 'comp', ID, '{', {stmt}, '}'
     def comp(self):
         comp = ast.Comp()
         comp.line_number = self.scanner.line_number
@@ -97,7 +105,7 @@ class Parser:
 
         return comp
 
-    #* stmt = decl | assign
+    # * stmt = decl | assign
     def stmt(self):
         if (label := self.get_current_token().label) in FIRST_SETS['decl']:
             return self.decl()
@@ -106,7 +114,7 @@ class Parser:
 
         assert False, f'Unexpected Token: {label}'
 
-    #* decl = {'in' | 'out'}, 'bit', ID, {'=', expr}, ';'
+    # * decl = {'in' | 'out'}, 'bit', ID, {'=', expr}, ';'
     def decl(self):
         decl = ast.Decl()
         decl.line_number = self.scanner.line_number
@@ -118,7 +126,7 @@ class Parser:
             decl.conn = 1
             self.advance()
 
-        self.match_label('bit')  #todo adjust to accept other types
+        self.match_label('bit')  # todo adjust to accept other types
         decl.type = 'bit'
         self.advance()
         self.match_label('id')
@@ -134,7 +142,7 @@ class Parser:
 
         return decl
 
-    #* assign = ID, '=', expr, ';'
+    # * assign = ID, '=', expr, ';'
     def assign(self):
         assign = ast.Assign()
 
@@ -153,20 +161,23 @@ class Parser:
 
         return assign
 
-    #* expr = term, exprDash
+    # * expr = term, exprDash
     def expr(self):
         term = self.term()
 
-        if self.get_current_token().label in FIRST_SETS['expr_dash']:  # If expr' is not an empty production (there are more operators)
-            current_node = self.expr_dash()  # the coming node is the father of term
-            current_node.l_expr = term  # and term will be his left son
+        # If expr' is not an empty production (there are more operators),
+        if self.get_current_token().label in FIRST_SETS['expr_dash']:
+            # the coming node is the father of term
+            current_node = self.expr_dash()
+            # and term will be his left son.
+            current_node.l_expr = term
 
-            return current_node  # a complete node is returned to the top routine
-
+            # A complete node is returned to the top routine.
+            return current_node
         else:
             return term
-        
-    #* exprDash = ('or' | 'nor'), term, exprDash | ε
+
+    # * exprDash = ('or' | 'nor'), term, exprDash | ε
     def expr_dash(self):
         token = self.get_current_token().label
 
@@ -177,39 +188,52 @@ class Parser:
         elif token == 'nor':
             current_node = ast.Nor()
             self.advance()
-        
+
         else:
-            raise SyntacticalError(self.scanner.line_number, 'Expected "or" or "nor".')
+            raise SyntacticalError(
+                self.scanner.line_number,
+                'Expected "or" or "nor".'
+            )
 
         term = self.term()
 
-        if self.get_current_token().label in FIRST_SETS['expr_dash']:  # If there are more operators
-            son_node = self.expr_dash()  # the coming son node is the father of term
-            son_node.l_expr = term  # and term will be his left son. the son node is complete now
+        # If there are more operators,
+        if self.get_current_token().label in FIRST_SETS['expr_dash']:
+            # the coming son node is the father of term
+            son_node = self.expr_dash()
+            # and term will be his left son. the son node is complete now.
+            son_node.l_expr = term
 
-            current_node.r_expr = son_node  # then, the son node will be the right son of the current node
+            # Then, the son node will be the right son of the current node.
+            current_node.r_expr = son_node
 
-            return current_node  # the current note returns with empty left expr to be filled by the top routine
+            # The current note returns with empty left expr to be filled by the
+            # top routine.
+            return current_node
 
-        else:  # If there are no more operators, term is the right son of the current node
+        # If there are no more operators, term is the right son of the current
+        # node.
+        else:
             current_node.r_expr = term
 
-            return current_node  # the current note returns with empty left expr to be filled by the top routine
-        
-    #* term = factor, termDash
+            # The current note returns with empty left expr to be filled by the
+            # top routine
+            return current_node
+
+    # * term = factor, termDash
     def term(self):
         factor = self.fact()
 
-        if self.get_current_token().label in FIRST_SETS['term_dash']:  # If term_dash is not an empty production (there are more operators)
-            current_node = self.term_dash()  # the coming node is the father of factor
-            current_node.l_expr = factor  # and factor will be his left son
+        if self.get_current_token().label in FIRST_SETS['term_dash']:
+            current_node = self.term_dash()
+            current_node.l_expr = factor
 
-            return current_node  # a complete node is returned to the top routine
+            return current_node
 
         else:
             return factor
 
-    #* termDash = ('xor' | 'xnor'), factor, termDash | ε
+    # * termDash = ('xor' | 'xnor'), factor, termDash | ε
     def term_dash(self):
         token = self.get_current_token().label
 
@@ -222,37 +246,40 @@ class Parser:
             self.advance()
 
         else:
-            raise SyntacticalError(self.scanner.line_number, 'Expected "xor" or "xnor".')
+            raise SyntacticalError(
+                self.scanner.line_number,
+                'Expected "xor" or "xnor".'
+            )
 
         factor = self.fact()
 
-        if self.get_current_token().label in FIRST_SETS['term_dash']:  # If there are more operators
-            son_node = self.term_dash()  # the coming son node is the father of factor
-            son_node.l_expr = factor  # and factor will be his left son. the son node is complete now
+        if self.get_current_token().label in FIRST_SETS['term_dash']:
+            son_node = self.term_dash()
+            son_node.l_expr = factor
 
-            current_node.r_expr = son_node  # then, the son node will be the right son of the current node
+            current_node.r_expr = son_node
 
-            return current_node  # the current note returns with empty left expr to be filled by the top routine
+            return current_node
 
-        else:  # If there are no more operators, factor is the right son of the current node
+        else:
             current_node.r_expr = factor
 
-            return current_node  # the current note returns with empty left expr to be filled by the top routine
+            return current_node
 
-    #* fact = primary, factDash
+    # * fact = primary, factDash
     def fact(self):
         primary = self.primary()
 
-        if self.get_current_token().label in FIRST_SETS['fact_dash']:  # If fact_dash is not an empty production (there are more operators)
-            current_node = self.fact_dash()  # the coming node is the father of primary
-            current_node.l_expr = primary  # and primary will be his left son
+        if self.get_current_token().label in FIRST_SETS['fact_dash']:
+            current_node = self.fact_dash()
+            current_node.l_expr = primary
 
-            return current_node  # a complete node is returned to the top routine
+            return current_node
 
         else:
             return primary
 
-    #* factDash = ('and' | 'nand'), primary, factDash | ε
+    # * factDash = ('and' | 'nand'), primary, factDash | ε
     def fact_dash(self):
         token = self.get_current_token().label
 
@@ -263,26 +290,29 @@ class Parser:
         elif token == 'nand':
             current_node = ast.Nand()
             self.advance()
-        
+
         else:
-            raise SyntacticalError(self.scanner.line_number, 'Expected "and" or "nand".')  #todo maybe change to assert
+            raise SyntacticalError(
+                self.scanner.line_number,
+                'Expected "and" or "nand".'
+            )  # todo maybe change to assert
 
         primary = self.primary()
 
-        if self.get_current_token().label in FIRST_SETS['fact_dash']:  # If there are more operators
-            son_node = self.fact_dash()  # the coming son node is the father of primary
-            son_node.l_expr = primary  # and primary will be his left son. the son node is complete now
+        if self.get_current_token().label in FIRST_SETS['fact_dash']:
+            son_node = self.fact_dash()
+            son_node.l_expr = primary
 
-            current_node.r_expr = son_node  # then, the son node will be the right son of the current node
+            current_node.r_expr = son_node
 
-            return current_node  # the current note returns with empty left expr to be filled by the top routine
+            return current_node
 
-        else:  # If there are no more operators, primary is the right son of the current node
+        else:
             current_node.r_expr = primary
 
-            return current_node  # the current note returns with empty left expr to be filled by the top routine
+            return current_node
 
-    #* primary = 'not', primary | '(', expr, ')' | ID | BIN
+    # * primary = 'not', primary | '(', expr, ')' | ID | BIN
     def primary(self) -> ast.ExprElem:
         if (token_label := self.get_current_token().label) == 'id':
             identifier = ast.Identifier(self.get_current_token().lexeme)
@@ -315,4 +345,7 @@ class Parser:
             return expr
 
         else:
-            raise SyntacticalError(self.scanner.line_number, 'Expected primary.')
+            raise SyntacticalError(
+                self.scanner.line_number,
+                'Expected primary.'
+            )
