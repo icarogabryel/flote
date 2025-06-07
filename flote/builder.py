@@ -83,7 +83,7 @@ class Builder:
                 if decl.id in components_bus_table:
                     raise SemanticalError(
                         decl.line_number,
-                        f'Bus \'{decl.id}\' has already been declared.'
+                        f'Bus "{decl.id}" has already been declared.'
                     )
 
                 if decl.conn == INPUT:
@@ -119,12 +119,12 @@ class Builder:
             for bus_id, bus in comp_bus_list.items():
                 if (bus.conn != INPUT) and (not bus.is_assigned):
                     warn(
-                        f'Bus \'{bus_id}\' has not been assigned.',
+                        f'Bus "{bus_id}" has not been assigned.',
                         UserWarning
                     )
 
                 if (bus.conn != OUTPUT) and (not bus.is_read):
-                    warn(f'Bus \'{bus_id}\' is never read', UserWarning)
+                    warn(f'Bus "{bus_id}" is never read', UserWarning)
 
     def vst_mod(self, mod: Mod):
         if len(mod.comps) == 1:
@@ -164,7 +164,7 @@ class Builder:
         if comp.id in self.bus_symbol_table.keys():
             raise SemanticalError(
                 comp.line_number,
-                f'Component {comp.id} has already been declared.'
+                f'Component "{comp.id}" has already been declared.'
             )
 
         component = Component(comp.id)
@@ -203,19 +203,19 @@ class Builder:
             # All destiny signals must be declared previously
             raise SemanticalError(
                 assign.dt.line_number,
-                f'Identifier \'{assign.dt.id}\' has not been declared.'
+                f'Identifier "{assign.dt.id}" has not been declared.'
             )
         elif self.bus_symbol_table[component.id][assign.dt.id].is_assigned:
             # Destiny signal cannot be assigned more than once
             raise SemanticalError(
                 assign.dt.line_number,
-                f'Identifier \'{assign.dt.id}\' has already been assigned.'
+                f'Identifier "{assign.dt.id}" has already been assigned.'
             )
         elif self.bus_symbol_table[component.id][assign.dt.id].conn == INPUT:
             # Input buses cannot be assigned
             raise SemanticalError(
                 assign.dt.line_number,
-                f'Input Buses like {assign.dt.id} cannot be assigned.'
+                f'Input Buses like "{assign.dt.id}" cannot be assigned.'
             )
         else:
             # Mark the bus as assigned in the symbol table
@@ -250,7 +250,7 @@ class Builder:
             if expr_elem.id not in self.bus_symbol_table[component.id]:
                 raise SemanticalError(
                     expr_elem.line_number,
-                    f'Identifier \'{expr_elem.id}\' has not been declared.'
+                    f'Identifier "{expr_elem.id}" has not been declared.'
                 )
 
             self.bus_symbol_table[component.id][expr_elem.id].is_read = True
