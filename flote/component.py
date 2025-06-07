@@ -149,7 +149,7 @@ class Component:
             if id in self.inputs:
                 # Insert the new value into the bus
                 self.bus_dict[id].insert_value(new_value)
-            else:
+            else:  # todo improve logic
                 raise KeyError(
                     f'Bit signal "{id}" not found in the component.'
                 )
