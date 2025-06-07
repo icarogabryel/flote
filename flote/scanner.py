@@ -161,7 +161,7 @@ class Scanner():
         else:
             raise LexicalError(self.line_number, f"Invalid character: {char}")
 
-        # . Here I am another day. Under the bloodthirsty eye of the debugger
+        # . Here I am another day. Under the bloodthirsty eye of the debugger.
         assert token is not None, 'token returned None'
 
         return token
