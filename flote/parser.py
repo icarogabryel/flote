@@ -54,8 +54,8 @@ class Parser:
             raise SyntacticalError(
                 self.scanner.line_number,
                 (
-                    f'Unexpected Token. Expected \'{expected_label}\'. Got'
-                    '\'{token.label}\'.'
+                    f'Unexpected Token. Expected "{expected_label}". Got'
+                    '"{token.label}".'
                 )
             )
 
