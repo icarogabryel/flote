@@ -1,4 +1,14 @@
-__pycache__/
+# IDE files
 .vscode/
+
+# Python cache files
+__pycache__/
+*.pyc
+
+# Virtual environment
+venv/
+
+# Distribution files
+build/
 dist/
 *.egg-info/
