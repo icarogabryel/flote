@@ -1,8 +1,5 @@
-import os
-import sys
-
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 import flote as ft
+
 
 half_adder = ft.elaborate_from_file('src/halfAdder.ft')
 

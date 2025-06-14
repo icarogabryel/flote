@@ -1,10 +1,7 @@
-import sys
-import os
-
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 import flote as ft
 
-def test_rslatch():
+
+def test_rs_latch():
     latch = ft.elaborate_from_file('src/RsLatch.ft')
 
     print(latch)
@@ -36,5 +33,6 @@ def test_rslatch():
 
     latch.save_vcd('waves/RsLatch.vcd')
 
-test_rslatch()
-print('ok')
+
+if __name__ == '__main__':
+    test_rs_latch()

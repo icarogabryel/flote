@@ -1,8 +1,6 @@
-import sys
-import os
-
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+"""This file test de constructions of a RS Latch using the Flote library."""
 import flote as ft
+
 
 latch = ft.Component('latch')
 
@@ -10,11 +8,15 @@ set = ft.BitBus()
 rst = ft.BitBus()
 
 q = ft.BitBus()
-q.assignment = lambda: not (latch.bus_dict['rst'].value or latch.bus_dict['i1'].value)
+q.assignment = lambda: not (
+    latch.bus_dict['rst'].value or latch.bus_dict['i1'].value
+)
 q.sensitivity_list = ['rst', 'i1']
 
 not_q = ft.BitBus()
-not_q.assignment = lambda: not (latch.bus_dict['set'].value or latch.bus_dict['i2'].value)
+not_q.assignment = lambda: not (
+    latch.bus_dict['set'].value or latch.bus_dict['i2'].value
+)
 not_q.sensitivity_list = ['set', 'i2']
 
 i1 = ft.BitBus()
