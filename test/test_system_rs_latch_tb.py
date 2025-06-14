@@ -1,7 +1,7 @@
 import flote as ft
 from pathlib import Path
 
-from flote import test
+
 FILE_DIR = Path(__file__).resolve().parent
 
 
@@ -39,5 +39,4 @@ def test_rs_latch():
 
 
 if __name__ == '__main__':
-    test()
-    #test_rs_latch()
+    test_rs_latch()
