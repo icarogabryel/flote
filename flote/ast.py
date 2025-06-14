@@ -132,7 +132,10 @@ class BinaryOp(ABC):
         l_expr = f'{self.l_expr}'.replace('\n', '\n|  ')
         r_expr = f'{self.r_expr}'.replace('\n', '\n|  ')
 
-        desc = f'{self.__class__.__name__}\n|  |- l_expr: {l_expr}\n|  |- r_expr: {r_expr}'
+        desc = (
+            f'{self.__class__.__name__}\n|  |- l_expr: {l_expr}\n|  |-'
+            f'r_expr: {r_expr}'
+        )
 
         return desc
 
