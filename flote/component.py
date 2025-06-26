@@ -15,7 +15,7 @@ class Sample:
         self.time = time
 
         # signals is a tuple of signal name and value
-        self.signals: list[tuple[str, str]] = signals
+        self.signals: list[tuple[bool, str]] = signals
 
 
 class Bus(ABC):
@@ -163,7 +163,7 @@ class Component:
 
         self.samples.append(sample)
 
-    def set_time_unit(self, time_unit: str) -> str:
+    def set_time_unit(self, time_unit: str) -> None:
         if time_unit not in VALID_UNITS:
             raise ValueError(
                 f'Invalid time unit "{time_unit}". Valid units are: '
