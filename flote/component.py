@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Any
 from abc import ABC, abstractmethod
 
 
@@ -23,9 +24,14 @@ class Bus(ABC):
     def __init__(self):
         # The assignment of the bus. It can be an expression or None.
         self.assignment = None
-        self.value = False  # The value of the bus.
+        self.value: Any = self.get_default()  # The value of the bus.
         # The list of buses that the current bus depends on.
         self.sensitivity_list: list[str] = []
+
+    @abstractmethod
+    def get_default(self) -> Any:
+        """This method returns the default value of the bus."""
+        pass
 
     @abstractmethod
     def get_valid_values(self) -> list[str]:
@@ -45,6 +51,9 @@ class Bus(ABC):
 
 class BitBus(Bus):
     """This class represents a bit bus in the circuit."""
+    def get_default(self) -> bool:
+        return False
+
     def get_valid_values(self):
         return ['0', '1']
 
@@ -144,7 +153,7 @@ class Component:
                     if bit_influenced not in queue:
                         queue.append(bit_influenced)
 
-    def stimulate(self, new_values: dict[str, bool]) -> None:
+    def stimulate(self, new_values: dict[str, str]) -> None:
         for id, new_value in new_values.items():
             if id in self.inputs:
                 # Insert the new value into the bus
