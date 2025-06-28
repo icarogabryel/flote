@@ -60,8 +60,16 @@ Flote is in beta development. You can see the latest releases in [the GitHub rep
 - [X] Create waveform class
 - [X] Add line number in semantic errors
 - [X] Improve testbench methods
-- [ ] Add multi-bit signals support
-- [ ] Add multi-bit signals addressing support
+- [ ] Add multi-dimensional bit signals support
+  - [ ] Declaration
+  - [ ] Assignment
+  - [ ] Operation
+  - [ ] Error handling
+  - [ ] Indexing
+  - [ ] Slicing
+  - [ ] Concatenation
+  - [ ] Big endian support
+  - [ ] N-Dimensional arrays support
 - [ ] Add sub-components support
 - [ ] Add Python calls support
 - [ ] Improve HLS support
