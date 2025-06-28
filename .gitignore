@@ -6,6 +6,9 @@ __pycache__/
 *.pyc
 
 # Virtual environment
+.env/
+env/
+.venv/
 venv/
 
 # Distribution files
