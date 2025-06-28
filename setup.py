@@ -2,7 +2,6 @@
 This is the setup.py file for the Flote package.
 It is used to package and distribute the Flote library.
 """
-
 from setuptools import setup
 from flote.component import VERSION
 
