@@ -24,7 +24,10 @@ SYMBOLS_LABELS = {
     ')': 'r_paren',
     '{': 'l_brace',
     '}': 'r_brace',
-    '=': 'assign'
+    '=': 'assign',
+    '-': 'minus',
+    '[': 'l_bracket',
+    ']': 'r_bracket',
 }
 
 
@@ -136,28 +139,34 @@ class Scanner():
             self.advance()
 
         # Check if the character can be the start of a word.
-        elif re.match(r'[a-zA-Z_\d]', char):
+        elif re.match(r'[a-zA-Z_\d\"]', char):
             lexeme = self.scan_lexeme()
 
             if lexeme in KEY_WORDS:
                 # The label is the lexeme itself in case of keywords
                 token = Token(lexeme, lexeme)
-
             # Check if the lexeme is a valid identifier
             elif re.match(r'^[a-zA-Z]\w*$', lexeme):
                 token = Token('id', lexeme)
-
             # Check if the lexeme is a valid binary number
-            # TODO Change to accept more than one bit.
-            elif lexeme in ['0', '1']:
+            elif re.match(r'^\"[0-1]+\"$', lexeme):
                 token = Token('bit_field', lexeme)
-
+            # Check if the lexeme is decimal number
+            elif re.match(r'^[0-9]+$', lexeme):
+                # Check if the lexeme is a valid decimal number
+                if re.match(r'^[1-9][0-9]*$', lexeme) or lexeme == '0':
+                    token = Token('dec', lexeme)
+                # If the lexeme is not a valid decimal number, raise an error.
+                else:
+                    raise LexicalError(
+                        self.line_number,
+                        f'Decimal number can not begin with 0: {lexeme}'
+                    )
             else:  # If the lexeme was not recognized, raise an error.
                 raise LexicalError(
                     self.line_number,
                     f'Invalid lexeme: {lexeme}'
                 )
-
         else:
             raise LexicalError(self.line_number, f"Invalid character: {char}")
 
