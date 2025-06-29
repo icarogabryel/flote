@@ -15,5 +15,5 @@ primary = 'not', primary | '(', expr, ')' | ID | BIT_FIELD;
 
 (* Lexical rules *)
 ID = ? [a-zA-Z_][a-zA-Z0-9_]* ?;
-DEC = ? [0-9]+ ?;
-BIT_FIELD = ? [01]+ ?;
+DEC = ? 0 | [1-9][0-9]* ?;
+BIT_FIELD = ? "([01]+)" ?;
