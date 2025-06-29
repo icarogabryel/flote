@@ -1,0 +1,6 @@
+comp AndGate{
+    in bit[-8] a;
+    in bit[-8] b;
+
+    out bit[-8] y = a and b;
+}
