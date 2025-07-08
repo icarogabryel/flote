@@ -55,7 +55,7 @@ class Parser:
                 self.scanner.line_number,
                 (
                     f'Unexpected Token. Expected "{expected_label}". Got'
-                    '"{token.label}".'
+                    f'"{token.label}".'
                 )
             )
 
@@ -114,7 +114,7 @@ class Parser:
 
         assert False, f'Unexpected Token: {label}'
 
-    # * decl = {'in' | 'out'}, 'bit', ID, {'=', expr}, ';'
+    # * decl = ['in' | 'out'], 'bit', ID, [dimension], ['=', expr], ';';
     def decl(self):
         decl = ast.Decl()
         decl.line_number = self.scanner.line_number
@@ -133,6 +133,15 @@ class Parser:
         decl.id = self.get_current_token().lexeme
         self.advance()
 
+        if self.get_current_token().label == 'l_bracket':
+            decl.dimension = self.dimension()
+        else:
+            decl.dimension = ast.Dimension()
+            # Default size if no dimension is specified
+            decl.dimension.size = 1
+            # Default MSB is ascending if no dimension is specified
+            decl.dimension.msb = ast.Msb.ascending
+
         if self.get_current_token().label == 'assign':
             self.advance()
             decl.assign = self.expr()
@@ -141,6 +150,40 @@ class Parser:
         self.advance()
 
         return decl
+
+    # * dimension = '[', ['-'], DEC, ']';
+    def dimension(self) -> ast.Dimension:
+        dimension = ast.Dimension()
+
+        self.match_label('l_bracket')
+        self.advance()
+
+        # Check if the dimension is descending
+        if self.get_current_token().label == 'minus':
+            dimension.msb = ast.Msb.descending
+            self.advance()
+        else:
+            dimension.msb = ast.Msb.ascending
+
+        self.match_label('dec')
+        size = int(self.get_current_token().lexeme)
+
+        # Logically, the lexeme of a decimal token should never be a negative
+        # integer.
+        assert size >= 0, 'Dimension size must be non-negative'
+
+        if size == 0:
+            raise SyntacticalError(
+                self.scanner.line_number,
+                'Dimension size must be positive.'
+            )
+
+        dimension.size = size
+        self.advance()
+        self.match_label('r_bracket')
+        self.advance()
+
+        return dimension
 
     # * assign = ID, '=', expr, ';'
     def assign(self):
