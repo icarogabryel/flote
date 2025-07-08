@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from typing import Union, Optional
+from enum import Enum
 
 
 INTERNAL = 0
@@ -7,6 +8,13 @@ INPUT = -1
 OUTPUT = 1
 
 
+class Msb(Enum):
+    """Enum to represent the most significant bit (MSB) direction."""
+    ascending = 0
+    descending = 1
+
+
+# * AST Nodes
 class Mod:
     def __init__(self) -> None:
         self.comps: list[Comp] = []
@@ -69,6 +77,7 @@ class Decl:
         self.id = ''
         self.conn = INTERNAL
         self.type = 'bit'
+        self.dimension: Optional[Dimension] = None
         self.assign: Optional[ExprElem] = None
         self.line_number = 0
 
@@ -85,11 +94,29 @@ class Decl:
         else:
             desc += ', internal)'
 
+        if self.dimension:
+            desc += f'\n|  |- dimension: {self.dimension}'
+
         if self.assign:
             desc_assign = str(self.assign).replace('\n', '\n|  ')
             desc += f'\n|  |- assign: {desc_assign}'
 
         return desc
+
+
+class Dimension:
+    def __init__(self) -> None:
+        # Private to ensure size is set through the setter method
+        self.size: Optional[int] = None
+        self.msb: Optional[Msb] = None
+
+    def __repr__(self) -> str:
+        msb_name = self.msb.name if self.msb is not None else None
+        return f'Dimension(size={self.size}, MSB={msb_name})'
+
+    def __str__(self) -> str:
+        msb_name = self.msb.name if self.msb is not None else None
+        return f'Dimension: {self.size}, MSB={msb_name}'
 
 
 ExprElem = Union['Identifier', 'BitField', 'UnaryOp', 'BinaryOp']
@@ -133,8 +160,8 @@ class BinaryOp(ABC):
         r_expr = f'{self.r_expr}'.replace('\n', '\n|  ')
 
         desc = (
-            f'{self.__class__.__name__}\n|  |- l_expr: {l_expr}\n|  |-'
-            f'r_expr: {r_expr}'
+            f'{self.__class__.__name__}\n|  |- l_expr: {l_expr}\n|  |- r_expr:'
+            f' {r_expr}'
         )
 
         return desc
