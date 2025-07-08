@@ -22,7 +22,7 @@ main comp FourBitsAdder{
     fullAdder0 = FullAdder(
         a_in = a_in[0],
         b_in = b_in[0],
-        carry_in = 0
+        carry_in = "0"
         carry_out = inter_carry[0],
         sum = sum[0]
     );

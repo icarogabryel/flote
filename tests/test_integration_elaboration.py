@@ -4,17 +4,18 @@ project.
 """
 from pathlib import Path
 from flote.scanner import Scanner
-from flote.parser import Parser
+# from flote.parser import Parser
 from flote.builder import Builder
 
 
-FILE_DIR = Path(__file__).resolve().parent
+BASE_DIR = Path(__file__).parent.parent
+print(Path(__file__))
 # 1 for Scanner, 2 for Parser, 3 for Builder
-TEST_MODE = 0
+TEST_MODE = 1
 
 
 def main():
-    with open(FILE_DIR / 'src/halfAdder.ft') as file:
+    with open(BASE_DIR / 'test/src/ByteAndGate.ft') as file:
         code = file.read()
 
     if TEST_MODE > 0:
