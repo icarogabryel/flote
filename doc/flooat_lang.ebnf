@@ -1,7 +1,8 @@
 mod = comp {comp};
 comp = ['main'], 'comp', ID, '{', {stmt}, '}';
 stmt = decl | assign;
-decl = ['in' | 'out'], 'bit', ID, ['[', ['-'], DEC, ']'], ['=', expr], ';';
+decl = ['in' | 'out'], 'bit', ID, [dimension], ['=', expr], ';';
+dimension = '[', ['-'], DEC, ']';
 assign = ID, '=', expr, ';';
 
 (* Expression rules *)
