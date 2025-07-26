@@ -1,6 +1,7 @@
 from .component import Component, BitBus
+from .busses import BusValue
 from .ast import (
-    Mod, Comp, Decl, Assign, ExprElem,
+    Mod, Comp, Decl, Dimension, Assign, ExprElem,
     Identifier, BitField, UnaryOp, BinaryOp,
     Not, And, Or, Xor, Nand, Nor, Xnor,
     INPUT, OUTPUT
@@ -188,6 +189,9 @@ class Builder:
         if decl.conn == INPUT:
             component.inputs.append(decl.id)
 
+        if decl.dimension is not None:
+            bit_bus.set_dimension(decl.dimension.size)
+
         if decl.assign is not None:
             self.bus_symbol_table[component.id][decl.id].is_assigned = (
                 IS_ASSIGNED
@@ -246,6 +250,12 @@ class Builder:
         Visit an expression element, validate it, and return a callable for
         evaluation.
         """
+        if expr_elem is None:
+            raise SemanticalError(
+                '_',  # todo Check if this logic is correct
+                'Expression element cannot be None.'
+            )
+
         if isinstance(expr_elem, Identifier):
             if expr_elem.id not in self.bus_symbol_table[component.id]:
                 raise SemanticalError(
@@ -257,68 +267,45 @@ class Builder:
 
             return lambda: component.bus_dict[expr_elem.id].value
         elif isinstance(expr_elem, BitField):
-            # todo change here for vectorial format
-            if not isinstance(expr_elem.value, bool):
-                assert False, f'Invalid bit field value: {expr_elem.value}'
+            if not isinstance(expr_elem.value, BusValue):
+                assert False, f'Invalid bus value: {expr_elem.value}'
 
-            return lambda: bool(expr_elem.value)
+            bus_value = expr_elem.value  # change name for better readability
+
+            return lambda: bus_value
         elif isinstance(expr_elem, Not):
-            self.vst_expr_elem(component, expr_elem.expr)
+            expr = self.vst_expr_elem(component, expr_elem.expr)
 
-            return lambda: not self.vst_expr_elem(component, expr_elem.expr)()
+            return lambda: ~ expr()
         elif isinstance(expr_elem, And):
-            self.vst_expr_elem(component, expr_elem.l_expr)
-            self.vst_expr_elem(component, expr_elem.r_expr)
+            l_expr: BusValue = self.vst_expr_elem(component, expr_elem.l_expr)
+            r_expr: BusValue = self.vst_expr_elem(component, expr_elem.r_expr)
 
-            return lambda: (
-                self.vst_expr_elem(component, expr_elem.l_expr)()
-                and
-                self.vst_expr_elem(component, expr_elem.r_expr)()
-            )
+            return lambda: l_expr() & r_expr()
         elif isinstance(expr_elem, Or):
-            self.vst_expr_elem(component, expr_elem.l_expr)
-            self.vst_expr_elem(component, expr_elem.r_expr)
+            l_expr = self.vst_expr_elem(component, expr_elem.l_expr)
+            r_expr = self.vst_expr_elem(component, expr_elem.r_expr)
 
-            return lambda: (
-                self.vst_expr_elem(component, expr_elem.l_expr)()
-                or
-                self.vst_expr_elem(component, expr_elem.r_expr)()
-            )
+            return lambda: l_expr() | r_expr()
         elif isinstance(expr_elem, Xor):
-            self.vst_expr_elem(component, expr_elem.l_expr)
-            self.vst_expr_elem(component, expr_elem.r_expr)
+            l_expr = self.vst_expr_elem(component, expr_elem.l_expr)
+            r_expr = self.vst_expr_elem(component, expr_elem.r_expr)
 
-            return lambda: (
-                self.vst_expr_elem(component, expr_elem.l_expr)()
-                ^
-                self.vst_expr_elem(component, expr_elem.r_expr)()
-            )
+            return lambda: l_expr() ^ r_expr()
         elif isinstance(expr_elem, Nand):
-            self.vst_expr_elem(component, expr_elem.l_expr)
-            self.vst_expr_elem(component, expr_elem.r_expr)
+            l_expr = self.vst_expr_elem(component, expr_elem.l_expr)
+            r_expr = self.vst_expr_elem(component, expr_elem.r_expr)
 
-            return lambda: not (
-                self.vst_expr_elem(component, expr_elem.l_expr)()
-                and
-                self.vst_expr_elem(component, expr_elem.r_expr)()
-            )
+            return lambda: ~ (l_expr() & r_expr())
         elif isinstance(expr_elem, Nor):
-            self.vst_expr_elem(component, expr_elem.l_expr)
-            self.vst_expr_elem(component, expr_elem.r_expr)
+            l_expr = self.vst_expr_elem(component, expr_elem.l_expr)
+            r_expr = self.vst_expr_elem(component, expr_elem.r_expr)
 
-            return lambda: not (
-                self.vst_expr_elem(component, expr_elem.l_expr)()
-                or
-                self.vst_expr_elem(component, expr_elem.r_expr)()
-            )
+            return lambda: ~ (l_expr() | r_expr())
         elif isinstance(expr_elem, Xnor):
-            self.vst_expr_elem(component, expr_elem.l_expr)
-            self.vst_expr_elem(component, expr_elem.r_expr)
+            l_expr = self.vst_expr_elem(component, expr_elem.l_expr)
+            r_expr = self.vst_expr_elem(component, expr_elem.r_expr)
 
-            return lambda: not (
-                self.vst_expr_elem(component, expr_elem.l_expr)()
-                ^
-                self.vst_expr_elem(component, expr_elem.r_expr)()
-            )
+            return lambda: ~ (l_expr() ^ r_expr())
 
         assert False, f'Invalid expression element: {expr_elem}'

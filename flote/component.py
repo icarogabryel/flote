@@ -1,6 +1,5 @@
 from datetime import datetime
-from typing import Any
-from abc import ABC, abstractmethod
+from .busses import BitBus
 
 
 VERSION = '0.1.1'
@@ -17,74 +16,6 @@ class Sample:
 
         # signals is a tuple of signal name and value
         self.signals: list[tuple[bool, str]] = signals
-
-
-class Bus(ABC):
-    """This class represents a bus in the circuit."""
-    def __init__(self):
-        # The assignment of the bus. It can be an expression or None.
-        self.assignment = None
-        self.value: Any = self.get_default()  # The value of the bus.
-        # The list of buses that the current bus depends on.
-        self.sensitivity_list: list[str] = []
-
-    @abstractmethod
-    def get_default(self) -> Any:
-        """This method returns the default value of the bus."""
-        pass
-
-    @abstractmethod
-    def get_valid_values(self) -> list[str]:
-        """This method returns the valid values for the bus."""
-        pass
-
-    @abstractmethod
-    def insert_value(self, value) -> None:
-        """This method inserts a value into the bus if it is valid"""
-        pass
-
-    def assign(self):
-        """Do the assignment of the bus when not None."""
-        if self.assignment:
-            self.value = self.assignment()
-
-
-class BitBus(Bus):
-    """This class represents a bit bus in the circuit."""
-    def get_default(self) -> bool:
-        return False
-
-    def get_valid_values(self):
-        return ['0', '1']
-
-    def insert_value(self, value) -> None:
-        if value not in self.get_valid_values():
-            raise ValueError(
-                f'Invalid value "{value}". Valid values are: '
-                f'{self.get_valid_values()}'
-            )
-
-        self.value = bool(int(value))
-
-    # * Operators overloading
-    def __invert__(self) -> bool:
-        return not self.value
-
-    def __and__(self, other: 'BitBus') -> bool:
-        return self.value and other.value
-
-    def __or__(self, other: 'BitBus') -> bool:
-        return self.value or other.value
-
-    def __xor__(self, other: 'BitBus') -> bool:
-        return self.value ^ other.value
-    # * End of operators overloading
-
-    def __repr__(self):
-        return (
-            f'Assigned: {'Yes' if self.assignment else 'No'}, Current Value: '
-            f'{self.value}, SL: {self.sensitivity_list}'
-        )
 
 
 class Component:
@@ -111,6 +42,15 @@ class Component:
 
     def __repr__(self):
         return f'Component {self.id}: {self.bus_dict}'
+
+    def get_values(self) -> dict[str, str]:
+        """
+        This method returns the values of the component as a dictionary.
+        The keys are the bit names and the values are the bit values.
+        """
+        return {
+            bit_name: str(bit.value) for bit_name, bit in self.bus_dict.items()
+        }
 
     def make_influence_list(self):
         """

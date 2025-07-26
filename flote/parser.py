@@ -1,6 +1,6 @@
-from .scanner import Scanner
 from . import ast
-
+from .busses import BitBusValue
+from .scanner import Scanner
 
 # Dict of First Sets used to enter syntactical rules
 FIRST_SETS = {
@@ -366,7 +366,7 @@ class Parser:
             return identifier
 
         elif token_label == 'bit_field':
-            value = bool(self.get_current_token().lexeme)
+            value = BitBusValue([bool(bit) for bit in self.get_current_token().lexeme.strip('"')])
             self.advance()
 
             return ast.BitField(value)
