@@ -1,5 +1,5 @@
 """This file test de constructions of a RS Latch using the Flote library."""
-from flote.component import Component, BitBus
+from flote.model.component import Component, BitBus
 from pathlib import Path
 
 

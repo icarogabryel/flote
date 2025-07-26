@@ -1,5 +1,5 @@
-from .component import Component, BitBus
-from .busses import BusValue
+from ..model.component import Component, BitBus
+from ..model.busses import BusValue
 from .ast import (
     Mod, Comp, Decl, Dimension, Assign, ExprElem,
     Identifier, BitField, UnaryOp, BinaryOp,

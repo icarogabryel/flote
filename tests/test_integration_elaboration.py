@@ -3,9 +3,9 @@ Tests for the integration of Scanner, Parser, and Builder classes in the Flote
 project.
 """
 from pathlib import Path
-from flote.scanner import Scanner
-from flote.parser import Parser
-from flote.builder import Builder
+from flote.elaborator.scanner import Scanner
+from flote.elaborator.parser import Parser
+from flote.elaborator.builder import Builder
 
 
 BASE_DIR = Path(__file__).parent.parent

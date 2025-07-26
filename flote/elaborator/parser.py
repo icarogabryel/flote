@@ -1,5 +1,5 @@
 from . import ast
-from .busses import BitBusValue
+from ..model.busses import BitBusValue
 from .scanner import Scanner
 
 # Dict of First Sets used to enter syntactical rules
