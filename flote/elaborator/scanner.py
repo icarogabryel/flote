@@ -12,11 +12,11 @@ KEY_WORDS = [
     'out',
     'bit',
     'not',
-    'nor',
     'and',
     'nand',
     'xor',
     'or',
+    'nor',
 ]
 SYMBOLS_LABELS = {
     ';': 'semicolon',
@@ -64,6 +64,9 @@ class Scanner():
         self.code = code + END_OF_FILE
         self.line_number = 1
         self.index = 0  # Current index in the code string
+        self.token_stream = []
+
+        self.get_token_stream()
 
     def advance(self):
         """
@@ -132,12 +135,10 @@ class Scanner():
 
         if self.is_eof():  # First, check if we reached the end of the code.
             token = Token('EOF', END_OF_FILE)
-
         # Check if the current character is a symbol.
         elif (char := self.get_char()) in SYMBOLS_LABELS:
             token = Token(SYMBOLS_LABELS[char], char)
             self.advance()
-
         # Check if the character can be the start of a word.
         elif re.match(r'[a-zA-Z_\d\"]', char):
             lexeme = self.scan_lexeme()
@@ -170,7 +171,7 @@ class Scanner():
         else:
             raise LexicalError(self.line_number, f"Invalid character: {char}")
 
-        # . Here I am another day. Under the bloodthirsty eye of the debugger.
+        #. Here I am another day. Under the bloodthirsty eye of the debugger.
         assert token is not None, 'token returned None'
 
         return token
@@ -180,7 +181,7 @@ class Scanner():
         while True:
             token = self.get_token()
 
-            yield token
+            self.token_stream.append(token)
 
             if token.label == 'EOF':
                 break
