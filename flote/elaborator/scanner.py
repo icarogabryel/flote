@@ -12,11 +12,12 @@ KEY_WORDS = [
     'out',
     'bit',
     'not',
-    'and',
     'nand',
+    'and',
+    'xnor',
     'xor',
-    'or',
     'nor',
+    'or',
 ]
 SYMBOLS_LABELS = {
     ';': 'semicolon',
