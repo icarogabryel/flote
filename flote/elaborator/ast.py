@@ -1,6 +1,8 @@
 from abc import ABC, abstractmethod
-from typing import Union, Optional
 from enum import Enum
+from typing import Optional, Union
+
+from ..model.busses import BusValue
 
 
 INTERNAL = 0
@@ -136,7 +138,7 @@ class Assign:
 
 
 class UnaryOp(ABC):
-    expr:  Optional[ExprElem] = None
+    expr: Optional[ExprElem] = None
 
     @abstractmethod
     def __repr__(self) -> str:
@@ -205,7 +207,7 @@ class Xnor(BinaryOp):
 class Identifier:
     def __init__(self, id: str) -> None:
         self.id = id
-        self.line_number = None
+        self.line_number: Optional[int] = None
 
     def __repr__(self) -> str:
         return f'Id: "{self.id}"'
@@ -215,11 +217,11 @@ class Identifier:
 
 
 class BitField:
-    def __init__(self, value: str) -> None:
+    def __init__(self, value: BusValue) -> None:
         self.value = value
 
     def __repr__(self) -> str:
-        return f'BitField: {int(self.value)}'
+        return f'BitField: {self.value}'
 
     def __str__(self) -> str:
         return self.__repr__()

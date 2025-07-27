@@ -1,6 +1,7 @@
-from . import ast
 from ..model.busses import BitBusValue
-from .scanner import Scanner
+from . import ast
+from .scanner import Token
+
 
 # Dict of First Sets used to enter syntactical rules
 FIRST_SETS = {
@@ -26,23 +27,19 @@ class SyntacticalError(Exception):
 class Parser:
     """
     Syntactical Parser for Flote Language.
-
-    Args:
-        scanner (Scanner): Scanner object that will provide the token stream.
     """
-    def __init__(self, scanner: Scanner) -> None:
-        self.scanner = scanner
+    def __init__(self, token_stream: list[Token]) -> None:
         # Get the generator token stream from the scanner
-        self.token_stream = self.scanner.get_token_stream()
+        self.token_stream = token_stream
         self.ast = None
         # Get the first token from the stream
-        self.current_token = next(self.token_stream)
+        self.current_token = self.token_stream.pop(0)
 
         self.parse()
 
     def advance(self):
-        """Move to the next token in the token stream on demand."""
-        self.current_token = next(self.token_stream)
+        """Move to the next token in the token stream."""
+        self.current_token = self.token_stream.pop(0)
 
     def get_current_token(self):
         return self.current_token
@@ -52,7 +49,7 @@ class Parser:
 
         if token.label != expected_label:
             raise SyntacticalError(
-                self.scanner.line_number,
+                token.line_number,
                 (
                     f'Unexpected Token. Expected "{expected_label}". Got'
                     f'"{token.label}".'
@@ -83,13 +80,13 @@ class Parser:
     # * comp = ['main'], 'comp', ID, '{', {stmt}, '}'
     def comp(self):
         comp = ast.Comp()
-        comp.line_number = self.scanner.line_number
 
         if self.get_current_token().label == 'main':
             comp.is_main = True
             self.advance()
 
         self.match_label('comp')
+        comp.line_number = self.get_current_token().line_number
         self.advance()
         self.match_label('id')
         comp.id = self.get_current_token().lexeme
@@ -117,7 +114,6 @@ class Parser:
     # * decl = ['in' | 'out'], 'bit', ID, [dimension], ['=', expr], ';';
     def decl(self):
         decl = ast.Decl()
-        decl.line_number = self.scanner.line_number
 
         if self.get_current_token().label == 'in':
             decl.conn = -1
@@ -127,6 +123,7 @@ class Parser:
             self.advance()
 
         self.match_label('bit')  # todo adjust to accept other types
+        decl.line_number = self.get_current_token().line_number
         decl.type = 'bit'
         self.advance()
         self.match_label('id')
@@ -166,7 +163,8 @@ class Parser:
             dimension.msb = ast.Msb.ascending
 
         self.match_label('dec')
-        size = int(self.get_current_token().lexeme)
+        token = self.get_current_token()
+        size = int(token.lexeme)
 
         # Logically, the lexeme of a decimal token should never be a negative
         # integer.
@@ -174,7 +172,7 @@ class Parser:
 
         if size == 0:
             raise SyntacticalError(
-                self.scanner.line_number,
+                token.line_number,
                 'Dimension size must be positive.'
             )
 
@@ -191,8 +189,9 @@ class Parser:
 
         self.match_label('id')
 
-        identifier = ast.Identifier(self.get_current_token().lexeme)
-        identifier.line_number = self.scanner.line_number
+        token = self.get_current_token()
+        identifier = ast.Identifier(token.lexeme)
+        identifier.line_number = token.line_number
         assign.dt = identifier
 
         self.advance()
@@ -222,19 +221,17 @@ class Parser:
 
     # * exprDash = ('or' | 'nor'), term, exprDash | ε
     def expr_dash(self):
-        token = self.get_current_token().label
+        token = self.get_current_token()
 
-        if token == 'or':
+        if token.label == 'or':
             current_node = ast.Or()
             self.advance()
-
-        elif token == 'nor':
+        elif token.label == 'nor':
             current_node = ast.Nor()
             self.advance()
-
         else:
             raise SyntacticalError(
-                self.scanner.line_number,
+                token.line_number,
                 'Expected "or" or "nor".'
             )
 
@@ -253,7 +250,6 @@ class Parser:
             # The current note returns with empty left expr to be filled by the
             # top routine.
             return current_node
-
         # If there are no more operators, term is the right son of the current
         # node.
         else:
@@ -278,19 +274,19 @@ class Parser:
 
     # * termDash = ('xor' | 'xnor'), factor, termDash | ε
     def term_dash(self):
-        token = self.get_current_token().label
+        token = self.get_current_token()
 
-        if token == 'xor':
+        if token.label == 'xor':
             current_node = ast.Xor()
             self.advance()
 
-        elif token == 'xnor':
+        elif token.label == 'xnor':
             current_node = ast.Xnor()
             self.advance()
 
         else:
             raise SyntacticalError(
-                self.scanner.line_number,
+                token.line_number,
                 'Expected "xor" or "xnor".'
             )
 
@@ -324,21 +320,21 @@ class Parser:
 
     # * factDash = ('and' | 'nand'), primary, factDash | ε
     def fact_dash(self):
-        token = self.get_current_token().label
+        token = self.get_current_token()
 
-        if token == 'and':
+        if token.label == 'and':
             current_node = ast.And()
             self.advance()
 
-        elif token == 'nand':
+        elif token.label == 'nand':
             current_node = ast.Nand()
             self.advance()
 
         else:
             raise SyntacticalError(
-                self.scanner.line_number,
+                token.line_number,
                 'Expected "and" or "nand".'
-            )  # todo maybe change to assert
+            )  #todo maybe change to assert
 
         primary = self.primary()
 
@@ -357,16 +353,23 @@ class Parser:
 
     # * primary = 'not', primary | '(', expr, ')' | ID | BIN
     def primary(self) -> ast.ExprElem:
-        if (token_label := self.get_current_token().label) == 'id':
-            identifier = ast.Identifier(self.get_current_token().lexeme)
-            identifier.line_number = self.scanner.line_number
+        token = self.get_current_token()
+
+        if (token_label := token.label) == 'id':
+            identifier = ast.Identifier(token.lexeme)
+            identifier.line_number = token.line_number
 
             self.advance()
 
             return identifier
 
         elif token_label == 'bit_field':
-            value = BitBusValue([bool(bit) for bit in self.get_current_token().lexeme.strip('"')])
+            value = BitBusValue(
+                [
+                    bool(bit) for bit in
+                    self.get_current_token().lexeme.strip('"')
+                ]
+            )
             self.advance()
 
             return ast.BitField(value)
@@ -389,6 +392,6 @@ class Parser:
 
         else:
             raise SyntacticalError(
-                self.scanner.line_number,
+                token.line_number,
                 'Expected primary.'
             )
