@@ -1,6 +1,6 @@
-from .elaborator.builder import Builder
-from .elaborator.parser import Parser
-from .elaborator.scanner import Scanner
+from .elaboration.builder import Builder
+from .elaboration.parser import Parser
+from .elaboration.scanner import Scanner
 
 
 def elaborate(code):
