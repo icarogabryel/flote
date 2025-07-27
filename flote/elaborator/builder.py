@@ -1,13 +1,11 @@
-from ..model.component import Component, BitBus
-from ..model.busses import BusValue
-from .ast import (
-    Mod, Comp, Decl, Dimension, Assign, ExprElem,
-    Identifier, BitField, UnaryOp, BinaryOp,
-    Not, And, Or, Xor, Nand, Nor, Xnor,
-    INPUT, OUTPUT
-)
 from typing import Optional, Union
 from warnings import warn
+
+from ..model.busses import BusValue
+from ..model.component import BitBus, Component
+from .ast import (INPUT, OUTPUT, And, Assign, BinaryOp, BitField, Comp, Decl,
+                  Dimension, ExprElem, Identifier, Mod, Nand, Nor, Not, Or,
+                  UnaryOp, Xnor, Xor)
 
 
 NOT_ASSIGNED = False
