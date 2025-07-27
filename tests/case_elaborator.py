@@ -30,16 +30,20 @@ def main():
         for token in tokens:
             print(token)
 
-    if TEST_MODE > 1:
-        print('\n- AST:\n')
+        if TEST_MODE > 1:
+            print('\n- AST:\n')
 
-        parser = Parser(tokens)
+            tokens = tokens if TEST_MODE > 0 else []
+            parser = Parser(tokens)
 
-    if TEST_MODE > 2:
-        builder = Builder(parser.ast)
+            print(parser.ast)
 
-        print('\nComponent:\n')
-        print(builder.get_component())
+            if TEST_MODE > 2:
+                print('\nComponent:\n')
+
+                ast = parser.ast
+                builder = Builder(ast)
+                print(builder.get_component())
 
 
 if __name__ == "__main__":
