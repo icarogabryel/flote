@@ -12,6 +12,7 @@ class Connection(Enum):
     OUTPUT = 1
 
 
+#TODO this is not used in builder yet
 class Msb(Enum):
     """Enum to represent the most significant bit (MSB) direction."""
     ASCENDING = 0
@@ -173,37 +174,37 @@ class BinaryOp(ABC):
         return desc
 
 
-class Not(UnaryOp):
+class NotOp(UnaryOp):
     def __repr__(self) -> str:
         return f'Not {self.expr}'
 
 
-class And(BinaryOp):
+class AndOp(BinaryOp):
     def __repr__(self) -> str:
         return f'And {self.l_expr} {self.r_expr}'
 
 
-class Or(BinaryOp):
+class OrOp(BinaryOp):
     def __repr__(self) -> str:
         return f'Or {self.l_expr} {self.r_expr}'
 
 
-class Xor(BinaryOp):
+class XorOp(BinaryOp):
     def __repr__(self) -> str:
         return f'Xor {self.l_expr} {self.r_expr}'
 
 
-class Nand(BinaryOp):
+class NandOp(BinaryOp):
     def __repr__(self) -> str:
         return f'Nand {self.l_expr} {self.r_expr}'
 
 
-class Nor(BinaryOp):
+class NorOp(BinaryOp):
     def __repr__(self) -> str:
         return f'Nor {self.l_expr} {self.r_expr}'
 
 
-class Xnor(BinaryOp):
+class XnorOp(BinaryOp):
     def __repr__(self) -> str:
         return f'Xnor {self.l_expr} {self.r_expr}'
 

@@ -307,36 +307,36 @@ class Builder:
             bus_value = expr_elem.value  # change name for better readability
 
             return lambda: bus_value
-        elif isinstance(expr_elem, ast_nodes.Not):
+        elif isinstance(expr_elem, ast_nodes.NotOp):
             expr = self.vst_expr_elem(component, expr_elem.expr)
 
             return lambda: ~ expr()
-        elif isinstance(expr_elem, ast_nodes.And):
+        elif isinstance(expr_elem, ast_nodes.AndOp):
             l_expr: BusValue = self.vst_expr_elem(component, expr_elem.l_expr)
             r_expr: BusValue = self.vst_expr_elem(component, expr_elem.r_expr)
 
             return lambda: l_expr() & r_expr()
-        elif isinstance(expr_elem, ast_nodes.Or):
+        elif isinstance(expr_elem, ast_nodes.OrOp):
             l_expr = self.vst_expr_elem(component, expr_elem.l_expr)
             r_expr = self.vst_expr_elem(component, expr_elem.r_expr)
 
             return lambda: l_expr() | r_expr()
-        elif isinstance(expr_elem, ast_nodes.Xor):
+        elif isinstance(expr_elem, ast_nodes.XorOp):
             l_expr = self.vst_expr_elem(component, expr_elem.l_expr)
             r_expr = self.vst_expr_elem(component, expr_elem.r_expr)
 
             return lambda: l_expr() ^ r_expr()
-        elif isinstance(expr_elem, ast_nodes.Nand):
+        elif isinstance(expr_elem, ast_nodes.NandOp):
             l_expr = self.vst_expr_elem(component, expr_elem.l_expr)
             r_expr = self.vst_expr_elem(component, expr_elem.r_expr)
 
             return lambda: ~ (l_expr() & r_expr())
-        elif isinstance(expr_elem, ast_nodes.Nor):
+        elif isinstance(expr_elem, ast_nodes.NorOp):
             l_expr = self.vst_expr_elem(component, expr_elem.l_expr)
             r_expr = self.vst_expr_elem(component, expr_elem.r_expr)
 
             return lambda: ~ (l_expr() | r_expr())
-        elif isinstance(expr_elem, ast_nodes.Xnor):
+        elif isinstance(expr_elem, ast_nodes.XnorOp):
             l_expr = self.vst_expr_elem(component, expr_elem.l_expr)
             r_expr = self.vst_expr_elem(component, expr_elem.r_expr)
 

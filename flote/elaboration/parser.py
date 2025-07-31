@@ -116,10 +116,10 @@ class Parser:
         decl = ast_nodes.Decl()
 
         if self.get_current_token().label == 'in':
-            decl.conn = -1
+            decl.conn = ast_nodes.Connection.INPUT
             self.advance()
         elif self.get_current_token().label == 'out':
-            decl.conn = 1
+            decl.conn = ast_nodes.Connection.OUTPUT
             self.advance()
 
         self.match_label('bit')  # todo adjust to accept other types
@@ -153,7 +153,11 @@ class Parser:
         if is_descending:
             self.advance()
 
-        msb = ast_nodes.Msb.DESCENDING if is_descending else ast_nodes.Msb.ASCENDING
+        msb = (
+            ast_nodes.Msb.DESCENDING
+            if is_descending else
+            ast_nodes.Msb.ASCENDING
+        )
 
         self.match_label('dec')
         token = self.get_current_token()
@@ -223,10 +227,10 @@ class Parser:
         token = self.get_current_token()
 
         if token.label == 'or':
-            current_node = ast_nodes.Or()
+            current_node = ast_nodes.OrOp()
             self.advance()
         elif token.label == 'nor':
-            current_node = ast_nodes.Nor()
+            current_node = ast_nodes.NorOp()
             self.advance()
         else:
             raise SyntacticalError(
@@ -276,11 +280,11 @@ class Parser:
         token = self.get_current_token()
 
         if token.label == 'xor':
-            current_node = ast_nodes.Xor()
+            current_node = ast_nodes.XorOp()
             self.advance()
 
         elif token.label == 'xnor':
-            current_node = ast_nodes.Xnor()
+            current_node = ast_nodes.XnorOp()
             self.advance()
 
         else:
@@ -322,11 +326,11 @@ class Parser:
         token = self.get_current_token()
 
         if token.label == 'and':
-            current_node = ast_nodes.And()
+            current_node = ast_nodes.AndOp()
             self.advance()
 
         elif token.label == 'nand':
-            current_node = ast_nodes.Nand()
+            current_node = ast_nodes.NandOp()
             self.advance()
 
         else:
@@ -376,7 +380,7 @@ class Parser:
         elif token_label == 'not':
             self.advance()
 
-            node = ast_nodes.Not()
+            node = ast_nodes.NotOp()
             node.expr = self.primary()
 
             return node
