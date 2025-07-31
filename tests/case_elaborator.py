@@ -12,10 +12,9 @@ BASE_DIR = Path(__file__).parent.parent
 
 
 class TestMode(Enum):
-    NONE = 0
-    SCANNER = 1
-    PARSER = 2
-    BUILDER = 3
+    SCANNER = 0
+    PARSER = 1
+    BUILDER = 2
 
 
 TEST_MODE = TestMode.BUILDER.value
@@ -25,7 +24,7 @@ def main():
     with open(BASE_DIR / 'tests/src/HalfAdder.ft') as file:
         code = file.read()
 
-    if TEST_MODE > 0:
+    if TEST_MODE >= 0:
         print('- Token Stream:\n')
 
         scanner = Scanner(code)
@@ -34,7 +33,7 @@ def main():
         for token in tokens:
             print(token)
 
-        if TEST_MODE > 1:
+        if TEST_MODE >= 1:
             print('\n- AST:\n')
 
             tokens = tokens if TEST_MODE > 0 else []
@@ -42,7 +41,7 @@ def main():
 
             print(parser.ast)
 
-            if TEST_MODE > 2:
+            if TEST_MODE >= 2:
                 print('\nComponent:\n')
 
                 ast = parser.ast
