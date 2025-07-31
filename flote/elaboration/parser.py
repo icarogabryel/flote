@@ -132,12 +132,6 @@ class Parser:
 
         if self.get_current_token().label == 'l_bracket':
             decl.dimension = self.dimension()
-        else:
-            decl.dimension = ast.Dimension()
-            # Default size if no dimension is specified
-            decl.dimension.size = 1
-            # Default MSB is ascending if no dimension is specified
-            decl.dimension.msb = ast.Msb.ascending
 
         if self.get_current_token().label == 'assign':
             self.advance()
@@ -150,20 +144,23 @@ class Parser:
 
     # * dimension = '[', ['-'], DEC, ']';
     def dimension(self) -> ast.Dimension:
-        dimension = ast.Dimension()
-
         self.match_label('l_bracket')
         self.advance()
 
         # Check if the dimension is descending
-        if self.get_current_token().label == 'minus':
-            dimension.msb = ast.Msb.descending
+        is_descending = self.get_current_token().label == 'minus'
+
+        if is_descending:
             self.advance()
-        else:
-            dimension.msb = ast.Msb.ascending
+
+        msb = ast.Msb.descending if is_descending else ast.Msb.ascending
 
         self.match_label('dec')
         token = self.get_current_token()
+
+        assert token.lexeme.isdigit(), (
+            f"Token lexeme '{token.lexeme}' is not a valid integer"
+        )
         size = int(token.lexeme)
 
         # Logically, the lexeme of a decimal token should never be a negative
@@ -176,7 +173,8 @@ class Parser:
                 'Dimension size must be positive.'
             )
 
-        dimension.size = size
+        dimension = ast.Dimension(size, msb)
+
         self.advance()
         self.match_label('r_bracket')
         self.advance()
