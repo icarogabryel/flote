@@ -1,4 +1,4 @@
-mod = comp {comp};
+mod = comp, {comp};
 comp = ['main'], 'comp', ID, '{', {stmt}, '}';
 stmt = decl | assign;
 decl = ['in' | 'out'], 'bit', ID, [dimension], ['=', expr], ';';
