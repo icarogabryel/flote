@@ -40,7 +40,7 @@ class Not(UnaryOperator):
         return f'Not {self.expr}'
 
     def evaluate(self):
-        return - self.expr.evaluate()
+        return ~ self.expr.evaluate()
 
 
 class And(BinaryOperator):
@@ -72,7 +72,7 @@ class Nand(BinaryOperator):
         return f'Nand {self.l_expr} {self.r_expr}'
 
     def evaluate(self):
-        return - (self.l_expr.evaluate() & self.r_expr.evaluate())
+        return ~ (self.l_expr.evaluate() & self.r_expr.evaluate())
 
 
 class Nor(BinaryOperator):
@@ -80,7 +80,7 @@ class Nor(BinaryOperator):
         return f'Nor {self.l_expr} {self.r_expr}'
 
     def evaluate(self):
-        return - (self.l_expr.evaluate() | self.r_expr.evaluate())
+        return ~ (self.l_expr.evaluate() | self.r_expr.evaluate())
 
 
 class Xnor(BinaryOperator):
@@ -88,4 +88,4 @@ class Xnor(BinaryOperator):
         return f'Xnor {self.l_expr} {self.r_expr}'
 
     def evaluate(self):
-        return - (self.l_expr.evaluate() ^ self.r_expr.evaluate())
+        return ~ (self.l_expr.evaluate() ^ self.r_expr.evaluate())
