@@ -7,6 +7,7 @@ from ..model.component import BitBus, Component
 from . import ast_nodes
 
 
+#TODO verify if this make sense with Connection Enum
 class AssignType(Enum):
     """Enum to represent the assignment type."""
     INPUT = 'input'
@@ -246,12 +247,10 @@ class Builder:
         ):
             # Destiny signal cannot be assigned more than once
             raise SemanticalError(
-                f'Identifier "{assign.destiny.id}" has already been assigned.',
+                f'Identifier "{assign.destiny.id}" already assigned.',
                 assign.destiny.line_number
             )
-        elif (
-            self.bus_symbol_table[component.id][assign.destiny.id].conn
-            ==
+        elif self.bus_symbol_table[component.id][assign.destiny.id].conn == (
             ast_nodes.Connection.INPUT
         ):
             # Input buses cannot be assigned
