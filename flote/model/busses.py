@@ -41,7 +41,7 @@ class Bus(Evaluator):
             self.value = self.assignment.evaluate()
 
 
-class BitBusValue(Evaluator):
+class BitBusValue():
     """This class represents a value of a BitBus."""
     def __init__(self, value: list[bool] = [False]) -> None:
         self.value = value
@@ -69,10 +69,6 @@ class BitBusValue(Evaluator):
     def __xor__(self, other: 'BitBusValue') -> 'BitBusValue':
         return BitBusValue([a ^ b for a, b in zip(self.value, other.value)])
     # * End of operators overloading
-
-    def evaluate(self):
-        """Evaluate the bus value based on its assignment."""
-        return self
 
 
 class BitBus(Bus):
