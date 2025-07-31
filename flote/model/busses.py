@@ -2,23 +2,29 @@ import re
 from abc import ABC, abstractmethod
 from typing import Any, Optional, Union
 
-from .operations import Operations, Evaluator
 
 BusValue = Union['BitBusValue']
-Assignment = Union[Operations, BusValue]
+
+
+class Evaluator(ABC):
+    """Base class for all evaluators."""
+    @abstractmethod
+    def evaluate(self) -> Any:
+        """Evaluate the expression."""
+        pass
 
 
 class Bus(Evaluator):
     """This class represents a bus in the circuit."""
     def __init__(self) -> None:
         # The assignment of the bus. It can be an expression or None.
-        self.assignment: Optional[Assignment] = None
-        self.value: Any = self.get_default()  # The value of the bus.
+        self.assignment: Optional[Evaluator] = None
+        self.value: Evaluator = self.get_default()  # The value of the bus.
         # The list of buses that the current bus depends on.
         self.sensitivity_list: list[str] = []
 
     @abstractmethod
-    def get_default(self) -> Any:
+    def get_default(self) -> Evaluator:
         """This method returns the default value of the bus."""
         pass
 
@@ -32,8 +38,8 @@ class Bus(Evaluator):
         """This method inserts a value into the bus if it is valid"""
         pass
 
-    def evaluate(self) -> Any:
-        return self.value
+    def evaluate(self):
+        return self.value.evaluate()
 
     def assign(self):
         """Do the assignment of the bus when not None."""
@@ -41,8 +47,9 @@ class Bus(Evaluator):
             self.value = self.assignment.evaluate()
 
 
-class BitBusValue():
+class BitBusValue(Evaluator):
     """This class represents a value of a BitBus."""
+
     def __init__(self, value: list[bool] = [False]) -> None:
         self.value = value
 
@@ -70,6 +77,10 @@ class BitBusValue():
         return BitBusValue([a ^ b for a, b in zip(self.value, other.value)])
     # * End of operators overloading
 
+    def evaluate(self):
+        """Evaluate the BitBusValue."""
+        return self
+
 
 class BitBus(Bus):
     """This class represents a bit bus in the circuit."""
@@ -93,6 +104,6 @@ class BitBus(Bus):
 
     def __repr__(self):
         return (
-            f'Assigned: {self.assignment}, Current Value: '
+            f'Assign: -, Current Value: '
             f'{self.value}, SL: {self.sensitivity_list}'
         )

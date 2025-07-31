@@ -1,13 +1,4 @@
-from abc import ABC, abstractmethod
-from typing import Any
-
-
-class Evaluator(ABC):
-    """Base class for all evaluators."""
-    @abstractmethod
-    def evaluate(self) -> Any:
-        """Evaluate the expression."""
-        pass
+from .busses import Evaluator
 
 
 #TODO type all this
