@@ -5,9 +5,12 @@ from .elaboration.scanner import Scanner
 
 def elaborate(code):
     scanner = Scanner(code)
-    parser = Parser(scanner)
-    builder = Builder(parser.ast)
+    tokens_stream = scanner.token_stream
 
+    parser = Parser(tokens_stream)
+    ast = parser.ast
+
+    builder = Builder(ast)
     component = builder.get_component()
 
     return component
