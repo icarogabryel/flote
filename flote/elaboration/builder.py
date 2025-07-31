@@ -8,13 +8,6 @@ from ..model.operations import (Not, And, Or, Xor, Nand, Nor, Xnor)
 from . import ast_nodes
 
 
-#TODO verify if this make sense with Connection Enum
-class AssignType(Enum):
-    """Enum to represent the assignment type."""
-    INPUT = 'input'
-    OUTPUT = 'output'
-
-
 class Assigned(Enum):
     """Enum to represent if a bus is assigned."""
     ASSIGNED = True
@@ -118,7 +111,7 @@ class Builder:
                         decl.line_number
                     )
 
-                if decl.conn == AssignType.INPUT:
+                if decl.conn == ast_nodes.Connection.INPUT:
                     if decl.assign is not None:
                         raise SemanticalError(
                             f'Input Buses like {decl.id} cannot be assigned.',
@@ -149,13 +142,13 @@ class Builder:
         """
         for comp_id, comp_bus_list in self.bus_symbol_table.items():
             for bus_id, bus in comp_bus_list.items():
-                if (bus.conn != AssignType.INPUT) and (not bus.is_assigned):
+                if (bus.conn != ast_nodes.Connection.INPUT) and (not bus.is_assigned):
                     warn(
                         f'Bus "{bus_id}" has not been assigned.',
                         UserWarning
                     )
 
-                if (bus.conn != AssignType.OUTPUT) and (not bus.is_read):
+                if (bus.conn != ast_nodes.Connection.OUTPUT) and (not bus.is_read):
                     warn(f'Bus "{bus_id}" is never read', UserWarning)
 
     def vst_mod(self, mod: ast_nodes.Mod):
@@ -216,7 +209,7 @@ class Builder:
     def vst_decl(self, component: Component, decl: ast_nodes.Decl) -> None:
         bit_bus = BitBus()
 
-        if decl.conn == AssignType.INPUT:
+        if decl.conn == ast_nodes.Connection.INPUT:
             component.inputs.append(decl.id)
 
         if decl.dimension is not None:
@@ -299,7 +292,7 @@ class Builder:
 
             self.bus_symbol_table[component.id][expr_elem.id].is_read = True
 
-            return component.bus_dict[expr_elem.id].value
+            return component.bus_dict[expr_elem.id]
         elif isinstance(expr_elem, ast_nodes.BitField):
             if not isinstance(expr_elem.value, BusValue):
                 assert False, f'Invalid bus value: {expr_elem.value}'

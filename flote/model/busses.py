@@ -8,7 +8,7 @@ BusValue = Union['BitBusValue']
 Assignment = Union[Operations, BusValue]
 
 
-class Bus(ABC):
+class Bus(Evaluator):
     """This class represents a bus in the circuit."""
     def __init__(self) -> None:
         # The assignment of the bus. It can be an expression or None.
@@ -31,6 +31,9 @@ class Bus(ABC):
     def insert_value(self, value) -> None:
         """This method inserts a value into the bus if it is valid"""
         pass
+
+    def evaluate(self) -> Any:
+        return self.value
 
     def assign(self):
         """Do the assignment of the bus when not None."""
@@ -69,7 +72,7 @@ class BitBusValue(Evaluator):
 
     def evaluate(self):
         """Evaluate the bus value based on its assignment."""
-        return self.value
+        return self
 
 
 class BitBus(Bus):
