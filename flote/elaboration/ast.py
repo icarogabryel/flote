@@ -107,10 +107,10 @@ class Decl:
 
 
 class Dimension:
-    def __init__(self) -> None:
+    def __init__(self, size=1, msb=Msb.ascending) -> None:
         # Private to ensure size is set through the setter method
-        self.size: Optional[int] = None
-        self.msb: Optional[Msb] = None
+        self.size: Optional[int] = size
+        self.msb: Optional[Msb] = msb
 
     def __repr__(self) -> str:
         msb_name = self.msb.name if self.msb is not None else None
