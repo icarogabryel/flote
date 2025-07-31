@@ -2,6 +2,7 @@
 Tests for the integration of Scanner, Parser, and Builder classes in the Flote
 project.
 """
+from enum import Enum
 from pathlib import Path
 
 from flote import Builder, Parser, Scanner
@@ -9,12 +10,15 @@ from flote import Builder, Parser, Scanner
 
 BASE_DIR = Path(__file__).parent.parent
 
-NONE = 0
-SCANNER = 1
-PARSER = 2
-BUILDER = 3
 
-TEST_MODE = NONE
+class TestMode(Enum):
+    NONE = 0
+    SCANNER = 1
+    PARSER = 2
+    BUILDER = 3
+
+
+TEST_MODE = TestMode.BUILDER.value
 
 
 def main():
