@@ -1,5 +1,5 @@
 from ..model.busses import BitBusValue
-from . import ast
+from . import ast_nodes
 from .scanner import Token
 
 
@@ -66,7 +66,7 @@ class Parser:
 
     # * mod = {comp}
     def mod(self):
-        mod = ast.Mod()
+        mod = ast_nodes.Mod()
 
         mod.add_comp(self.comp())
 
@@ -79,7 +79,7 @@ class Parser:
 
     # * comp = ['main'], 'comp', ID, '{', {stmt}, '}'
     def comp(self):
-        comp = ast.Comp()
+        comp = ast_nodes.Comp()
 
         if self.get_current_token().label == 'main':
             comp.is_main = True
@@ -113,7 +113,7 @@ class Parser:
 
     # * decl = ['in' | 'out'], 'bit', ID, [dimension], ['=', expr], ';';
     def decl(self):
-        decl = ast.Decl()
+        decl = ast_nodes.Decl()
 
         if self.get_current_token().label == 'in':
             decl.conn = -1
@@ -143,7 +143,7 @@ class Parser:
         return decl
 
     # * dimension = '[', ['-'], DEC, ']';
-    def dimension(self) -> ast.Dimension:
+    def dimension(self) -> ast_nodes.Dimension:
         self.match_label('l_bracket')
         self.advance()
 
@@ -153,7 +153,7 @@ class Parser:
         if is_descending:
             self.advance()
 
-        msb = ast.Msb.descending if is_descending else ast.Msb.ascending
+        msb = ast_nodes.Msb.DESCENDING if is_descending else ast_nodes.Msb.ASCENDING
 
         self.match_label('dec')
         token = self.get_current_token()
@@ -173,7 +173,7 @@ class Parser:
                 'Dimension size must be positive.'
             )
 
-        dimension = ast.Dimension(size, msb)
+        dimension = ast_nodes.Dimension(size, msb)
 
         self.advance()
         self.match_label('r_bracket')
@@ -183,21 +183,22 @@ class Parser:
 
     # * assign = ID, '=', expr, ';'
     def assign(self):
-        assign = ast.Assign()
-
         self.match_label('id')
 
         token = self.get_current_token()
-        identifier = ast.Identifier(token.lexeme)
+        identifier = ast_nodes.Identifier(token.lexeme)
         identifier.line_number = token.line_number
-        assign.dt = identifier
-
+        destiny = identifier
         self.advance()
+
         self.match_label('assign')
         self.advance()
-        assign.expr = self.expr()
+
+        expr = self.expr()
         self.match_label('semicolon')
         self.advance()
+
+        assign = ast_nodes.Assign(destiny, expr)
 
         return assign
 
@@ -222,10 +223,10 @@ class Parser:
         token = self.get_current_token()
 
         if token.label == 'or':
-            current_node = ast.Or()
+            current_node = ast_nodes.Or()
             self.advance()
         elif token.label == 'nor':
-            current_node = ast.Nor()
+            current_node = ast_nodes.Nor()
             self.advance()
         else:
             raise SyntacticalError(
@@ -275,11 +276,11 @@ class Parser:
         token = self.get_current_token()
 
         if token.label == 'xor':
-            current_node = ast.Xor()
+            current_node = ast_nodes.Xor()
             self.advance()
 
         elif token.label == 'xnor':
-            current_node = ast.Xnor()
+            current_node = ast_nodes.Xnor()
             self.advance()
 
         else:
@@ -321,11 +322,11 @@ class Parser:
         token = self.get_current_token()
 
         if token.label == 'and':
-            current_node = ast.And()
+            current_node = ast_nodes.And()
             self.advance()
 
         elif token.label == 'nand':
-            current_node = ast.Nand()
+            current_node = ast_nodes.Nand()
             self.advance()
 
         else:
@@ -350,11 +351,11 @@ class Parser:
             return current_node
 
     # * primary = 'not', primary | '(', expr, ')' | ID | BIN
-    def primary(self) -> ast.ExprElem:
+    def primary(self) -> ast_nodes.ExprElem:
         token = self.get_current_token()
 
         if (token_label := token.label) == 'id':
-            identifier = ast.Identifier(token.lexeme)
+            identifier = ast_nodes.Identifier(token.lexeme)
             identifier.line_number = token.line_number
 
             self.advance()
@@ -370,12 +371,12 @@ class Parser:
             )
             self.advance()
 
-            return ast.BitField(value)
+            return ast_nodes.BitField(value)
 
         elif token_label == 'not':
             self.advance()
 
-            node = ast.Not()
+            node = ast_nodes.Not()
             node.expr = self.primary()
 
             return node
