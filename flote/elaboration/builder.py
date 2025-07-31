@@ -1,9 +1,10 @@
 from enum import Enum
-from typing import Optional, Callable
+from typing import Optional
 from warnings import warn
 
 from ..model.busses import BusValue
 from ..model.component import BitBus, Component
+from ..model.operations import (Not, And, Or, Xor, Nand, Nor, Xnor)
 from . import ast_nodes
 
 
@@ -272,14 +273,14 @@ class Builder:
                 self.get_sensitivity_list(assign.expr)
             )
 
-    def vst_expr(self, component, expr) -> Callable:
+    def vst_expr(self, component, expr):
         assignment = self.vst_expr_elem(component, expr)
 
         return assignment
 
     def vst_expr_elem(
         self, component: Component, expr_elem: ast_nodes.ExprElem
-    ) -> Callable:
+    ):
         """
         Visit an expression element, validate it, and return a callable for
         evaluation.
@@ -298,47 +299,91 @@ class Builder:
 
             self.bus_symbol_table[component.id][expr_elem.id].is_read = True
 
-            return lambda: component.bus_dict[expr_elem.id].value
+            return component.bus_dict[expr_elem.id].value
         elif isinstance(expr_elem, ast_nodes.BitField):
             if not isinstance(expr_elem.value, BusValue):
                 assert False, f'Invalid bus value: {expr_elem.value}'
 
             bus_value = expr_elem.value  # change name for better readability
 
-            return lambda: bus_value
+            return bus_value
         elif isinstance(expr_elem, ast_nodes.NotOp):
+            assert expr_elem.expr is not None, 'Expression cannot be None.'
+
             expr = self.vst_expr_elem(component, expr_elem.expr)
 
-            return lambda: ~ expr()
+            return Not(expr)
         elif isinstance(expr_elem, ast_nodes.AndOp):
+            assert expr_elem.l_expr is not None, (
+                'Left expression of And operation cannot be None.'
+            )
+            assert expr_elem.r_expr is not None, (
+                'Right expression of And operation cannot be None.'
+            )
+
             l_expr: BusValue = self.vst_expr_elem(component, expr_elem.l_expr)
             r_expr: BusValue = self.vst_expr_elem(component, expr_elem.r_expr)
 
-            return lambda: l_expr() & r_expr()
+            return And(l_expr, r_expr)
         elif isinstance(expr_elem, ast_nodes.OrOp):
+            assert expr_elem.l_expr is not None, (
+                'Left expression of Or operation cannot be None.'
+            )
+            assert expr_elem.r_expr is not None, (
+                'Right expression of Or operation cannot be None.'
+            )
+
             l_expr = self.vst_expr_elem(component, expr_elem.l_expr)
             r_expr = self.vst_expr_elem(component, expr_elem.r_expr)
 
-            return lambda: l_expr() | r_expr()
+            return Or(l_expr, r_expr)
         elif isinstance(expr_elem, ast_nodes.XorOp):
+            assert expr_elem.l_expr is not None, (
+                'Left expression of Xor operation cannot be None.'
+            )
+            assert expr_elem.r_expr is not None, (
+                'Right expression of Xor operation cannot be None.'
+            )
+
             l_expr = self.vst_expr_elem(component, expr_elem.l_expr)
             r_expr = self.vst_expr_elem(component, expr_elem.r_expr)
 
-            return lambda: l_expr() ^ r_expr()
+            return Xor(l_expr, r_expr)
         elif isinstance(expr_elem, ast_nodes.NandOp):
+            assert expr_elem.l_expr is not None, (
+                'Left expression of Nand operation cannot be None.'
+            )
+            assert expr_elem.r_expr is not None, (
+                'Right expression of Nand operation cannot be None.'
+            )
+
             l_expr = self.vst_expr_elem(component, expr_elem.l_expr)
             r_expr = self.vst_expr_elem(component, expr_elem.r_expr)
 
-            return lambda: ~ (l_expr() & r_expr())
+            return Nand(l_expr, r_expr)
         elif isinstance(expr_elem, ast_nodes.NorOp):
+            assert expr_elem.l_expr is not None, (
+                'Left expression of Nor operation cannot be None.'
+            )
+            assert expr_elem.r_expr is not None, (
+                'Right expression of Nor operation cannot be None.'
+            )
+
             l_expr = self.vst_expr_elem(component, expr_elem.l_expr)
             r_expr = self.vst_expr_elem(component, expr_elem.r_expr)
 
-            return lambda: ~ (l_expr() | r_expr())
+            return Nor(l_expr, r_expr)
         elif isinstance(expr_elem, ast_nodes.XnorOp):
+            assert expr_elem.l_expr is not None, (
+                'Left expression of Xnor operation cannot be None.'
+            )
+            assert expr_elem.r_expr is not None, (
+                'Right expression of Xnor operation cannot be None.'
+            )
+
             l_expr = self.vst_expr_elem(component, expr_elem.l_expr)
             r_expr = self.vst_expr_elem(component, expr_elem.r_expr)
 
-            return lambda: ~ (l_expr() ^ r_expr())
-
-        assert False, f'Invalid expression element: {expr_elem}'
+            return Xnor(l_expr, r_expr)
+        else:
+            assert False, f'Invalid expression element: {expr_elem}'

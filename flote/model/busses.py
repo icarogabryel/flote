@@ -1,13 +1,18 @@
 import re
 from abc import ABC, abstractmethod
-from typing import Any, Union
+from typing import Any, Optional, Union
+
+from .operations import Operations, Evaluator
+
+BusValue = Union['BitBusValue']
+Assignment = Union[Operations, BusValue]
 
 
 class Bus(ABC):
     """This class represents a bus in the circuit."""
     def __init__(self) -> None:
         # The assignment of the bus. It can be an expression or None.
-        self.assignment = None
+        self.assignment: Optional[Assignment] = None
         self.value: Any = self.get_default()  # The value of the bus.
         # The list of buses that the current bus depends on.
         self.sensitivity_list: list[str] = []
@@ -30,10 +35,10 @@ class Bus(ABC):
     def assign(self):
         """Do the assignment of the bus when not None."""
         if self.assignment:
-            self.value = self.assignment()
+            self.value = self.assignment.evaluate()
 
 
-class BitBusValue:
+class BitBusValue(Evaluator):
     """This class represents a value of a BitBus."""
     def __init__(self, value: list[bool] = [False]) -> None:
         self.value = value
@@ -62,6 +67,10 @@ class BitBusValue:
         return BitBusValue([a ^ b for a, b in zip(self.value, other.value)])
     # * End of operators overloading
 
+    def evaluate(self):
+        """Evaluate the bus value based on its assignment."""
+        return self.value
+
 
 class BitBus(Bus):
     """This class represents a bit bus in the circuit."""
@@ -85,9 +94,6 @@ class BitBus(Bus):
 
     def __repr__(self):
         return (
-            f'Assigned: {'Yes' if self.assignment else 'No'}, Current Value: '
+            f'Assigned: {self.assignment}, Current Value: '
             f'{self.value}, SL: {self.sensitivity_list}'
         )
-
-
-BusValue = Union[BitBusValue]
