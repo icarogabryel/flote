@@ -1,5 +1,5 @@
 from datetime import datetime
-from .busses import BitBus
+from .busses import BitBus, Evaluator
 
 
 VERSION = '0.1.1'
@@ -15,7 +15,7 @@ class Sample:
         self.time = time
 
         # signals is a tuple of signal name and value
-        self.signals: list[tuple[bool, str]] = signals
+        self.signals: list[tuple[Evaluator, str]] = signals
 
 
 class Component:
