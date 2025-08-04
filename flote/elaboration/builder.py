@@ -2,9 +2,9 @@ from enum import Enum
 from typing import Optional
 from warnings import warn
 
-from ..model.busses import BusRef, BusValue
+from ..model.busses import BusValue
 from ..model.component import BitBus, Component
-from ..model.operations import And, Nand, Nor, Not, Or, Xnor, Xor
+from ..model.expr_nodes import And, BusRef, Nand, Nor, Not, Or, Xnor, Xor
 from . import ast_nodes
 
 

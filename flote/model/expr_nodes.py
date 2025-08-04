@@ -1,4 +1,18 @@
-from .busses import Evaluator
+from .busses import Bus, Evaluator
+from .component import Component
+
+
+class BusRef(Evaluator):
+    """This class represents a reference to a bus in the circuit."""
+    def __init__(self, component: Component, id: str):
+        self.component = component
+        self.id = id
+
+    def __repr__(self) -> str:
+        return self.id
+
+    def evaluate(self) -> Bus:
+        return self.component.bus_dict[self.id].evaluate()
 
 
 #TODO type all this
