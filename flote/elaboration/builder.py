@@ -50,7 +50,7 @@ class Builder:
         #TODO improve
         self.bus_symbol_table: dict[str, dict[str, BusSymbol]] = {}
 
-    def get_component(self) -> None | Component:
+    def get_component(self) -> Component:
         return self.vst_mod(self.ast)
 
     def get_sensitivity_list(self, expr_elem: ast_nodes.ExprElem) -> list[str]:
@@ -151,10 +151,14 @@ class Builder:
                 if (bus.conn != ast_nodes.Connection.OUTPUT) and (not bus.is_read):
                     warn(f'Bus "{bus_id}" is never read', UserWarning)
 
-    def vst_mod(self, mod: ast_nodes.Mod):
+    def vst_mod(self, mod: ast_nodes.Mod) -> Component:
+        if not mod.comps:
+            raise SemanticalError('Module is empty.')
+
         if len(mod.comps) == 1:
             return self.vst_comp(mod.comps[0])
 
+        # If there are multiple components, we assume one of them is the main
         else:
             is_main_comp_found = False
             main_component: Optional[Component] = None
@@ -164,7 +168,7 @@ class Builder:
                     if is_main_comp_found:
                         raise SemanticalError(
                             (
-                                f'{comp.id} can\'t be main. Only one main'
+                                f'{comp.id} can\'t be main. Only one main '
                                 'component is allowed.'
                             ),
                             comp.line_number
@@ -179,6 +183,10 @@ class Builder:
                 raise SemanticalError(
                     'Main component not found in a multiple component module.'
                 )
+
+        assert main_component is not None, (
+            'Main component should not be None.'
+        )
 
         self.validate_bus_symbol_table()
 
