@@ -2,7 +2,7 @@ from .busses import Bus, Evaluator
 from .component import Component
 
 
-class BusId(Evaluator):
+class BusRef(Evaluator):
     def __init__(self, component: Component, id: str):
         self.component = component
         self.id = id

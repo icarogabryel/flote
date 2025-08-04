@@ -4,7 +4,7 @@ from warnings import warn
 
 from ..model.busses import BusValue
 from ..model.component import BitBus, Component
-from ..model.operations import (BusId, Not, And, Or, Xor, Nand, Nor, Xnor)
+from ..model.operations import (BusRef, Not, And, Or, Xor, Nand, Nor, Xnor)
 from . import ast_nodes
 
 
@@ -300,7 +300,7 @@ class Builder:
 
             self.bus_symbol_table[component.id][expr_elem.id].is_read = True
 
-            bus_id = BusId(component, expr_elem.id)
+            bus_id = BusRef(component, expr_elem.id)
 
             return bus_id
         elif isinstance(expr_elem, ast_nodes.BitField):
