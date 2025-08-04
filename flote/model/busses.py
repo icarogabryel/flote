@@ -2,6 +2,8 @@ import re
 from abc import ABC, abstractmethod
 from typing import Any, Optional, Union
 
+from .component import Component
+
 
 BusValue = Union['BitBusValue']
 
@@ -45,6 +47,18 @@ class Bus(Evaluator):
         """Do the assignment of the bus when not None."""
         if self.assignment:
             self.value = self.assignment.evaluate()
+
+
+class BusRef(Evaluator):
+    def __init__(self, component: Component, id: str):
+        self.component = component
+        self.id = id
+
+    def __repr__(self) -> str:
+        return self.id
+
+    def evaluate(self) -> Bus:
+        return self.component.bus_dict[self.id].evaluate()
 
 
 class BitBusValue(Evaluator):
