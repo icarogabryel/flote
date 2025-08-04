@@ -4,7 +4,7 @@ from warnings import warn
 
 from ..model.busses import BusValue
 from ..model.component import BitBus, Component
-from ..model.operations import (Not, And, Or, Xor, Nand, Nor, Xnor)
+from ..model.operations import (BusId, Not, And, Or, Xor, Nand, Nor, Xnor)
 from . import ast_nodes
 
 
@@ -292,7 +292,9 @@ class Builder:
 
             self.bus_symbol_table[component.id][expr_elem.id].is_read = True
 
-            return component.bus_dict[expr_elem.id]
+            bus_id = BusId(component, expr_elem.id)
+
+            return bus_id
         elif isinstance(expr_elem, ast_nodes.BitField):
             if not isinstance(expr_elem.value, BusValue):
                 assert False, f'Invalid bus value: {expr_elem.value}'

@@ -1,4 +1,14 @@
-from .busses import Evaluator
+from .busses import Bus, Evaluator
+from .component import Component
+
+
+class BusId(Evaluator):
+    def __init__(self, component: Component, id: str):
+        self.component = component
+        self.id = id
+
+    def evaluate(self) -> Bus:
+        return self.component.bus_dict[self.id].evaluate()
 
 
 #TODO type all this
