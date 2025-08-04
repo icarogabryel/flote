@@ -103,6 +103,6 @@ class BitBus(Bus):
 
     def __repr__(self):
         return (
-            f'Assign: -, Current Value: '
+            f'Assignment: {self.assignment}, Current Value: '
             f'{self.value}, SL: {self.sensitivity_list}'
         )
