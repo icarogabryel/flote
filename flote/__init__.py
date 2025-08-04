@@ -1,9 +1,11 @@
+from flote.model.component import Component
+
 from .elaboration.builder import Builder
 from .elaboration.parser import Parser
 from .elaboration.scanner import Scanner
 
 
-def elaborate(code):
+def elaborate(code) -> Component:
     scanner = Scanner(code)
     tokens_stream = scanner.token_stream
 
