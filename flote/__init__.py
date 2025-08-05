@@ -13,9 +13,9 @@ def elaborate(code) -> Component:
     ast = parser.ast
 
     builder = Builder(ast)
-    component = builder.get_component()
+    model = builder.get_model()
 
-    return component
+    return model
 
 
 def elaborate_from_file(file_path):

@@ -21,7 +21,7 @@ TEST_MODE = TestMode.BUILDER.value
 
 
 def main():
-    with open(BASE_DIR / 'tests/src/HalfAdder.ft') as file:
+    with open(BASE_DIR / 'tests/examples/HalfAdder.ft') as file:
         code = file.read()
 
     if TEST_MODE >= 0:
@@ -42,11 +42,11 @@ def main():
             print(parser.ast)
 
             if TEST_MODE >= 2:
-                print('\nComponent:\n')
+                print('\nModel:\n')
 
                 ast = parser.ast
                 builder = Builder(ast)
-                print(builder.get_component())
+                print(builder.get_model())
 
 
 if __name__ == "__main__":

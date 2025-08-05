@@ -45,13 +45,14 @@ class BusSymbol:
 class Builder:
     """Class that builds the component from the AST."""
     def __init__(self, ast) -> None:
-        self.ast = ast
+        self.ast: ast_nodes.Mod = ast
         # component: bus: (type, is_assigned)
         #TODO improve
         self.bus_symbol_table: dict[str, dict[str, BusSymbol]] = {}
+        self.model: Component = self.vst_mod(self.ast)
 
-    def get_component(self) -> Component:
-        return self.vst_mod(self.ast)
+    def get_model(self) -> Component:
+        return self.model
 
     def get_sensitivity_list(self, expr_elem: ast_nodes.ExprElem) -> list[str]:
         """
