@@ -2,11 +2,13 @@ import flote as ft
 from pathlib import Path
 
 
-FILE_DIR = Path(__file__).resolve().parent
+BASE_DIR = Path(__file__).parent.parent
 
 
 def test():
-    half_adder = ft.elaborate_from_file(FILE_DIR / 'src/HalfAdder.ft')
+    half_adder = ft.elaborate_from_file(
+        BASE_DIR / 'tests/examples/HalfAdder.ft'
+    )
 
     half_adder.stimulate({'a': '0', 'b': '0'})
     half_adder.wait(10)
@@ -27,7 +29,6 @@ def test():
     half_adder.wait(10)
 
     print(half_adder)
-
 
     # half_adder.save_vcd(FILE_DIR / 'waves/HalfAdder.vcd')
 

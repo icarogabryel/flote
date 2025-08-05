@@ -2,11 +2,11 @@ import flote as ft
 from pathlib import Path
 
 
-FILE_DIR = Path(__file__).resolve().parent
+BASE_DIR = Path(__file__).parent.parent
 
 
 def test_rs_latch():
-    latch = ft.elaborate_from_file(FILE_DIR / 'src/RsLatch.ft')
+    latch = ft.elaborate_from_file(BASE_DIR / 'tests/examples/RsLatch.ft')
 
     print(latch)
 
@@ -35,7 +35,7 @@ def test_rs_latch():
     latch.stimulate({'set': '0', 'rst': '0'})
     latch.wait(1)
 
-    latch.save_vcd(FILE_DIR / 'waves/RsLatch.vcd')
+    # latch.save_vcd(BASE_DIR / 'tests/waves/RsLatch.vcd')
 
 
 if __name__ == '__main__':

@@ -24,7 +24,7 @@ def main():
     with open(BASE_DIR / 'tests/examples/HalfAdder.ft') as file:
         code = file.read()
 
-    if TEST_MODE >= 0:
+    if TEST_MODE >= TestMode.SCANNER.value:
         print('- Token Stream:\n')
 
         scanner = Scanner(code)
@@ -33,7 +33,7 @@ def main():
         for token in tokens:
             print(token)
 
-        if TEST_MODE >= 1:
+        if TEST_MODE >= TestMode.PARSER.value:
             print('\n- AST:\n')
 
             tokens = tokens if TEST_MODE > 0 else []
@@ -41,7 +41,7 @@ def main():
 
             print(parser.ast)
 
-            if TEST_MODE >= 2:
+            if TEST_MODE >= TestMode.BUILDER.value:
                 print('\nModel:\n')
 
                 ast = parser.ast
