@@ -143,13 +143,15 @@ class Builder:
         """
         for comp_id, comp_bus_list in self.bus_symbol_table.items():
             for bus_id, bus in comp_bus_list.items():
-                if (bus.conn != ast_nodes.Connection.INPUT) and (not bus.is_assigned):
+                if (bus.conn != ast_nodes.Connection.INPUT) and \
+                        (not bus.is_assigned):
                     warn(
                         f'Bus "{bus_id}" has not been assigned.',
                         UserWarning
                     )
 
-                if (bus.conn != ast_nodes.Connection.OUTPUT) and (not bus.is_read):
+                if (bus.conn != ast_nodes.Connection.OUTPUT) and \
+                        (not bus.is_read):
                     warn(f'Bus "{bus_id}" is never read', UserWarning)
 
     def vst_mod(self, mod: ast_nodes.Mod) -> Component:
