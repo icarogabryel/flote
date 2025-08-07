@@ -2,16 +2,17 @@ from enum import Enum
 from typing import Optional
 from warnings import warn
 
-from ..model.busses import BusValue
+from ..model.busses import Value
 from ..model.component import BitBus, Component
 from ..model.expr_nodes import And, BusRef, Nand, Nor, Not, Or, Xnor, Xor
 from . import ast_nodes
+from .symbol_table import BusSymbol, CompTable, SymbolTable
 
 
 class Assigned(Enum):
     """Enum to represent if a bus is assigned."""
-    ASSIGNED = True
-    NOT_ASSIGNED = False
+    ASSIGNED = 0
+    NOT_ASSIGNED = 1
 
 
 class SemanticalError(Exception):
@@ -27,28 +28,11 @@ class SemanticalError(Exception):
         )
 
 
-class BusSymbol:
-    """Class that represents a bus symbol in the symbol table."""
-    def __init__(self, type, is_assigned, conn):
-        self.type: Optional[str] = type
-        self.is_assigned = is_assigned
-        self.conn = conn
-        self.is_read = False
-
-    def __repr__(self):
-        return (
-            f'| {self.type} | {self.is_assigned} | {self.conn} | '
-            f'{self.is_read} |'
-        )
-
-
 class Builder:
     """Class that builds the component from the AST."""
     def __init__(self, ast) -> None:
         self.ast: ast_nodes.Mod = ast
-        # component: bus: (type, is_assigned)
-        #TODO improve
-        self.bus_symbol_table: dict[str, dict[str, BusSymbol]] = {}
+        self.symbol_table: SymbolTable = SymbolTable()
         self.model: Component = self.vst_mod(self.ast)
 
     def get_model(self) -> Component:
@@ -96,61 +80,52 @@ class Builder:
 
         return sensitivity_list
 
-    def get_components_bus_table(
+    def init_component_table(
         self, comp: ast_nodes.Comp
-    ) -> dict[str, BusSymbol]:
+    ) -> CompTable:
         """Get the component's bus symbol table."""
-        components_bus_table: dict[str, BusSymbol] = {}
+        comp_table: CompTable = CompTable()
 
         for stmt in comp.stmts:
             if isinstance(stmt, ast_nodes.Decl):
                 decl = stmt  # Name change for better readability
 
-                if decl.id in components_bus_table:
+                if decl.id in comp_table.buses.keys():
                     raise SemanticalError(
                         f'Bus "{decl.id}" has already been declared.',
                         decl.line_number
                     )
 
-                if decl.conn == ast_nodes.Connection.INPUT:
-                    if decl.assign is not None:
-                        raise SemanticalError(
-                            f'Input Buses like {decl.id} cannot be assigned.',
-                            decl.line_number
-                        )
-                    else:
-                        components_bus_table[decl.id] = BusSymbol(
-                            decl.type,
-                            # Is considered assigned if it has an input
-                            # connection
-                            # todo Improve this logic
-                            Assigned.ASSIGNED,
-                            decl.conn
-                        )
-                else:
-                    components_bus_table[decl.id] = BusSymbol(
-                        decl.type,
-                        Assigned.NOT_ASSIGNED,
-                        decl.conn
+                if (decl.conn == ast_nodes.Connection.INPUT) and \
+                        (decl.assign is not None):
+                    raise SemanticalError(
+                        f'Input Buses like {decl.id} cannot be assigned.',
+                        decl.line_number
                     )
 
-        return components_bus_table
+                comp_table.buses[decl.id] = BusSymbol(
+                    decl.type,
+                    Assigned.NOT_ASSIGNED,
+                    decl.conn
+                )
+
+        return comp_table
 
     def validate_bus_symbol_table(self):
         """
         Validate the bus symbol table to ensure all buses are assigned and
         read.
         """
-        for comp_id, comp_bus_list in self.bus_symbol_table.items():
-            for bus_id, bus in comp_bus_list.items():
-                if (bus.conn != ast_nodes.Connection.INPUT) and \
+        for _, bus_table in self.symbol_table.components.items():
+            for bus_id, bus in bus_table.buses.items():
+                if (bus.connection_type != ast_nodes.Connection.INPUT) and \
                         (not bus.is_assigned):
                     warn(
                         f'Bus "{bus_id}" has not been assigned.',
                         UserWarning
                     )
 
-                if (bus.conn != ast_nodes.Connection.OUTPUT) and \
+                if (bus.connection_type != ast_nodes.Connection.OUTPUT) and \
                         (not bus.is_read):
                     warn(f'Bus "{bus_id}" is never read', UserWarning)
 
@@ -176,11 +151,9 @@ class Builder:
                             ),
                             comp.line_number
                         )
-                    else:
-                        is_main_comp_found = True
-                        main_component = self.vst_comp(comp)
-                else:
-                    self.vst_comp(comp)
+
+                    is_main_comp_found = True
+                    main_component = self.vst_comp(comp)
 
             if not is_main_comp_found:
                 raise SemanticalError(
@@ -196,14 +169,15 @@ class Builder:
         return main_component
 
     def vst_comp(self, comp: ast_nodes.Comp) -> Component:
-        if comp.id in self.bus_symbol_table.keys():
+        if comp.id in self.symbol_table.components.keys():
             raise SemanticalError(
                 f'Component "{comp.id}" has already been declared.',
                 comp.line_number
             )
 
         component = Component(comp.id)
-        self.bus_symbol_table[comp.id] = self.get_components_bus_table(comp)
+        self.symbol_table.components[comp.id] = self.init_component_table(comp)
+        print(f'{self.symbol_table}')
 
         for stmt in comp.stmts:
             if isinstance(stmt, ast_nodes.Assign):
@@ -229,10 +203,13 @@ class Builder:
             bit_bus.set_dimension(decl.dimension.size)
 
         if decl.assign is not None:
-            self.bus_symbol_table[component.id][decl.id].is_assigned = (
-                Assigned.ASSIGNED
+            # Mark the bus as assigned in the symbol table
+            bus_symbol = (
+                self.symbol_table.components[component.id].buses[decl.id]
             )
+            bus_symbol.is_assigned = Assigned.ASSIGNED
 
+            # Create the bus assignment
             bit_bus.assignment = self.vst_expr(component, decl.assign)
             bit_bus.sensitivity_list = self.get_sensitivity_list(decl.assign)
 
@@ -241,41 +218,43 @@ class Builder:
     def vst_assign(
             self, component: Component, assign: ast_nodes.Assign
     ) -> None:
-        if assign.destiny.id not in self.bus_symbol_table[component.id]:
+        if assign.destiny.id not in \
+                self.symbol_table.components[component.id].buses.keys():
             # All destiny signals must be declared previously
             raise SemanticalError(
                 f'Identifier "{assign.destiny.id}" has not been declared.',
                 assign.destiny.line_number
             )
-        elif (
-            self.bus_symbol_table[component.id][assign.destiny.id].is_assigned
-        ):
+
+        bus = (
+            self.symbol_table.components[component.id].buses[assign.destiny.id]
+        )
+
+        if bus.is_assigned == Assigned.ASSIGNED:
             # Destiny signal cannot be assigned more than once
             raise SemanticalError(
                 f'Identifier "{assign.destiny.id}" already assigned.',
                 assign.destiny.line_number
             )
-        elif self.bus_symbol_table[component.id][assign.destiny.id].conn == (
-            ast_nodes.Connection.INPUT
-        ):
+
+        if bus.connection_type == ast_nodes.Connection.INPUT:
             # Input buses cannot be assigned
             raise SemanticalError(
                 f'Input Buses like "{assign.destiny.id}" cannot be assigned.',
                 assign.destiny.line_number
             )
-        else:
-            # Mark the bus as assigned in the symbol table
-            bus = self.bus_symbol_table[component.id][assign.destiny.id]
-            bus.is_assigned = Assigned.ASSIGNED
-            # Create the assignment callable and put in the assignment field
-            component.bus_dict[assign.destiny.id].assignment = self.vst_expr(
-                component,
-                assign.expr
-            )
-            # Get the sensitivity list for the assignment expression
-            component.bus_dict[assign.destiny.id].sensitivity_list = (
-                self.get_sensitivity_list(assign.expr)
-            )
+
+        # Mark the bus as assigned in the symbol table
+        bus.is_assigned = Assigned.ASSIGNED
+        # Create the assignment callable and put in the assignment field
+        component.bus_dict[assign.destiny.id].assignment = self.vst_expr(
+            component,
+            assign.expr
+        )
+        # Get the sensitivity list for the assignment expression
+        component.bus_dict[assign.destiny.id].sensitivity_list = (
+            self.get_sensitivity_list(assign.expr)
+        )
 
     def vst_expr(self, component, expr):
         assignment = self.vst_expr_elem(component, expr)
@@ -295,19 +274,23 @@ class Builder:
             )
 
         if isinstance(expr_elem, ast_nodes.Identifier):
-            if expr_elem.id not in self.bus_symbol_table[component.id]:
+            if expr_elem.id not in \
+                    self.symbol_table.components[component.id].buses.keys():
                 raise SemanticalError(
                     f'Identifier "{expr_elem.id}" has not been declared.',
                     expr_elem.line_number
                 )
 
-            self.bus_symbol_table[component.id][expr_elem.id].is_read = True
+            bus_symbol = (
+                self.symbol_table.components[component.id].buses[expr_elem.id]
+            )
+            bus_symbol.is_read = True
 
             bus_id = BusRef(component, expr_elem.id)
 
             return bus_id
         elif isinstance(expr_elem, ast_nodes.BitField):
-            if not isinstance(expr_elem.value, BusValue):
+            if not isinstance(expr_elem.value, Value):
                 assert False, f'Invalid bus value: {expr_elem.value}'
 
             bus_value = expr_elem.value  # change name for better readability
@@ -327,8 +310,8 @@ class Builder:
                 'Right expression of And operation cannot be None.'
             )
 
-            l_expr: BusValue = self.vst_expr_elem(component, expr_elem.l_expr)
-            r_expr: BusValue = self.vst_expr_elem(component, expr_elem.r_expr)
+            l_expr = self.vst_expr_elem(component, expr_elem.l_expr)
+            r_expr = self.vst_expr_elem(component, expr_elem.r_expr)
 
             return And(l_expr, r_expr)
         elif isinstance(expr_elem, ast_nodes.OrOp):

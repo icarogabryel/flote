@@ -47,7 +47,11 @@ class Bus(Evaluator):
             self.value = self.assignment.evaluate()
 
 
-class BitBusValue(Evaluator):
+class Value(Evaluator):
+    """This class represents a value in the circuit."""
+
+
+class BitBusValue(Value):
     """This class represents a value of a BitBus."""
     def __init__(self, value: list[bool] = [False]) -> None:
         self.value = value
