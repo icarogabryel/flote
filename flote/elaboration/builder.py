@@ -81,7 +81,7 @@ class Builder:
         return sensitivity_list
 
     def init_component_table(
-        self, comp: ast_nodes.Comp
+        self, comp: ast_nodes.Comp, component: Component
     ) -> CompTable:
         """Get the component's bus symbol table."""
         comp_table: CompTable = CompTable()
@@ -108,6 +108,8 @@ class Builder:
                     Assigned.NOT_ASSIGNED,
                     decl.conn
                 )
+
+                component.bus_dict[decl.id] = BitBus()
 
         return comp_table
 
@@ -176,8 +178,10 @@ class Builder:
             )
 
         component = Component(comp.id)
-        self.symbol_table.components[comp.id] = self.init_component_table(comp)
-        print(f'{self.symbol_table}')
+        self.symbol_table.components[comp.id] = self.init_component_table(
+            comp,
+            component
+        )
 
         for stmt in comp.stmts:
             if isinstance(stmt, ast_nodes.Assign):
@@ -192,7 +196,7 @@ class Builder:
         return component
 
     def vst_decl(self, component: Component, decl: ast_nodes.Decl) -> None:
-        bit_bus = BitBus()
+        bit_bus = component.bus_dict[decl.id]
 
         if decl.conn == ast_nodes.Connection.INPUT:
             component.inputs.append(decl.id)
@@ -212,8 +216,6 @@ class Builder:
             # Create the bus assignment
             bit_bus.assignment = self.vst_expr(component, decl.assign)
             bit_bus.sensitivity_list = self.get_sensitivity_list(decl.assign)
-
-        component.bus_dict[decl.id] = bit_bus
 
     def vst_assign(
             self, component: Component, assign: ast_nodes.Assign
