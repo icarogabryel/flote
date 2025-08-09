@@ -9,6 +9,7 @@ def test():
     half_adder = ft.elaborate_from_file(
         BASE_DIR / 'tests/examples/HalfAdder.ft'
     )
+    print(half_adder)
 
     half_adder.stimulate({'a': '0', 'b': '0'})
     half_adder.wait(10)

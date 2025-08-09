@@ -109,8 +109,6 @@ class Builder:
                     decl.conn
                 )
 
-                component.bus_dict[decl.id] = BitBus()
-
         return comp_table
 
     def validate_bus_symbol_table(self):
@@ -196,7 +194,7 @@ class Builder:
         return component
 
     def vst_decl(self, component: Component, decl: ast_nodes.Decl) -> None:
-        bit_bus = component.bus_dict[decl.id]
+        bit_bus = BitBus()
 
         if decl.conn == ast_nodes.Connection.INPUT:
             component.inputs.append(decl.id)
@@ -216,6 +214,8 @@ class Builder:
             # Create the bus assignment
             bit_bus.assignment = self.vst_expr(component, decl.assign)
             bit_bus.sensitivity_list = self.get_sensitivity_list(decl.assign)
+
+        component.bus_dict[decl.id] = bit_bus
 
     def vst_assign(
             self, component: Component, assign: ast_nodes.Assign
@@ -249,6 +249,15 @@ class Builder:
         # Mark the bus as assigned in the symbol table
         bus.is_assigned = Assigned.ASSIGNED
         # Create the assignment callable and put in the assignment field
+        if component.bus_dict.get(assign.destiny.id) is None:
+            raise SemanticalError(
+                (
+                    f'Identifier "{assign.destiny.id}" has not been declared '
+                    'before.'
+                ),
+                assign.destiny.line_number
+            )
+
         component.bus_dict[assign.destiny.id].assignment = self.vst_expr(
             component,
             assign.expr
