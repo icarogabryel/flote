@@ -1,4 +1,4 @@
-from ..model.busses import BitBusValue
+from ..simulation.busses import BitBusValue
 from . import ast_nodes
 from .scanner import Token
 

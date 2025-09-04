@@ -1,7 +1,7 @@
 from .elaboration.builder import Builder
 from .elaboration.parser import Parser
 from .elaboration.scanner import Scanner
-from .model.test_bench import TestBench
+from .simulation.test_bench import TestBench
 
 
 def elaborate(code) -> TestBench:

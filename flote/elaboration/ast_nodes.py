@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from enum import Enum
 from typing import Optional, Union
 
-from ..model.busses import BusValue
+from ..simulation.busses import BusValue
 
 
 class Connection(Enum):
