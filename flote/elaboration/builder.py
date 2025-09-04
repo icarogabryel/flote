@@ -314,6 +314,7 @@ class Builder:
 
             return Not(expr)
         elif isinstance(expr_elem, ast_nodes.AndOp):
+            #TODO put a function for those asserts
             assert expr_elem.l_expr is not None, (
                 'Left expression of And operation cannot be None.'
             )

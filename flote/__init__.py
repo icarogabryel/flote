@@ -1,11 +1,10 @@
-from flote.model.component import Component
-
 from .elaboration.builder import Builder
 from .elaboration.parser import Parser
 from .elaboration.scanner import Scanner
+from .model.test_bench import TestBench
 
 
-def elaborate(code) -> Component:
+def elaborate(code) -> TestBench:
     scanner = Scanner(code)
     tokens_stream = scanner.token_stream
 
@@ -15,7 +14,9 @@ def elaborate(code) -> Component:
     builder = Builder(ast)
     model = builder.get_model()
 
-    return model
+    test_bench = TestBench(model)
+
+    return test_bench
 
 
 def elaborate_from_file(file_path):

@@ -11,27 +11,27 @@ def test():
     )
     print(half_adder)
 
-    half_adder.stimulate({'a': '0', 'b': '0'})
+    half_adder.update({'a': '0', 'b': '0'})
     half_adder.wait(10)
 
     print(half_adder)
 
-    half_adder.stimulate({'a': '0', 'b': '1'})
+    half_adder.update({'a': '0', 'b': '1'})
     half_adder.wait(10)
 
     print(half_adder)
 
-    half_adder.stimulate({'a': '1', 'b': '0'})
+    half_adder.update({'a': '1', 'b': '0'})
     half_adder.wait(10)
 
     print(half_adder)
 
-    half_adder.stimulate({'a': '1', 'b': '1'})
+    half_adder.update({'a': '1', 'b': '1'})
     half_adder.wait(10)
 
     print(half_adder)
 
-    # half_adder.save_vcd(FILE_DIR / 'waves/HalfAdder.vcd')
+    half_adder.save_vcd('HalfAdder.vcd')
 
 
 if __name__ == '__main__':
