@@ -1,8 +1,18 @@
 # Building and Editing Flote
 
+## 1. Installing in Editable Mode
+
+If you want to install the package in editable mode, which is useful for development, you can use:
+
+```bash
+pip install -e .
+```
+
+## 2. Building the Package
+
 In order to build and edit the Flote package, you need to follow these steps:
 
-## 1. Install Dependencies
+### 1. Install Dependencies
 
 Install the required dependencies and run the application using the following commands:
 
@@ -10,7 +20,7 @@ Install the required dependencies and run the application using the following co
 pip install -r requirements.txt
 ```
 
-## 2. Build the Package
+### 2. Build the Package
 
 To build the package, you can use the following command:
 
@@ -18,7 +28,7 @@ To build the package, you can use the following command:
 python setup.py sdist bdist_wheel
 ```
 
-## 3. Install the Package
+### 3. Install the Package
 
 To install the package, use the following command:
 
@@ -26,15 +36,7 @@ To install the package, use the following command:
 pip install dist/{package_name}.whl
 ```
 
-If you want to install the package in editable mode, which is useful for development, you can use:
-
-```bash
-pip install --config-settings editable-mode=strict -e .
-```
-
-The `--config-settings editable-mode=strict` option ensures that the pylance extension in VSCode recognizes the package.
-
-## 4. Publish the Package
+### 4. Publish the Package
 
 To publish the package to PyPI, you can use the following command:
 
