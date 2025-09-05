@@ -2,16 +2,26 @@
 This module have classes responsible for registering the signals values and
 controlling time in them simulation.
 """
-
 from datetime import datetime
 
-from .busses import Evaluator
 from .component import Component
 
 
 VERSION = '0.1.2'
 CODENAME = 'Gambiarra'
 VALID_UNITS = ['fs', 'ps', 'ns', 'us', 'ms', 's']
+
+
+class Signal:
+    """
+    This class represents a signal in the simulation.
+    """
+    def __init__(self, id: str, value: str) -> None:
+        self.id = id
+        self.value = value
+
+    def __repr__(self) -> str:
+        return f'Signal {self.id}: {self.value}'
 
 
 class WaveSample:
@@ -22,7 +32,7 @@ class WaveSample:
         self.time = time
 
         # signals is a tuple of signal name and value
-        self.signals: list[tuple[str, Evaluator]] = signals
+        self.signals: list[Signal] = signals
 
 
 class TestBench:
@@ -78,8 +88,8 @@ class TestBench:
             datasec += f"\n#{sample.time}\n\n"
 
             for signal in sample.signals:
-                bits = f'b{signal[1]}'
-                datasec += f"{bits} {signal[0]}\n"
+                bits = f'b{signal.value}'
+                datasec += f"{bits} {signal.id}\n"
 
         return header + datasec + f'\n#{self.s_time}\n'
 
@@ -95,6 +105,6 @@ class TestBench:
         sample = WaveSample(self.s_time, [])
 
         for id, bit in self.component.bus_dict.items():
-            sample.signals.append((id, bit.value.get_vcd_repr()))
+            sample.signals.append(Signal(id, bit.value.get_vcd_repr()))
 
         self.samples.append(sample)
