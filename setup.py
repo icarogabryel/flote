@@ -4,7 +4,7 @@ It is used to package and distribute the Flote library.
 """
 from setuptools import setup
 
-from flote.simulation.component import VERSION
+from flote.simulation.test_bench import VERSION
 
 
 with open('README.md', 'r', encoding='utf-8') as f:
