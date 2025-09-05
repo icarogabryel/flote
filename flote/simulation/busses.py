@@ -1,16 +1,6 @@
 import re
 from abc import ABC, abstractmethod
-from typing import Any, Optional, Union
-
-
-BusValue = Union['BitBusValue']
-
-
-class VcdValue(ABC):
-    @abstractmethod
-    def __str__(self) -> str:
-        pass
-
+from typing import Any, Optional
 
 class Evaluator(ABC):
     """Base class for all evaluators."""
@@ -20,17 +10,50 @@ class Evaluator(ABC):
         pass
 
 
+class VcdValue(ABC):
+    """This base class represents a value that can be represented in a VCD file."""
+    @abstractmethod
+    def get_vcd_repr(self) -> str:
+        pass
+
+
+class BusValue(VcdValue):
+    """This class represents a value in the circuit."""
+    def __init__(self, value=None) -> None:
+        self.value: Any = self.get_default() if value is None else value
+
+    @abstractmethod
+    def get_default(self) -> Any:
+        pass
+
+    @abstractmethod
+    def __invert__(self) -> 'BusValue':
+        pass
+
+    @abstractmethod
+    def __and__(self, other: 'BusValue') -> 'BusValue':
+        pass
+
+    @abstractmethod
+    def __or__(self, other: 'BusValue') -> 'BusValue':
+        pass
+
+    @abstractmethod
+    def __xor__(self, other: 'BusValue') -> 'BusValue':
+        pass
+
+
 class Bus(Evaluator):
     """This class represents a bus in the circuit."""
     def __init__(self) -> None:
         # The assignment of the bus. It can be an expression or None.
-        self.assignment: Optional[Evaluator] = None
-        self.value: Evaluator = self.get_default()  # The value of the bus.
+        self.assignment: Optional[Evaluator | BusValue] = None
+        self.value: BusValue = self.get_default()  # The value of the bus.
         # The list of buses that the current bus depends on.
         self.sensitivity_list: list[str] = []
 
     @abstractmethod
-    def get_default(self) -> Evaluator:
+    def get_default(self) -> BusValue:
         """This method returns the default value of the bus."""
         pass
 
@@ -45,7 +68,7 @@ class Bus(Evaluator):
         pass
 
     def evaluate(self):
-        return self.value.evaluate()
+        return self.value
 
     def assign(self):
         """Do the assignment of the bus when not None."""
@@ -53,44 +76,40 @@ class Bus(Evaluator):
             self.value = self.assignment.evaluate()
 
 
-class Value(Evaluator, VcdValue):
-    """This class represents a value in the circuit."""
-
-
-class BitBusValue(Value):
+class BitBusValue(BusValue):
     """This class represents a value of a BitBus."""
-    def __init__(self, value: list[bool] = [False]) -> None:
-        self.value = value
-
     def __repr__(self):
         return f'{self.value}'
 
-    def __str__(self):
+    def get_vcd_repr(self):
         value = ''.join(['1' if bit else '0' for bit in self.value])
 
         return value
 
-    # * Operators overloading
+    def get_default(self) -> list[bool]:
+        return [False]
+
+    #* Operators overloading
     def __invert__(self) -> 'BitBusValue':
+        assert self.value is not None
+
         return BitBusValue([not bit for bit in self.value])
 
     def __and__(self, other: 'BitBusValue') -> 'BitBusValue':
+        assert self.value is not None
         if len(self.value) != len(other.value):
             raise ValueError("BitBusValue operands must have the same length")
         return BitBusValue([a and b for a, b in zip(self.value, other.value)])
 
     def __or__(self, other: 'BitBusValue') -> 'BitBusValue':
         if len(self.value) != len(other.value):
+            #TODO Remove, this  should be handled in elaboration phase.
             raise ValueError("BitBusValue operands must have the same length")
         return BitBusValue([a or b for a, b in zip(self.value, other.value)])
 
     def __xor__(self, other: 'BitBusValue') -> 'BitBusValue':
         return BitBusValue([a ^ b for a, b in zip(self.value, other.value)])
-    # * End of operators overloading
-
-    def evaluate(self):
-        """Evaluate the BitBusValue."""
-        return self
+    #* End of operators overloading
 
 
 class BitBus(Bus):

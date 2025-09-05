@@ -93,6 +93,6 @@ class TestBench:
         sample = WaveSample(self.s_time, [])
 
         for id, bit in self.component.bus_dict.items():
-            sample.signals.append((id, bit.value.__str__()))
+            sample.signals.append((id, bit.value.get_vcd_repr()))
 
         self.samples.append(sample)

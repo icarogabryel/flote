@@ -2,7 +2,7 @@ from enum import Enum
 from typing import Optional
 from warnings import warn
 
-from ..simulation.busses import Value
+from ..simulation.busses import BusValue
 from ..simulation.component import BitBus, Component
 from ..simulation.expr_nodes import And, BusRef, Nand, Nor, Not, Or, Xnor, Xor
 from . import ast_nodes
@@ -301,7 +301,7 @@ class Builder:
 
             return bus_id
         elif isinstance(expr_elem, ast_nodes.BitField):
-            if not isinstance(expr_elem.value, Value):
+            if not isinstance(expr_elem.value, BusValue):
                 assert False, f'Invalid bus value: {expr_elem.value}'
 
             bus_value = expr_elem.value  # change name for better readability
