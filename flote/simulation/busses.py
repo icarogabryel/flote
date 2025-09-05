@@ -21,7 +21,7 @@ class VcdValue(ABC):
 class BusValue(VcdValue):
     """This class represents a value in the circuit."""
     def __init__(self, value=None) -> None:
-        self.value: Any = self.get_default() if value is None else value
+        self.raw_value: Any = self.get_default() if value is None else value
 
     @abstractmethod
     def get_default(self) -> Any:
@@ -80,10 +80,10 @@ class Bus(Evaluator):
 class BitBusValue(BusValue):
     """This class represents a value of a BitBus."""
     def __repr__(self):
-        return f'{self.value}'
+        return f'{self.raw_value}'
 
     def get_vcd_repr(self):
-        value = ''.join(['1' if bit else '0' for bit in self.value])
+        value = ''.join(['1' if bit else '0' for bit in self.raw_value])
 
         return value
 
@@ -92,21 +92,21 @@ class BitBusValue(BusValue):
 
     #* Operators overloading
     def __invert__(self) -> 'BitBusValue':
-        return BitBusValue([not bit for bit in self.value])
+        return BitBusValue([not bit for bit in self.raw_value])
 
     def __and__(self, other) -> 'BitBusValue':
-        if len(self.value) != len(other.value):
+        if len(self.raw_value) != len(other.raw_value):
             raise ValueError("BitBusValue operands must have the same length")
-        return BitBusValue([a and b for a, b in zip(self.value, other.value)])
+        return BitBusValue([a and b for a, b in zip(self.raw_value, other.raw_value)])
 
     def __or__(self, other) -> 'BitBusValue':
-        if len(self.value) != len(other.value):
+        if len(self.raw_value) != len(other.raw_value):
             #TODO Remove, this  should be handled in elaboration phase.
             raise ValueError("BitBusValue operands must have the same length")
-        return BitBusValue([a or b for a, b in zip(self.value, other.value)])
+        return BitBusValue([a or b for a, b in zip(self.raw_value, other.raw_value)])
 
     def __xor__(self, other) -> 'BitBusValue':
-        return BitBusValue([a ^ b for a, b in zip(self.value, other.value)])
+        return BitBusValue([a ^ b for a, b in zip(self.raw_value, other.raw_value)])
     #* End of operators overloading
 
 
