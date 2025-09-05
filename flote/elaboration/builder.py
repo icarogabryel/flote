@@ -2,8 +2,8 @@ from enum import Enum
 from typing import Optional
 from warnings import warn
 
-from ..simulation.busses import BusValue
-from ..simulation.component import BitBus, Component
+from ..simulation.busses import BitBus, BusValue
+from ..simulation.component import Component
 from ..simulation.expr_nodes import (And, BusRef, Const, Nand, Nor, Not, Or,
                                      Xnor, Xor)
 from . import ast_nodes

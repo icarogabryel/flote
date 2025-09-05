@@ -59,8 +59,10 @@ class TestBench:
 
         header_declaration = f'\n$scope module {self.component.id} $end\n'
 
-        for bit in self.component.bus_dict:
-            header_declaration += f'\t$var wire 1 {bit} {bit} $end\n'
+        for bit_name, bit_bus in self.component.bus_dict.items():
+            header_declaration += (
+                f'\t$var wire {len(bit_bus.value.raw_value)} {bit_name} {bit_name} $end\n'
+            )
 
         header_declaration += '$upscope $end\n\n' \
 

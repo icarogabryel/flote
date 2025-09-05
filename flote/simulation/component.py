@@ -1,4 +1,4 @@
-from .busses import BitBus
+from .busses import Bus
 
 
 class Component():
@@ -16,7 +16,7 @@ class Component():
     """
     def __init__(self, id) -> None:
         self.id: str = id
-        self.bus_dict: dict[str, BitBus] = {}
+        self.bus_dict: dict[str, Bus] = {}
         self.inputs: list[str] = []
         self.influence_list: dict[str, list[str]] = {}
 
