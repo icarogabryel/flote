@@ -12,7 +12,7 @@ def elaborate(code) -> TestBench:
     ast = parser.ast
 
     builder = Builder(ast)
-    model = builder.get_model()
+    model = builder.get_component()
 
     test_bench = TestBench(model)
 

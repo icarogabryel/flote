@@ -34,10 +34,11 @@ class Builder:
     def __init__(self, ast) -> None:
         self.ast: ast_nodes.Mod = ast
         self.symbol_table: SymbolTable = SymbolTable()
-        self.model: Component = self.vst_mod(self.ast)
+        self.components: dict[str, Component] = {}
+        self.main_component: Component = self.vst_mod(self.ast)
 
-    def get_model(self) -> Component:
-        return self.model
+    def get_component(self) -> Component:
+        return self.main_component
 
     def get_sensitivity_list(self, expr_elem: ast_nodes.ExprElem) -> list[str]:
         """
@@ -135,7 +136,10 @@ class Builder:
             raise SemanticalError('Module is empty.')
 
         if len(mod.comps) == 1:
-            return self.vst_comp(mod.comps[0])
+            component = self.vst_comp(mod.comps[0])
+            self.components[mod.comps[0].id] = component
+
+            return component
 
         # If there are multiple components, we assume one of them is the main
         else:
@@ -143,6 +147,10 @@ class Builder:
             main_component: Optional[Component] = None
 
             for comp in mod.comps:  # Search for the main component
+                # Add component to the components dict
+                component = self.vst_comp(comp)
+                self.components[comp.id] = component
+
                 if comp.is_main:
                     if is_main_comp_found:
                         raise SemanticalError(
@@ -154,7 +162,7 @@ class Builder:
                         )
 
                     is_main_comp_found = True
-                    main_component = self.vst_comp(comp)
+                    main_component = component
 
             if not is_main_comp_found:
                 raise SemanticalError(

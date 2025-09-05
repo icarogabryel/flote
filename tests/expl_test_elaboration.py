@@ -46,7 +46,7 @@ def main():
 
                 ast = parser.ast
                 builder = Builder(ast)
-                print(builder.get_model())
+                print(builder.get_component())
 
 
 if __name__ == "__main__":
