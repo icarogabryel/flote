@@ -6,6 +6,12 @@ from typing import Any, Optional, Union
 BusValue = Union['BitBusValue']
 
 
+class VcdValue(ABC):
+    @abstractmethod
+    def __str__(self) -> str:
+        pass
+
+
 class Evaluator(ABC):
     """Base class for all evaluators."""
     @abstractmethod
@@ -47,7 +53,7 @@ class Bus(Evaluator):
             self.value = self.assignment.evaluate()
 
 
-class Value(Evaluator):
+class Value(Evaluator, VcdValue):
     """This class represents a value in the circuit."""
 
 
@@ -60,7 +66,9 @@ class BitBusValue(Value):
         return f'{self.value}'
 
     def __str__(self):
-        return f'{self.value}'
+        value = ''.join(['1' if bit else '0' for bit in self.value])
+
+        return value
 
     # * Operators overloading
     def __invert__(self) -> 'BitBusValue':

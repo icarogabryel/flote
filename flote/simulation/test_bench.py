@@ -22,7 +22,7 @@ class WaveSample:
         self.time = time
 
         # signals is a tuple of signal name and value
-        self.signals: list[tuple[Evaluator, str]] = signals
+        self.signals: list[tuple[str, Evaluator]] = signals
 
 
 class TestBench:
@@ -38,9 +38,6 @@ class TestBench:
     def wait(self, time: int) -> None:
         """This method waits for a certain time."""
         self.s_time += time
-
-    def add_sample(self, sample: WaveSample):
-        self.samples.append(sample)
 
     def set_time_unit(self, time_unit: str) -> None:
         if time_unit not in VALID_UNITS:
@@ -79,12 +76,8 @@ class TestBench:
             datasec += f"\n#{sample.time}\n\n"
 
             for signal in sample.signals:
-                #! FIXME:
-                sig_string = str(signal[0])
-                if len(sig_string) > 1:  # Bus
-                    datasec += f'b{sig_string} {signal[1]}\n'
-                else:  # Bit
-                    datasec += f"{int(signal[0])}{signal[1]}\n"
+                bits = f'b{signal[1]}'
+                datasec += f"{bits} {signal[0]}\n"
 
         return header + datasec + f'\n#{self.s_time}\n'
 
@@ -100,6 +93,6 @@ class TestBench:
         sample = WaveSample(self.s_time, [])
 
         for id, bit in self.component.bus_dict.items():
-            sample.signals.append((bit.value, id))
+            sample.signals.append((id, bit.value.__str__()))
 
         self.samples.append(sample)
