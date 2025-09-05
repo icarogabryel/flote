@@ -1,4 +1,4 @@
-from .busses import Bus, Evaluator
+from .busses import BusValue, Evaluator
 from .component import Component
 
 
@@ -11,8 +11,8 @@ class BusRef(Evaluator):
     def __repr__(self) -> str:
         return self.id
 
-    def evaluate(self) -> Bus:
-        return self.component.bus_dict[self.id].evaluate()
+    def evaluate(self) -> BusValue:
+        return self.component.bus_dict[self.id].value
 
 
 #TODO type all this
