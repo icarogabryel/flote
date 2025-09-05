@@ -15,6 +15,17 @@ class BusRef(Evaluator):
         return self.component.bus_dict[self.id].value
 
 
+class Const(Evaluator):
+    def __init__(self, value: BusValue) -> None:
+        self.value = value
+
+    def __repr__(self) -> str:
+        return f'Const({self.value})'
+
+    def evaluate(self) -> BusValue:
+        return self.value
+
+
 #TODO type all this
 class UnaryOperation(Evaluator):
     def __init__(self, expr: Evaluator) -> None:

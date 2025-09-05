@@ -4,7 +4,8 @@ from warnings import warn
 
 from ..simulation.busses import BusValue
 from ..simulation.component import BitBus, Component
-from ..simulation.expr_nodes import And, BusRef, Nand, Nor, Not, Or, Xnor, Xor
+from ..simulation.expr_nodes import (And, BusRef, Const, Nand, Nor, Not, Or,
+                                     Xnor, Xor)
 from . import ast_nodes
 from .symbol_table import BusSymbol, CompTable, SymbolTable
 
@@ -304,7 +305,7 @@ class Builder:
             if not isinstance(expr_elem.value, BusValue):
                 assert False, f'Invalid bus value: {expr_elem.value}'
 
-            bus_value = expr_elem.value  # change name for better readability
+            bus_value = Const(expr_elem.value)  # change name for better readability
 
             return bus_value
         elif isinstance(expr_elem, ast_nodes.NotOp):

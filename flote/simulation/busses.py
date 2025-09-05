@@ -2,6 +2,7 @@ import re
 from abc import ABC, abstractmethod
 from typing import Any, Optional
 
+
 class Evaluator(ABC):
     """Base class for all evaluators."""
     @abstractmethod
@@ -47,7 +48,7 @@ class Bus(Evaluator):
     """This class represents a bus in the circuit."""
     def __init__(self) -> None:
         # The assignment of the bus. It can be an expression or None.
-        self.assignment: Optional[Evaluator | BusValue] = None
+        self.assignment: Optional[Evaluator] = None
         self.value: BusValue = self.get_default()  # The value of the bus.
         # The list of buses that the current bus depends on.
         self.sensitivity_list: list[str] = []
@@ -91,23 +92,20 @@ class BitBusValue(BusValue):
 
     #* Operators overloading
     def __invert__(self) -> 'BitBusValue':
-        assert self.value is not None
-
         return BitBusValue([not bit for bit in self.value])
 
-    def __and__(self, other: 'BitBusValue') -> 'BitBusValue':
-        assert self.value is not None
+    def __and__(self, other) -> 'BitBusValue':
         if len(self.value) != len(other.value):
             raise ValueError("BitBusValue operands must have the same length")
         return BitBusValue([a and b for a, b in zip(self.value, other.value)])
 
-    def __or__(self, other: 'BitBusValue') -> 'BitBusValue':
+    def __or__(self, other) -> 'BitBusValue':
         if len(self.value) != len(other.value):
             #TODO Remove, this  should be handled in elaboration phase.
             raise ValueError("BitBusValue operands must have the same length")
         return BitBusValue([a or b for a, b in zip(self.value, other.value)])
 
-    def __xor__(self, other: 'BitBusValue') -> 'BitBusValue':
+    def __xor__(self, other) -> 'BitBusValue':
         return BitBusValue([a ^ b for a, b in zip(self.value, other.value)])
     #* End of operators overloading
 
