@@ -165,6 +165,7 @@ class Parser:
         assert token.lexeme.isdigit(), (
             f"Token lexeme '{token.lexeme}' is not a valid integer"
         )
+
         size = int(token.lexeme)
 
         # Logically, the lexeme of a decimal token should never be a negative

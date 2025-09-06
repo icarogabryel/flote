@@ -82,15 +82,15 @@ class Builder:
 
         return sensitivity_list
 
-    def init_component_table(
-        self, comp: ast_nodes.Comp, component: Component
-    ) -> CompTable:
+    def init_component_table(self, comp: ast_nodes.Comp, component: Component) -> CompTable:
         """Get the component's bus symbol table."""
         comp_table: CompTable = CompTable()
 
         for stmt in comp.stmts:
             if isinstance(stmt, ast_nodes.Decl):
                 decl = stmt  # Name change for better readability
+                is_assigned = Assigned.NOT_ASSIGNED
+                size = 1
 
                 if decl.id in comp_table.buses.keys():
                     raise SemanticalError(
@@ -98,17 +98,24 @@ class Builder:
                         decl.line_number
                     )
 
-                if (decl.conn == ast_nodes.Connection.INPUT) and \
-                        (decl.assign is not None):
-                    raise SemanticalError(
-                        f'Input Buses like {decl.id} cannot be assigned.',
-                        decl.line_number
-                    )
+                if decl.assign is not None:
+                    if (decl.conn == ast_nodes.Connection.INPUT):
+                        raise SemanticalError(
+                            f'Input Buses like {decl.id} cannot be assigned.',
+                            decl.line_number
+                        )
+
+                    # Mark the bus as assigned in the symbol table
+                    is_assigned = Assigned.ASSIGNED
+
+                if decl.dimension is not None:
+                    size = decl.dimension.size
 
                 comp_table.buses[decl.id] = BusSymbol(
                     decl.type,
-                    Assigned.NOT_ASSIGNED,
-                    decl.conn
+                    is_assigned,
+                    decl.conn,
+                    size
                 )
 
         return comp_table
@@ -214,32 +221,21 @@ class Builder:
             bit_bus.set_dimension(decl.dimension.size)
 
         if decl.assign is not None:
-            # Mark the bus as assigned in the symbol table
-            bus_symbol = (
-                self.symbol_table.components[component.id].buses[decl.id]
-            )
-            bus_symbol.is_assigned = Assigned.ASSIGNED
-
             # Create the bus assignment
             bit_bus.assignment = self.vst_expr(component, decl.assign)
             bit_bus.sensitivity_list = self.get_sensitivity_list(decl.assign)
 
         component.bus_dict[decl.id] = bit_bus
 
-    def vst_assign(
-            self, component: Component, assign: ast_nodes.Assign
-    ) -> None:
-        if assign.destiny.id not in \
-                self.symbol_table.components[component.id].buses.keys():
+    def vst_assign(self, component: Component, assign: ast_nodes.Assign) -> None:
+        if assign.destiny.id not in self.symbol_table.components[component.id].buses.keys():
             # All destiny signals must be declared previously
             raise SemanticalError(
                 f'Identifier "{assign.destiny.id}" has not been declared.',
                 assign.destiny.line_number
             )
 
-        bus = (
-            self.symbol_table.components[component.id].buses[assign.destiny.id]
-        )
+        bus = self.symbol_table.components[component.id].buses[assign.destiny.id]
 
         if bus.is_assigned == Assigned.ASSIGNED:
             # Destiny signal cannot be assigned more than once
@@ -257,7 +253,9 @@ class Builder:
 
         # Mark the bus as assigned in the symbol table
         bus.is_assigned = Assigned.ASSIGNED
-        # Create the assignment callable and put in the assignment field
+
+        # Create the assignment and put in the assignment field
+        # TODO change to make run if declaration is after assignment
         if component.bus_dict.get(assign.destiny.id) is None:
             raise SemanticalError(
                 (
@@ -281,13 +279,9 @@ class Builder:
 
         return assignment
 
-    def vst_expr_elem(
-        self, component: Component, expr_elem: ast_nodes.ExprElem
-    ):
+    def vst_expr_elem(self, component: Component, expr_elem: ast_nodes.ExprElem):
         """
-        Visit an expression element, validate it, and return a callable for
-        evaluation.
-        """
+        Visit an expression element, validate it, and return a callable for evaluation. """
         if expr_elem is None:
             raise SemanticalError(
                 'Expression element cannot be None.'
