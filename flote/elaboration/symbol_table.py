@@ -1,6 +1,6 @@
 class BusSymbol:
     """Class that represents a bus symbol in the symbol table."""
-    def __init__(self, type, is_assigned, connection_type, size):
+    def __init__(self, type, is_assigned, connection_type, size: int):
         self.type = type
         self.is_assigned = is_assigned
         self.connection_type = connection_type

@@ -228,10 +228,10 @@ class Parser:
         token = self.get_current_token()
 
         if token.label == 'or':
-            current_node = ast_nodes.OrOp()
+            current_node = ast_nodes.OrOp(self.get_current_token().line_number)
             self.advance()
         elif token.label == 'nor':
-            current_node = ast_nodes.NorOp()
+            current_node = ast_nodes.NorOp(self.get_current_token().line_number)
             self.advance()
         else:
             raise SyntacticalError(
@@ -281,11 +281,11 @@ class Parser:
         token = self.get_current_token()
 
         if token.label == 'xor':
-            current_node = ast_nodes.XorOp()
+            current_node = ast_nodes.XorOp(self.get_current_token().line_number)
             self.advance()
 
         elif token.label == 'xnor':
-            current_node = ast_nodes.XnorOp()
+            current_node = ast_nodes.XnorOp(self.get_current_token().line_number)
             self.advance()
 
         else:
@@ -327,11 +327,11 @@ class Parser:
         token = self.get_current_token()
 
         if token.label == 'and':
-            current_node = ast_nodes.AndOp()
+            current_node = ast_nodes.AndOp(self.get_current_token().line_number)
             self.advance()
 
         elif token.label == 'nand':
-            current_node = ast_nodes.NandOp()
+            current_node = ast_nodes.NandOp(self.get_current_token().line_number)
             self.advance()
 
         else:
@@ -368,12 +368,8 @@ class Parser:
             return identifier
 
         elif token_label == 'bit_field':
-            value = BitBusValue(
-                [
-                    bool(bit) for bit in
-                    self.get_current_token().lexeme.strip('"')
-                ]
-            )
+            value = self.get_current_token().lexeme.strip('"')
+
             self.advance()
 
             return ast_nodes.BitField(value)

@@ -2,7 +2,7 @@ from enum import Enum
 from typing import Optional
 from warnings import warn
 
-from ..simulation.busses import BitBus, BusValue
+from ..simulation.busses import BitBus, BitBusValue, Evaluator
 from ..simulation.component import Component
 from ..simulation.expr_nodes import (And, BusRef, Const, Nand, Nor, Not, Or,
                                      Xnor, Xor)
@@ -210,6 +210,12 @@ class Builder:
         return component
 
     def vst_decl(self, component: Component, decl: ast_nodes.Decl) -> None:
+        assert decl.id in self.symbol_table.components[component.id].buses.keys(), (
+            f'Bus "{decl.id}" has not been declared in the symbol table.'
+
+        )
+
+        bus_symbol = self.symbol_table.components[component.id].buses[decl.id]
         bit_bus = BitBus()
 
         if decl.conn == ast_nodes.Connection.INPUT:
@@ -222,7 +228,17 @@ class Builder:
 
         if decl.assign is not None:
             # Create the bus assignment
-            bit_bus.assignment = self.vst_expr(component, decl.assign)
+            bit_bus.assignment, size = self.vst_expr(component, decl.assign)
+
+            if size != bus_symbol.size:
+                raise SemanticalError(
+                    (
+                        f'Assignment size ({size}) does not match bus size '
+                        f'({bus_symbol.size}) for "{decl.id}".'
+                    ),
+                    decl.line_number
+                )
+
             bit_bus.sensitivity_list = self.get_sensitivity_list(decl.assign)
 
         component.bus_dict[decl.id] = bit_bus
@@ -235,16 +251,16 @@ class Builder:
                 assign.destiny.line_number
             )
 
-        bus = self.symbol_table.components[component.id].buses[assign.destiny.id]
+        bus_symbol = self.symbol_table.components[component.id].buses[assign.destiny.id]
 
-        if bus.is_assigned == Assigned.ASSIGNED:
+        if bus_symbol.is_assigned == Assigned.ASSIGNED:
             # Destiny signal cannot be assigned more than once
             raise SemanticalError(
                 f'Identifier "{assign.destiny.id}" already assigned.',
                 assign.destiny.line_number
             )
 
-        if bus.connection_type == ast_nodes.Connection.INPUT:
+        if bus_symbol.connection_type == ast_nodes.Connection.INPUT:
             # Input buses cannot be assigned
             raise SemanticalError(
                 f'Input Buses like "{assign.destiny.id}" cannot be assigned.',
@@ -252,7 +268,7 @@ class Builder:
             )
 
         # Mark the bus as assigned in the symbol table
-        bus.is_assigned = Assigned.ASSIGNED
+        bus_symbol.is_assigned = Assigned.ASSIGNED
 
         # Create the assignment and put in the assignment field
         # TODO change to make run if declaration is after assignment
@@ -265,10 +281,21 @@ class Builder:
                 assign.destiny.line_number
             )
 
-        component.bus_dict[assign.destiny.id].assignment = self.vst_expr(
+        assignment, size = self.vst_expr(
             component,
             assign.expr
         )
+
+        if size != bus_symbol.size:
+            raise SemanticalError(
+                (
+                    f'Assignment size ({size}) does not match bus size '
+                    f'({bus_symbol.size}) for "{assign.destiny.id}".'
+                ),
+                assign.destiny.line_number
+            )
+
+        component.bus_dict[assign.destiny.id].assignment = assignment
         # Get the sensitivity list for the assignment expression
         component.bus_dict[assign.destiny.id].sensitivity_list = (
             self.get_sensitivity_list(assign.expr)
@@ -279,9 +306,13 @@ class Builder:
 
         return assignment
 
-    def vst_expr_elem(self, component: Component, expr_elem: ast_nodes.ExprElem):
+    from typing import Tuple
+
+    def vst_expr_elem(self, component: Component, expr_elem: ast_nodes.ExprElem) -> Tuple[
+        Evaluator, int
+    ]:
         """
-        Visit an expression element, validate it, and return a callable for evaluation. """
+        Visit an expression element, validate it, and return a callable for evaluation."""
         if expr_elem is None:
             raise SemanticalError(
                 'Expression element cannot be None.'
@@ -295,27 +326,25 @@ class Builder:
                     expr_elem.line_number
                 )
 
-            bus_symbol = (
-                self.symbol_table.components[component.id].buses[expr_elem.id]
-            )
+            bus_symbol = self.symbol_table.components[component.id].buses[expr_elem.id]
             bus_symbol.is_read = True
+            size = bus_symbol.size
 
-            bus_id = BusRef(component, expr_elem.id)
+            bus_ref = BusRef(component, expr_elem.id)
 
-            return bus_id
+            return bus_ref, size
         elif isinstance(expr_elem, ast_nodes.BitField):
-            if not isinstance(expr_elem.value, BusValue):
-                assert False, f'Invalid bus value: {expr_elem.value}'
+            bit_field = expr_elem
+            bit_value = BitBusValue([bool(int(bit)) for bit in bit_field.value])
+            const = Const(bit_value)
 
-            bus_value = Const(expr_elem.value)  # change name for better readability
-
-            return bus_value
+            return const, bit_field.size
         elif isinstance(expr_elem, ast_nodes.NotOp):
             assert expr_elem.expr is not None, 'Expression cannot be None.'
 
-            expr = self.vst_expr_elem(component, expr_elem.expr)
+            expr, size = self.vst_expr_elem(component, expr_elem.expr)
 
-            return Not(expr)
+            return Not(expr), size
         elif isinstance(expr_elem, ast_nodes.AndOp):
             #TODO put a function for those asserts
             assert expr_elem.l_expr is not None, (
@@ -325,10 +354,16 @@ class Builder:
                 'Right expression of And operation cannot be None.'
             )
 
-            l_expr = self.vst_expr_elem(component, expr_elem.l_expr)
-            r_expr = self.vst_expr_elem(component, expr_elem.r_expr)
+            l_expr, l_size = self.vst_expr_elem(component, expr_elem.l_expr)
+            r_expr, r_size = self.vst_expr_elem(component, expr_elem.r_expr)
 
-            return And(l_expr, r_expr)
+            if l_size != r_size:
+                raise SemanticalError(
+                    'Left and right expressions of And operation must be the same size.',
+                    expr_elem.line_number
+                )
+
+            return And(l_expr, r_expr), l_size
         elif isinstance(expr_elem, ast_nodes.OrOp):
             assert expr_elem.l_expr is not None, (
                 'Left expression of Or operation cannot be None.'
@@ -337,10 +372,16 @@ class Builder:
                 'Right expression of Or operation cannot be None.'
             )
 
-            l_expr = self.vst_expr_elem(component, expr_elem.l_expr)
-            r_expr = self.vst_expr_elem(component, expr_elem.r_expr)
+            l_expr, l_size = self.vst_expr_elem(component, expr_elem.l_expr)
+            r_expr, r_size = self.vst_expr_elem(component, expr_elem.r_expr)
 
-            return Or(l_expr, r_expr)
+            if l_size != r_size:
+                raise SemanticalError(
+                    'Left and right expressions of And operation must be the same size.',
+                    expr_elem.line_number
+                )
+
+            return Or(l_expr, r_expr), l_size
         elif isinstance(expr_elem, ast_nodes.XorOp):
             assert expr_elem.l_expr is not None, (
                 'Left expression of Xor operation cannot be None.'
@@ -349,10 +390,16 @@ class Builder:
                 'Right expression of Xor operation cannot be None.'
             )
 
-            l_expr = self.vst_expr_elem(component, expr_elem.l_expr)
-            r_expr = self.vst_expr_elem(component, expr_elem.r_expr)
+            l_expr, l_size = self.vst_expr_elem(component, expr_elem.l_expr)
+            r_expr, r_size = self.vst_expr_elem(component, expr_elem.r_expr)
 
-            return Xor(l_expr, r_expr)
+            if l_size != r_size:
+                raise SemanticalError(
+                    'Left and right expressions of And operation must be the same size.',
+                    expr_elem.line_number
+                )
+
+            return Xor(l_expr, r_expr), l_size
         elif isinstance(expr_elem, ast_nodes.NandOp):
             assert expr_elem.l_expr is not None, (
                 'Left expression of Nand operation cannot be None.'
@@ -361,10 +408,16 @@ class Builder:
                 'Right expression of Nand operation cannot be None.'
             )
 
-            l_expr = self.vst_expr_elem(component, expr_elem.l_expr)
-            r_expr = self.vst_expr_elem(component, expr_elem.r_expr)
+            l_expr, l_size = self.vst_expr_elem(component, expr_elem.l_expr)
+            r_expr, r_size = self.vst_expr_elem(component, expr_elem.r_expr)
 
-            return Nand(l_expr, r_expr)
+            if l_size != r_size:
+                raise SemanticalError(
+                    'Left and right expressions of And operation must be the same size.',
+                    expr_elem.line_number
+                )
+
+            return Nand(l_expr, r_expr), l_size
         elif isinstance(expr_elem, ast_nodes.NorOp):
             assert expr_elem.l_expr is not None, (
                 'Left expression of Nor operation cannot be None.'
@@ -373,10 +426,16 @@ class Builder:
                 'Right expression of Nor operation cannot be None.'
             )
 
-            l_expr = self.vst_expr_elem(component, expr_elem.l_expr)
-            r_expr = self.vst_expr_elem(component, expr_elem.r_expr)
+            l_expr, l_size = self.vst_expr_elem(component, expr_elem.l_expr)
+            r_expr, r_size = self.vst_expr_elem(component, expr_elem.r_expr)
 
-            return Nor(l_expr, r_expr)
+            if l_size != r_size:
+                raise SemanticalError(
+                    'Left and right expressions of And operation must be the same size.',
+                    expr_elem.line_number
+                )
+
+            return Nor(l_expr, r_expr), l_size
         elif isinstance(expr_elem, ast_nodes.XnorOp):
             assert expr_elem.l_expr is not None, (
                 'Left expression of Xnor operation cannot be None.'
@@ -385,9 +444,15 @@ class Builder:
                 'Right expression of Xnor operation cannot be None.'
             )
 
-            l_expr = self.vst_expr_elem(component, expr_elem.l_expr)
-            r_expr = self.vst_expr_elem(component, expr_elem.r_expr)
+            l_expr, l_size = self.vst_expr_elem(component, expr_elem.l_expr)
+            r_expr, r_size = self.vst_expr_elem(component, expr_elem.r_expr)
 
-            return Xnor(l_expr, r_expr)
+            if l_size != r_size:
+                raise SemanticalError(
+                    'Left and right expressions of And operation must be the same size.',
+                    expr_elem.line_number
+                )
+
+            return Xnor(l_expr, r_expr), l_size
         else:
             assert False, f'Invalid expression element: {expr_elem}'

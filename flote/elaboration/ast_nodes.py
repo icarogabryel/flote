@@ -112,7 +112,7 @@ class Decl:
 class Dimension:
     def __init__(self, size=1, msb=Msb.ASCENDING) -> None:
         # Private to ensure size is set through the setter method
-        self.size: Optional[int] = size
+        self.size: int = size
         self.msb: Optional[Msb] = msb
 
     def __repr__(self) -> str:
@@ -157,6 +157,9 @@ class UnaryOp(ABC):
 class BinaryOp(ABC):
     l_expr: Optional[ExprElem] = None
     r_expr: Optional[ExprElem] = None
+
+    def __init__(self, line_number: int) -> None:
+        self.line_number = line_number
 
     @abstractmethod
     def __repr__(self) -> str:
@@ -222,8 +225,9 @@ class Identifier:
 
 
 class BitField:
-    def __init__(self, value: BusValue) -> None:
-        self.value = value
+    def __init__(self, value: str) -> None:
+        self.value = value.strip('"')
+        self.size = len(value)
 
     def __repr__(self) -> str:
         return f'BitField: {self.value}'
