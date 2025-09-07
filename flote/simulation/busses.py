@@ -3,6 +3,15 @@ from abc import ABC, abstractmethod
 from typing import Any, Optional
 
 
+class SimulationError(Exception):
+    """This class represents an error in the simulation."""
+    def __init__(self, message: str) -> None:
+        self.message = message
+
+    def __str__(self) -> str:
+        return self.message
+
+
 class Evaluator(ABC):
     """Base class for all evaluators."""
     @abstractmethod
@@ -95,14 +104,9 @@ class BitBusValue(BusValue):
         return BitBusValue([not bit for bit in self.raw_value])
 
     def __and__(self, other) -> 'BitBusValue':
-        if len(self.raw_value) != len(other.raw_value):
-            raise ValueError("BitBusValue operands must have the same length")
         return BitBusValue([a and b for a, b in zip(self.raw_value, other.raw_value)])
 
     def __or__(self, other) -> 'BitBusValue':
-        if len(self.raw_value) != len(other.raw_value):
-            #TODO Remove, this  should be handled in elaboration phase.
-            raise ValueError("BitBusValue operands must have the same length")
         return BitBusValue([a or b for a, b in zip(self.raw_value, other.raw_value)])
 
     def __xor__(self, other) -> 'BitBusValue':
@@ -122,10 +126,16 @@ class BitBus(Bus):
         return ['[01]+']
 
     def insert_value(self, value: str) -> None:
-        if re.match(r'^\"[01]+\"$', value):
-            raise ValueError(
+        if not re.fullmatch(r'[01]+', value):
+            raise SimulationError(
                 f'Invalid value "{value}". Valid values are: '
                 f'{self.get_valid_values()}'
+            )
+
+        if len(value) != len(self.value.raw_value):
+            raise SimulationError(
+                f'Invalid value "{value}". The value must have '
+                f'{len(self.value.raw_value)} bits.'
             )
 
         self.value = BitBusValue([bool(int(bit)) for bit in value.strip('"')])
