@@ -7,7 +7,7 @@ from datetime import datetime
 from .component import Component
 
 
-VERSION = '0.1.2'
+VERSION = '0.2.0'
 CODENAME = 'Gambiarra'
 VALID_UNITS = ['fs', 'ps', 'ns', 'us', 'ms', 's']
 
