@@ -1,18 +1,23 @@
-from .scanner import Scanner
-from .parser import Parser
-from .builder import Builder
+from .elaboration.builder import Builder
+from .elaboration.parser import Parser
+from .elaboration.scanner import Scanner
+from .simulation.test_bench import TestBench
 
-# If the user wants to build it
-from .component import Component, BitBus
 
-def elaborate(code):
+def elaborate(code) -> TestBench:
     scanner = Scanner(code)
-    parser = Parser(scanner)
-    builder = Builder(parser.ast)
+    tokens_stream = scanner.token_stream
 
-    component = builder.get_component()
+    parser = Parser(tokens_stream)
+    ast = parser.ast
 
-    return component
+    builder = Builder(ast)
+    model = builder.get_component()
+
+    test_bench = TestBench(model)
+
+    return test_bench
+
 
 def elaborate_from_file(file_path):
     with open(file_path, 'r') as file:

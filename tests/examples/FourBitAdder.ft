@@ -1,0 +1,55 @@
+comp FullAdder{
+    in bit a_in;
+    in bit b_in;
+    in bit carry_in;
+
+    out bit sum = a_in xor b_in xor carry_in;
+    out bit carry_out = (
+        (a_in and b_in) or
+        (b_in and carry_in) or
+        (carry_in and a_in)
+    );
+}
+
+main comp FourBitsAdder{
+    in bit[-4] a_in;
+    in bit[-4] b_in;
+
+    bit inter_carry[-3];
+
+    out bit[-5] sum;
+
+    fullAdder0 = FullAdder(
+        a_in = a_in[0],
+        b_in = b_in[0],
+        carry_in = "0"
+        carry_out = inter_carry[0],
+        sum = sum[0]
+    );
+
+    fullAdder1 = FullAdder(
+        a_in = a_in[1],
+        b_in = b_in[1],
+        carry_in = inter_carry[0],
+        carry_out = inter_carry[1],
+        sum = sum[1]
+    );
+
+    fullAdder2 = FullAdder(
+        a_in = a_in[2],
+        b_in = b_in[2],
+        carry_in = inter_carry[1],
+        carry_out = inter_carry[2],
+        sum = sum[2]
+    );
+
+    // The carry_out of the last full adder is the final
+    // bit of the addition.
+    fullAdder3 = FullAdder(
+        a_in = a_in[3],
+        b_in = b_in[3],
+        carry_in = inter_carry[2],
+        carry_out = sum[4],
+        sum = sum[3]
+    );
+}

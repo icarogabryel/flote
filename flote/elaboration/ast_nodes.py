@@ -1,12 +1,25 @@
 from abc import ABC, abstractmethod
-from typing import Union, Optional
+from enum import Enum
+from typing import Optional, Union
+
+from ..simulation.busses import BusValue
 
 
-INTERNAL = 0
-INPUT = -1
-OUTPUT = 1
+class Connection(Enum):
+    """Enum to represent the connection type of a declaration."""
+    INTERNAL = 0
+    INPUT = -1
+    OUTPUT = 1
 
 
+#TODO this is not used in builder yet
+class Msb(Enum):
+    """Enum to represent the most significant bit (MSB) direction."""
+    ASCENDING = 0
+    DESCENDING = 1
+
+
+# * AST Nodes
 class Mod:
     def __init__(self) -> None:
         self.comps: list[Comp] = []
@@ -67,8 +80,9 @@ class Comp:
 class Decl:
     def __init__(self) -> None:
         self.id = ''
-        self.conn = INTERNAL
+        self.conn = Connection.INTERNAL
         self.type = 'bit'
+        self.dimension: Optional[Dimension] = None
         self.assign: Optional[ExprElem] = None
         self.line_number = 0
 
@@ -85,6 +99,9 @@ class Decl:
         else:
             desc += ', internal)'
 
+        if self.dimension:
+            desc += f'\n|  |- dimension: {self.dimension}'
+
         if self.assign:
             desc_assign = str(self.assign).replace('\n', '\n|  ')
             desc += f'\n|  |- assign: {desc_assign}'
@@ -92,24 +109,41 @@ class Decl:
         return desc
 
 
+class Dimension:
+    def __init__(self, size=1, msb=Msb.ASCENDING) -> None:
+        # Private to ensure size is set through the setter method
+        self.size: int = size
+        self.msb: Optional[Msb] = msb
+
+    def __repr__(self) -> str:
+        msb_name = self.msb.name if self.msb is not None else None
+        return f'Dimension(size={self.size}, MSB={msb_name})'
+
+    def __str__(self) -> str:
+        msb_name = self.msb.name if self.msb is not None else None
+        return f'Dimension: {self.size}, MSB={msb_name}'
+
+
 ExprElem = Union['Identifier', 'BitField', 'UnaryOp', 'BinaryOp']
 
 
 class Assign:
-    def __init__(self) -> None:
-        self.dt: Optional[Identifier] = None
-        self.expr: Optional[ExprElem] = None
+    def __init__(self, destiny: 'Identifier', expr: ExprElem) -> None:
+        self.destiny = destiny
+        self.expr = expr
 
     def __repr__(self) -> str:
-        return f'Assign({self.dt}, {self.expr})'
+        return f'Assign({self.destiny}, {self.expr})'
 
     def __str__(self) -> str:
         desc_expr = str(self.expr).replace('\n', '\n|  ')
-        return f'Assign:\n|  |- dt: {self.dt}\n|  |- expr: {desc_expr}'
+        return (
+            f'Assign:\n|  |- destiny: {self.destiny}\n|  |- expr: {desc_expr}'
+        )
 
 
 class UnaryOp(ABC):
-    expr:  Optional[ExprElem] = None
+    expr: Optional[ExprElem] = None
 
     @abstractmethod
     def __repr__(self) -> str:
@@ -124,6 +158,9 @@ class BinaryOp(ABC):
     l_expr: Optional[ExprElem] = None
     r_expr: Optional[ExprElem] = None
 
+    def __init__(self, line_number: int) -> None:
+        self.line_number = line_number
+
     @abstractmethod
     def __repr__(self) -> str:
         pass
@@ -132,42 +169,45 @@ class BinaryOp(ABC):
         l_expr = f'{self.l_expr}'.replace('\n', '\n|  ')
         r_expr = f'{self.r_expr}'.replace('\n', '\n|  ')
 
-        desc = f'{self.__class__.__name__}\n|  |- l_expr: {l_expr}\n|  |- r_expr: {r_expr}'
+        desc = (
+            f'{self.__class__.__name__}\n|  |- l_expr: {l_expr}\n|  |- r_expr:'
+            f' {r_expr}'
+        )
 
         return desc
 
 
-class Not(UnaryOp):
+class NotOp(UnaryOp):
     def __repr__(self) -> str:
         return f'Not {self.expr}'
 
 
-class And(BinaryOp):
+class AndOp(BinaryOp):
     def __repr__(self) -> str:
         return f'And {self.l_expr} {self.r_expr}'
 
 
-class Or(BinaryOp):
+class OrOp(BinaryOp):
     def __repr__(self) -> str:
         return f'Or {self.l_expr} {self.r_expr}'
 
 
-class Xor(BinaryOp):
+class XorOp(BinaryOp):
     def __repr__(self) -> str:
         return f'Xor {self.l_expr} {self.r_expr}'
 
 
-class Nand(BinaryOp):
+class NandOp(BinaryOp):
     def __repr__(self) -> str:
         return f'Nand {self.l_expr} {self.r_expr}'
 
 
-class Nor(BinaryOp):
+class NorOp(BinaryOp):
     def __repr__(self) -> str:
         return f'Nor {self.l_expr} {self.r_expr}'
 
 
-class Xnor(BinaryOp):
+class XnorOp(BinaryOp):
     def __repr__(self) -> str:
         return f'Xnor {self.l_expr} {self.r_expr}'
 
@@ -175,7 +215,7 @@ class Xnor(BinaryOp):
 class Identifier:
     def __init__(self, id: str) -> None:
         self.id = id
-        self.line_number = None
+        self.line_number: Optional[int] = None
 
     def __repr__(self) -> str:
         return f'Id: "{self.id}"'
@@ -186,10 +226,11 @@ class Identifier:
 
 class BitField:
     def __init__(self, value: str) -> None:
-        self.value = value
+        self.value = value.strip('"')
+        self.size = len(value)
 
     def __repr__(self) -> str:
-        return f'BitField: {int(self.value)}'
+        return f'BitField: {self.value}'
 
     def __str__(self) -> str:
         return self.__repr__()
