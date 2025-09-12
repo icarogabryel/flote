@@ -2,8 +2,6 @@ from abc import ABC, abstractmethod
 from enum import Enum
 from typing import Optional, Union
 
-from ..simulation.busses import BusValue
-
 
 class Connection(Enum):
     """Enum to represent the connection type of a declaration."""
