@@ -1,0 +1,25 @@
+comp Mux {
+    in bit a;
+    in bit b;
+    in bit s;
+
+    bit w1 = not s and a;
+    bit w2 = s and b;
+
+    out bit y = w1 or w2;
+}
+
+main comp Inverter {
+    in bit a;
+    in bit s;
+    out bit y;
+
+    bit not_a = not a;
+
+    sub Mux {
+        a < a;
+        b < not_a;
+        s < s;
+        y > y;
+    }
+}
