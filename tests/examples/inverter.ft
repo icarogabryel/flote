@@ -14,12 +14,10 @@ main comp Inverter {
     in bit s;
     out bit y;
 
-    bit not_a = not a;
+    sub Mux;
 
-    sub Mux {
-        a < a;
-        b < not_a;
-        s < s;
-        y > y;
-    }
+    Mux.a = a;
+    Mux.b = not a;
+    Mux.s = s;
+    y = Mux.y;
 }
