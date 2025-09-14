@@ -4,7 +4,7 @@ controlling time in them simulation.
 """
 from datetime import datetime
 
-from .component import Component
+from .backend.python.component import Component
 
 
 VERSION = '0.2.0'

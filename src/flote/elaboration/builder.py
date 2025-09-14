@@ -2,9 +2,9 @@ from enum import Enum
 from typing import Optional
 from warnings import warn
 
-from ..simulation.busses import BitBus, BitBusValue, Evaluator
-from ..simulation.component import Component
-from ..simulation.expr_nodes import (And, BusRef, Const, Nand, Nor, Not, Or,
+from ..simulation.backend.python.busses import BitBus, BitBusValue, Evaluator
+from ..simulation.backend.python.component import Component
+from ..simulation.backend.python.expr_nodes import (And, BusRef, Const, Nand, Nor, Not, Or,
                                      Xnor, Xor)
 from . import ast_nodes
 from .symbol_table import BusSymbol, CompTable, SymbolTable
