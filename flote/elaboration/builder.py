@@ -3,7 +3,7 @@ from typing import Optional
 from warnings import warn
 
 from ..simulation.backend.python.busses import BitBus, BitBusValue, Evaluator
-from ..simulation.backend.python.component import Component
+from ..simulation.backend.python.component import Circuit
 from ..simulation.backend.python.expr_nodes import (And, BusRef, Const, Nand, Nor, Not, Or,
                                      Xnor, Xor)
 from . import ast_nodes
@@ -35,9 +35,9 @@ class Builder:
         self.ast: ast_nodes.Mod = ast
         self.symbol_table: SymbolTable = SymbolTable()
         self.components: dict[str, Component] = {}
-        self.main_component: Component = self.vst_mod(self.ast)
+        self.main_component: Circuit = self.vst_mod(self.ast)
 
-    def get_component(self) -> Component:
+    def get_component(self) -> Circuit:
         return self.main_component
 
     def get_sensitivity_list(self, expr_elem: ast_nodes.ExprElem) -> list[str]:
@@ -82,7 +82,7 @@ class Builder:
 
         return sensitivity_list
 
-    def init_component_table(self, comp: ast_nodes.Comp, component: Component) -> CompTable:
+    def init_component_table(self, comp: ast_nodes.Comp, component: Circuit) -> CompTable:
         """Get the component's bus symbol table."""
         comp_table: CompTable = CompTable()
 
@@ -138,7 +138,7 @@ class Builder:
                         (not bus.is_read):
                     warn(f'Bus "{bus_id}" is never read', UserWarning)
 
-    def vst_mod(self, mod: ast_nodes.Mod) -> Component:
+    def vst_mod(self, mod: ast_nodes.Mod) -> Circuit:
         if not mod.comps:
             raise SemanticalError('Module is empty.')
 
@@ -151,7 +151,7 @@ class Builder:
         # If there are multiple components, we assume one of them is the main
         else:
             is_main_comp_found = False
-            main_component: Optional[Component] = None
+            main_component: Optional[Circuit] = None
 
             for comp in mod.comps:  # Search for the main component
                 # Add component to the components dict
@@ -184,14 +184,14 @@ class Builder:
 
         return main_component
 
-    def vst_comp(self, comp: ast_nodes.Comp) -> Component:
+    def vst_comp(self, comp: ast_nodes.Comp) -> Circuit:
         if comp.id in self.symbol_table.components.keys():
             raise SemanticalError(
                 f'Component "{comp.id}" has already been declared.',
                 comp.line_number
             )
 
-        component = Component(comp.id)
+        component = Circuit(comp.id)
         self.symbol_table.components[comp.id] = self.init_component_table(
             comp,
             component
@@ -209,7 +209,7 @@ class Builder:
 
         return component
 
-    def vst_decl(self, component: Component, decl: ast_nodes.Decl) -> None:
+    def vst_decl(self, component: Circuit, decl: ast_nodes.Decl) -> None:
         assert decl.id in self.symbol_table.components[component.id].buses.keys(), (
             f'Bus "{decl.id}" has not been declared in the symbol table.'
 
@@ -219,7 +219,7 @@ class Builder:
         bit_bus = BitBus()
 
         if decl.conn == ast_nodes.Connection.INPUT:
-            component.inputs.append(decl.id)
+            component.interface.append(decl.id)
 
         if decl.dimension is not None:
             assert decl.dimension.size is not None
@@ -243,7 +243,7 @@ class Builder:
 
         component.bus_dict[decl.id] = bit_bus
 
-    def vst_assign(self, component: Component, assign: ast_nodes.Assign) -> None:
+    def vst_assign(self, component: Circuit, assign: ast_nodes.Assign) -> None:
         if assign.destiny.id not in self.symbol_table.components[component.id].buses.keys():
             # All destiny signals must be declared previously
             raise SemanticalError(
@@ -308,7 +308,7 @@ class Builder:
 
     from typing import Tuple
 
-    def vst_expr_elem(self, component: Component, expr_elem: ast_nodes.ExprElem) -> Tuple[
+    def vst_expr_elem(self, component: Circuit, expr_elem: ast_nodes.ExprElem) -> Tuple[
         Evaluator, int
     ]:
         """

@@ -15,9 +15,15 @@ class SimulationError(Exception):
 class Evaluator(ABC):
     """Base class for all evaluators."""
     @abstractmethod
-    def evaluate(self) -> Any:
+    def evaluate(self) -> 'BusValue':
         """Evaluate the expression."""
         pass
+
+    # TODO FAZER BUS não ser avaliator
+    # @abstractmethod
+    # def get_sensitivity_list(self):
+    #     """Get the sensitivity list of the expression."""
+    #     pass
 
 
 class VcdValue(ABC):
@@ -60,7 +66,15 @@ class Bus(Evaluator):
         self.assignment: Optional[Evaluator] = None
         self.value: BusValue = self.get_default()  # The value of the bus.
         # The list of buses that the current bus depends on.
-        self.sensitivity_list: list[str] = []
+        self.influence_list: list[Bus] = []
+
+    def __str__(self) -> str:
+        return f'Value: {self.value}'
+
+    def __repr__(self) -> str:
+        return (
+            f'{self.value}'
+        )
 
     @abstractmethod
     def get_default(self) -> BusValue:
@@ -76,6 +90,16 @@ class Bus(Evaluator):
     def insert_value(self, value) -> None:
         """This method inserts a value into the bus if it is valid"""
         pass
+
+    def set_assignment(self, expr: Evaluator) -> None:
+        """This method adds an assignment to the bus."""
+        self.assignment = expr
+
+        sensitivity_list = expr.get_sensitivity_list()
+
+        for bit in sensitivity_list:
+            if self not in bit.influence_list:
+                bit.influence_list.append(self)
 
     def evaluate(self):
         return self.value
@@ -139,9 +163,3 @@ class BitBus(Bus):
             )
 
         self.value = BitBusValue([bool(int(bit)) for bit in value.strip('"')])
-
-    def __repr__(self):
-        return (
-            f'Assignment: {self.assignment}, Current Value: '
-            f'{self.value}, SL: {self.sensitivity_list}'
-        )
