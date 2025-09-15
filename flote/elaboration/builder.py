@@ -3,7 +3,7 @@ from typing import Optional
 from warnings import warn
 
 from ..simulation.backend.python.busses import BitBus, BitBusValue, Evaluator
-from ..simulation.backend.python.component import Circuit
+from ..simulation.backend.python.circuit import Circuit
 from ..simulation.backend.python.expr_nodes import (And, BusRef, Const, Nand, Nor, Not, Or,
                                      Xnor, Xor)
 from . import ast_nodes
@@ -34,7 +34,7 @@ class Builder:
     def __init__(self, ast) -> None:
         self.ast: ast_nodes.Mod = ast
         self.symbol_table: SymbolTable = SymbolTable()
-        self.components: dict[str, Component] = {}
+        self.components: dict[str, Circuit] = {}
         self.main_component: Circuit = self.vst_mod(self.ast)
 
     def get_component(self) -> Circuit:

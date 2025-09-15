@@ -1,9 +1,10 @@
 mod = comp, {comp};
 comp = ['main'], 'comp', ID, '{', {stmt}, '}';
-stmt = decl | assign;
+stmt = decl | assign | inst;
 decl = ['in' | 'out'], 'bit', ID, [dimension], ['=', expr], ';';
 dimension = '[', ['-'], DEC, ']';
 assign = ID, '=', expr, ';';
+inst = 'sub', ID, ['as' ID],';';
 
 (* Expression rules *)
 expr = term, exprDash;

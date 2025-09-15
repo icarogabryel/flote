@@ -17,11 +17,11 @@ class TestMode(Enum):
     BUILDER = 2
 
 
-TEST_MODE = TestMode.BUILDER.value
+TEST_MODE = TestMode.PARSER.value
 
 
 def main():
-    with open(BASE_DIR / 'tests/examples/HalfAdder.ft') as file:
+    with open(BASE_DIR / 'tests/examples/Inverter.ft') as file:
         code = file.read()
 
     if TEST_MODE >= TestMode.SCANNER.value:

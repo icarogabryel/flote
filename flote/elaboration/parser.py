@@ -1,4 +1,3 @@
-from ..simulation.backend.python.busses import BitBusValue
 from . import ast_nodes
 from .scanner import Token
 
@@ -6,7 +5,7 @@ from .scanner import Token
 # Dict of First Sets used to enter syntactical rules
 FIRST_SETS = {
     'comp': ['main', 'comp'],
-    'stmt': ['in', 'out', 'bit', 'id'],
+    'stmt': ['in', 'out', 'bit', 'id', 'sub'],
     'decl': ['in', 'out', 'bit'],
     'assign': ['id'],
     'expr_dash': ['or', 'nor'],
@@ -64,7 +63,7 @@ class Parser:
 
     # Syntactical Rules
 
-    # * mod = {comp}
+    #* mod = {comp}
     def mod(self):
         mod = ast_nodes.Mod()
 
@@ -77,7 +76,7 @@ class Parser:
 
         return mod
 
-    # * comp = ['main'], 'comp', ID, '{', {stmt}, '}'
+    #* comp = ['main'], 'comp', ID, '{', {stmt}, '}'
     def comp(self):
         comp = ast_nodes.Comp()
 
@@ -102,16 +101,18 @@ class Parser:
 
         return comp
 
-    # * stmt = decl | assign
+    #* stmt = decl | assign | inst
     def stmt(self):
         if (label := self.get_current_token().label) in FIRST_SETS['decl']:
             return self.decl()
         elif label in FIRST_SETS['assign']:
             return self.assign()
+        elif label == 'sub':
+            return self.inst()
+        else:
+            assert False, f'Unexpected Token: {label}'
 
-        assert False, f'Unexpected Token: {label}'
-
-    # * decl = ['in' | 'out'], 'bit', ID, [dimension], ['=', expr], ';';
+    #* decl = ['in' | 'out'], 'bit', ID, [dimension], ['=', expr], ';';
     def decl(self):
         decl = ast_nodes.Decl()
 
@@ -142,7 +143,7 @@ class Parser:
 
         return decl
 
-    # * dimension = '[', ['-'], DEC, ']';
+    #* dimension = '[', ['-'], DEC, ']';
     def dimension(self) -> ast_nodes.Dimension:
         self.match_label('l_bracket')
         self.advance()
@@ -186,7 +187,7 @@ class Parser:
 
         return dimension
 
-    # * assign = ID, '=', expr, ';'
+    #* assign = ID, '=', expr, ';'
     def assign(self):
         self.match_label('id')
 
@@ -207,7 +208,7 @@ class Parser:
 
         return assign
 
-    # * expr = term, exprDash
+    #* expr = term, exprDash
     def expr(self):
         term = self.term()
 
@@ -223,7 +224,7 @@ class Parser:
         else:
             return term
 
-    # * exprDash = ('or' | 'nor'), term, exprDash | ε
+    #* exprDash = ('or' | 'nor'), term, exprDash | ε
     def expr_dash(self):
         token = self.get_current_token()
 
@@ -263,7 +264,7 @@ class Parser:
             # top routine
             return current_node
 
-    # * term = factor, termDash
+    #* term = factor, termDash
     def term(self):
         factor = self.fact()
 
@@ -276,7 +277,7 @@ class Parser:
         else:
             return factor
 
-    # * termDash = ('xor' | 'xnor'), factor, termDash | ε
+    #* termDash = ('xor' | 'xnor'), factor, termDash | ε
     def term_dash(self):
         token = self.get_current_token()
 
@@ -309,7 +310,7 @@ class Parser:
 
             return current_node
 
-    # * fact = primary, factDash
+    #* fact = primary, factDash
     def fact(self):
         primary = self.primary()
 
@@ -322,7 +323,7 @@ class Parser:
         else:
             return primary
 
-    # * factDash = ('and' | 'nand'), primary, factDash | ε
+    #* factDash = ('and' | 'nand'), primary, factDash | ε
     def fact_dash(self):
         token = self.get_current_token()
 
@@ -355,7 +356,7 @@ class Parser:
 
             return current_node
 
-    # * primary = 'not', primary | '(', expr, ')' | ID | BIN
+    #* primary = 'not', primary | '(', expr, ')' | ID | BIN
     def primary(self) -> ast_nodes.ExprElem:
         token = self.get_current_token()
 
@@ -395,3 +396,27 @@ class Parser:
                 token.line_number,
                 'Expected primary.'
             )
+
+    #* inst = 'sub', ID, ['as' ID],';';
+    def inst(self):
+        self.match_label('sub')
+        inst = ast_nodes.Inst()
+        inst.line_number = self.get_current_token().line_number
+        self.advance()
+
+        self.match_label('id')
+        inst.comp_id = self.get_current_token().lexeme
+        self.advance()
+
+        if self.get_current_token().label == 'as':
+            self.advance()
+            self.match_label('id')
+            inst.sub_alias = self.get_current_token().lexeme
+            self.advance()
+        else:
+            inst.sub_alias = inst.comp_id
+
+        self.match_label('semicolon')
+        self.advance()
+
+        return inst

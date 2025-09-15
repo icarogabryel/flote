@@ -232,3 +232,16 @@ class BitField:
 
     def __str__(self) -> str:
         return self.__repr__()
+
+
+class Inst:
+    def __init__(self) -> None:
+        self.comp_id: Optional[str] = None
+        self.sub_alias: Optional[str] = None
+        self.line_number: Optional[int] = None
+
+    def __repr__(self) -> str:
+        return f'Inst({self.comp_id}, {self.sub_alias})'
+
+    def __str__(self) -> str:
+        return f'Inst: {self.sub_alias} of {self.comp_id}'
