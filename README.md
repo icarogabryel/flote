@@ -41,6 +41,10 @@ Flote's Evaluator uses a structure of a compiler's front-end to elaborate the co
 
 Using the HLS side, you can create the component "by hand". Also with the use of the Python package you can manipulate the signals and sava then in a waveform file.
 
+## Grammar and Syntax
+
+The language is defined by the EBNF findable [here](docs/flote.ebnf).
+
 ## 🚀 Release
 
 Flote is in beta development. You can see the latest releases in [the GitHub repository](https://github.com/icarogabryel/flote/releases).
