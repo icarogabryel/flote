@@ -47,7 +47,7 @@ class Comp:
     def __init__(self) -> None:
         self.id = ''
         self.is_main = False
-        self.stmts: list[Union[Decl, Assign]] = []
+        self.stmts: list[Union[Decl, Assign, Inst]] = []
         self.line_number = 0
 
     def add_stmt(self, stmt):

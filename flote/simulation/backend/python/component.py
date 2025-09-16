@@ -6,7 +6,10 @@ class Component:
         self.busses: dict[str, Bus] = {}
 
     def __repr__(self):
-        return f'{self.busses}'
+        return f'{'\n'.join([bus.__str__() for bus in self.busses.values()])}'
+
+    def __str__(self) -> str:
+        return self.__repr__()
 
     def add_bus(self, bus_id: str, bus: Bus) -> None:
         """

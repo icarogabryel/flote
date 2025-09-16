@@ -17,12 +17,12 @@ class BusSymbol:
 class CompTable:
     """Class that represents a component's symbol table."""
     def __init__(self):
-        self.buses: dict[str, BusSymbol] = {}
+        self.busses: dict[str, BusSymbol] = {}
 
     def __str__(self):
         return '\n'.join(
             f'| {bus_id} | {bus_symbol} |'
-            for bus_id, bus_symbol in self.buses.items()
+            for bus_id, bus_symbol in self.busses.items()
         )
 
 

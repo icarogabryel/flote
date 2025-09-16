@@ -6,6 +6,7 @@ from enum import Enum
 from pathlib import Path
 
 from flote import Builder, Parser, Scanner
+from flote.simulation.backend.python.circuit import Circuit
 
 
 BASE_DIR = Path(__file__).parent.parent
@@ -17,7 +18,7 @@ class TestMode(Enum):
     BUILDER = 2
 
 
-TEST_MODE = TestMode.PARSER.value
+TEST_MODE = TestMode.BUILDER.value
 
 
 def main():
@@ -46,7 +47,13 @@ def main():
 
                 ast = parser.ast
                 builder = Builder(ast)
-                print(builder.get_component())
+                co = builder.get_component()
+
+                ci = Circuit()
+                ci.busses = co.busses
+                print(ci)
+                ci.stabilize()
+                print(ci)
 
 
 if __name__ == "__main__":

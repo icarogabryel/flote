@@ -14,7 +14,7 @@ class BusRef(Evaluator, ExprNode):
         self.bus = bus
 
     def __repr__(self) -> str:
-        return f'{self.bus}'
+        return f'{self.bus.id}'
 
     def evaluate(self) -> BusValue:
         return self.bus.value

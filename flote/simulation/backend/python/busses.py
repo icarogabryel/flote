@@ -62,6 +62,7 @@ class BusValue(VcdValue):
 class Bus(Evaluator):
     """This class represents a bus in the circuit."""
     def __init__(self) -> None:
+        self.id: Optional[str] = None  # The id of the bus.
         # The assignment of the bus. It can be an expression or None.
         self.assignment: Optional[Evaluator] = None
         self.value: BusValue = self.get_default()  # The value of the bus.
@@ -69,12 +70,13 @@ class Bus(Evaluator):
         self.influence_list: list[Bus] = []
 
     def __str__(self) -> str:
-        return f'Value: {self.value}'
+        return (
+            f'id: {self.id} assign: {self.assignment} IL: {[bus.id for bus in self.influence_list]}'
+            f' Value: {self.value}'
+        )
 
     def __repr__(self) -> str:
-        return (
-            f'{self.value}'
-        )
+        return self.__str__()
 
     @abstractmethod
     def get_default(self) -> BusValue:
