@@ -1,6 +1,6 @@
-from flote.simulation.backend.python.component import Component, Circuit
-from flote.simulation.backend.python.busses import BitBus
-from flote.simulation.backend.python.expr_nodes import And, Not, Or, BusRef
+from flote.backend.backend.python.component import Component, Circuit
+from flote.backend.backend.python.busses import BitBus
+from flote.backend.backend.python.expr_nodes import And, Not, Or, BusRef
 
 
 mux = Component()

@@ -6,7 +6,7 @@ from enum import Enum
 from pathlib import Path
 
 from flote import Builder, Parser, Scanner
-from flote.simulation.backend.python.circuit import Circuit
+from flote.backend.backend.python.circuit import Circuit
 
 
 BASE_DIR = Path(__file__).parent.parent
