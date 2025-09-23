@@ -1,20 +1,12 @@
 import copy
-from enum import Enum
 from typing import Optional, Tuple
 from warnings import warn
 
-from ..backend.backend.python.busses import BitBus, BitBusValue, Evaluator
-from ..backend.backend.python.component import Component
-from ..backend.backend.python.expr_nodes import (And, BusRef, Const, Nand,
-                                                    Nor, Not, Or, Xnor, Xor)
 from . import ast_nodes
+from .ir import expr_nodes
+from .ir.busses import BitBus, BitBusValue, Evaluator
+from .ir.component import Component
 from .symbol_table import BusSymbol, CompTable, SymbolTable
-
-
-class Assigned(Enum):
-    """Enum to represent if a bus is assigned."""
-    ASSIGNED = 0
-    NOT_ASSIGNED = 1
 
 
 class SemanticalError(Exception):
@@ -49,7 +41,7 @@ class Builder:
         for stmt in comp.stmts:
             if isinstance(stmt, ast_nodes.Decl):
                 decl = stmt  # Name change for better readability
-                is_assigned = Assigned.NOT_ASSIGNED
+                is_assigned = False
                 size = 1
 
                 if decl.id in comp_table.busses.keys():
@@ -66,7 +58,7 @@ class Builder:
                         )
 
                     # Mark the bus as assigned in the symbol table
-                    is_assigned = Assigned.ASSIGNED
+                    is_assigned = True
 
                 if decl.dimension is not None:
                     size = decl.dimension.size
@@ -81,21 +73,16 @@ class Builder:
         return comp_table
 
     def validate_bus_symbol_table(self):
-        """
-        Validate the bus symbol table to ensure all buses are assigned and
-        read.
-        """
-        for _, bus_table in self.symbol_table.components.items():
+        """Validate the bus symbol table to ensure all buses are assigned and read."""
+        for bus_table in self.symbol_table.components.values():
             for bus_id, bus in bus_table.busses.items():
-                if (bus.connection_type != ast_nodes.Connection.INPUT) and \
-                        (not bus.is_assigned):
+                if (bus.connection_type != ast_nodes.Connection.INPUT) and (not bus.is_assigned):
                     warn(
                         f'Bus "{bus_id}" has not been assigned.',
                         UserWarning
                     )
 
-                if (bus.connection_type != ast_nodes.Connection.OUTPUT) and \
-                        (not bus.is_read):
+                if (bus.connection_type != ast_nodes.Connection.OUTPUT) and (not bus.is_read):
                     warn(f'Bus "{bus_id}" is never read', UserWarning)
 
     def vst_mod(self, mod: ast_nodes.Mod) -> Component:
@@ -216,7 +203,7 @@ class Builder:
 
         bus_symbol = self.symbol_table.components[component_id].busses[assign.destiny.id]
 
-        if bus_symbol.is_assigned == Assigned.ASSIGNED:
+        if bus_symbol.is_assigned == True:
             # Destiny signal cannot be assigned more than once
             raise SemanticalError(
                 f'Identifier "{assign.destiny.id}" already assigned.',
@@ -232,7 +219,7 @@ class Builder:
         #     )
 
         # Mark the bus as assigned in the symbol table
-        bus_symbol.is_assigned = Assigned.ASSIGNED
+        bus_symbol.is_assigned = True
 
         # Create the assignment and put in the assignment field
         # TODO change to make run if declaration is after assignment
@@ -289,13 +276,13 @@ class Builder:
             bus_symbol.is_read = True
             size = bus_symbol.size
 
-            bus_ref = BusRef(component.busses[expr_elem.id])
+            bus_ref = expr_nodes.BusRef(component.busses[expr_elem.id])
 
             return bus_ref, size
         elif isinstance(expr_elem, ast_nodes.BitField):
             bit_field = expr_elem
             bit_value = BitBusValue([bool(int(bit)) for bit in bit_field.value])
-            const = Const(bit_value)
+            const = expr_nodes.Const(bit_value)
 
             return const, bit_field.size
         elif isinstance(expr_elem, ast_nodes.NotOp):
@@ -303,7 +290,7 @@ class Builder:
 
             expr, size = self.vst_expr_elem(expr_elem.expr, component_id, component)
 
-            return Not(expr), size
+            return expr_nodes.Not(expr), size
         elif isinstance(expr_elem, ast_nodes.AndOp):
             #TODO put a function for those asserts
             assert expr_elem.l_expr is not None, (
@@ -322,7 +309,7 @@ class Builder:
                     expr_elem.line_number
                 )
 
-            return And(l_expr, r_expr), l_size
+            return expr_nodes.And(l_expr, r_expr), l_size
         elif isinstance(expr_elem, ast_nodes.OrOp):
             assert expr_elem.l_expr is not None, (
                 'Left expression of Or operation cannot be None.'
@@ -340,7 +327,7 @@ class Builder:
                     expr_elem.line_number
                 )
 
-            return Or(l_expr, r_expr), l_size
+            return expr_nodes.Or(l_expr, r_expr), l_size
         elif isinstance(expr_elem, ast_nodes.XorOp):
             assert expr_elem.l_expr is not None, (
                 'Left expression of Xor operation cannot be None.'
@@ -358,7 +345,7 @@ class Builder:
                     expr_elem.line_number
                 )
 
-            return Xor(l_expr, r_expr), l_size
+            return expr_nodes.Xor(l_expr, r_expr), l_size
         elif isinstance(expr_elem, ast_nodes.NandOp):
             assert expr_elem.l_expr is not None, (
                 'Left expression of Nand operation cannot be None.'
@@ -376,7 +363,7 @@ class Builder:
                     expr_elem.line_number
                 )
 
-            return Nand(l_expr, r_expr), l_size
+            return expr_nodes.Nand(l_expr, r_expr), l_size
         elif isinstance(expr_elem, ast_nodes.NorOp):
             assert expr_elem.l_expr is not None, (
                 'Left expression of Nor operation cannot be None.'
@@ -394,7 +381,7 @@ class Builder:
                     expr_elem.line_number
                 )
 
-            return Nor(l_expr, r_expr), l_size
+            return expr_nodes.Nor(l_expr, r_expr), l_size
         elif isinstance(expr_elem, ast_nodes.XnorOp):
             assert expr_elem.l_expr is not None, (
                 'Left expression of Xnor operation cannot be None.'
@@ -412,7 +399,7 @@ class Builder:
                     expr_elem.line_number
                 )
 
-            return Xnor(l_expr, r_expr), l_size
+            return expr_nodes.Xnor(l_expr, r_expr), l_size
         else:
             assert False, f'Invalid expression element: {expr_elem}'
 
