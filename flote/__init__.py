@@ -1,6 +1,6 @@
-from .elaboration.builder import Builder
-from .elaboration.parser import Parser
-from .elaboration.scanner import Scanner
+from .frontend.builder import Builder
+from .frontend.parser import Parser
+from .frontend.scanner import Scanner
 from .simulation.test_bench import TestBench
 
 
