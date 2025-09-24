@@ -1,48 +1,21 @@
-from .busses import Bus
+from .busses import BusDto
+from .representation import Representation
 
 
-class Component:
-    def __init__(self) -> None:
-        self.busses: dict[str, Bus] = {}
+class ComponentDto(Representation):
+    def __init__(self, id_: str) -> None:
+        self.id_: str = id_  # The id of the component.
+        self.busses: list[BusDto] = []
+        self.subcomponents: list[ComponentDto] = []
 
     def __repr__(self):
-        return f'{'\n'.join([bus.__str__() for bus in self.busses.values()])}'
+        return f'{'\n'.join([bus.__str__() for bus in self.busses])}'
 
     def __str__(self) -> str:
-        return self.__repr__()
+        return f'Component {self.id_}:\n{self.__repr__()}'
 
-    def add_bus(self, bus_id: str, bus: Bus) -> None:
-        """
-        This method adds a bus to the component.
-
-        Args:
-            bus (Bus): The bus to be added.
-        """
-        assert bus_id not in self.busses, f'Bus with id "{bus_id}" already exists.'
-
-        self.busses[bus_id] = bus
-
-    def add_busses(self, component_id, buses: dict[str, Bus]) -> None:
-        """
-        This method adds multiple buses to the component.
-
-        Args:
-            buses (dict[str, Bus]): The buses to be added.
-        """
-        for bus_id, bus in buses.items():
-            key = f'{component_id}.{bus_id}'
-            self.busses[key] = bus
-
-    def add_component(self, component_id: str, component: 'Component') -> None:
-        """
-        This method adds the busses of a component to the current component.
-
-        Args:
-            component (Component): The component to be added.
-        """
-        for bus_id, bus in component.busses.items():
-            new_id = f'{component_id}.{bus_id}'
-
-            assert new_id not in self.busses, f'Bus with id "{new_id}" already exists.'
-
-            self.busses[new_id] = bus
+    def to_repr(self) -> dict:
+        return {
+            'component': self.id_,
+            'busses': [bus.to_repr() for bus in self.busses],
+            'subcomponents': [comp.to_repr() for comp in self.subcomponents]}

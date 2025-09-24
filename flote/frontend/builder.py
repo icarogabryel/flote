@@ -85,6 +85,7 @@ class Builder:
                 if (bus.connection_type != ast_nodes.Connection.OUTPUT) and (not bus.is_read):
                     warn(f'Bus "{bus_id}" is never read', UserWarning)
 
+    #TODO change to return a module of components
     def vst_mod(self, mod: ast_nodes.Mod) -> Component:
         if not mod.comps:
             raise SemanticalError('Module is empty.')
@@ -104,7 +105,7 @@ class Builder:
 
             for comp in mod.comps:  # Search for the main component
                 if comp.id in self.components:
-                    continue  # Skip if component already processed
+                    continue  # Skip if component already processed in a previous instantiation
                 # Add component to the components dict
                 component = self.vst_comp(comp)
                 self.components[comp.id] = component
