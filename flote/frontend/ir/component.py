@@ -1,12 +1,12 @@
+"""Data transfer object for a component."""
 from .busses import BusDto
-from .representation import Representation
+from .representation import JsonRepresentation
 
 
-class ComponentDto(Representation):
+class ComponentDto(JsonRepresentation):
     def __init__(self, id_: str) -> None:
-        self.id_: str = id_  # The id of the component.
+        self.id_: str = id_
         self.busses: list[BusDto] = []
-        self.subcomponents: list[ComponentDto] = []
 
     def __repr__(self):
         return f'{'\n'.join([bus.__str__() for bus in self.busses])}'
@@ -14,8 +14,10 @@ class ComponentDto(Representation):
     def __str__(self) -> str:
         return f'Component {self.id_}:\n{self.__repr__()}'
 
-    def to_repr(self) -> dict:
+    def to_json(self):
         return {
-            'component': self.id_,
-            'busses': [bus.to_repr() for bus in self.busses],
-            'subcomponents': [comp.to_repr() for comp in self.subcomponents]}
+            'component': {
+                'id': self.id_,
+                'busses': [bus.to_json() for bus in self.busses],
+            }
+        }
