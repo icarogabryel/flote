@@ -11,3 +11,4 @@ crate-type = ["cdylib"]
 
 [dependencies]
 pyo3 = "0.25.0"
+serde_json = "1.0"

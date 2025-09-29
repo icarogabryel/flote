@@ -6,7 +6,7 @@ from .frontend.scanner import Scanner
 from .test_bench import TestBench
 
 try:
-    from .backend.rust.core.renderer import Renderer
+    from .backend.rust.core import Renderer
 except ImportError:
     warn('Rust backend not available, using Python backend.')
 
