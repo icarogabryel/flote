@@ -1,16 +1,9 @@
-from .busses import BusValue, Evaluator
-from .component import Component
-from abc import ABC, abstractmethod
+from .busses import BusValue, Bus, Evaluator
 
 
-class ExprNode():
-    def get_sensitivity_list(self):
-        return []
-
-
-class BusRef(Evaluator, ExprNode):
+class BusRef(Evaluator):
     """This class represents a reference to a bus in the circuit."""
-    def __init__(self, bus):
+    def __init__(self, bus: Bus):
         self.bus = bus
 
     def __repr__(self) -> str:
@@ -18,10 +11,6 @@ class BusRef(Evaluator, ExprNode):
 
     def evaluate(self) -> BusValue:
         return self.bus.value
-
-    def get_sensitivity_list(self):
-        return [self.bus]
-
 
 
 class Const(Evaluator):
@@ -35,7 +24,6 @@ class Const(Evaluator):
         return self.value
 
 
-#TODO type all this
 class UnaryOperation(Evaluator):
     def __init__(self, expr: Evaluator) -> None:
         self.expr = expr
@@ -45,9 +33,6 @@ class UnaryOperation(Evaluator):
 
     def __str__(self) -> str:
         return f'{self.__class__.__name__} ({self.expr})'
-
-    def get_sensitivity_list(self):
-        return self.expr.get_sensitivity_list()
 
 
 class BinaryOperation(Evaluator):
@@ -60,9 +45,6 @@ class BinaryOperation(Evaluator):
 
     def __str__(self) -> str:
         return f'({self.l_expr}) {self.__class__.__name__} ({self.r_expr})'
-
-    def get_sensitivity_list(self):
-        return self.l_expr.get_sensitivity_list() + self.r_expr.get_sensitivity_list()
 
 
 class Not(UnaryOperation):

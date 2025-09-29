@@ -1,10 +1,19 @@
+from warnings import warn
+
 from .frontend.builder import Builder
 from .frontend.parser import Parser
 from .frontend.scanner import Scanner
 from .test_bench import TestBench
 
+try:
+    from .backend.rust.core.render import Render
+except ImportError:
+    warn('Rust backend not available, using Python backend.')
 
-def elaborate(code) -> TestBench:
+    from .backend.python.core.render import Render
+
+
+def elaborate(code: str) -> TestBench:
     scanner = Scanner(code)
     tokens_stream = scanner.token_stream
 
@@ -12,9 +21,12 @@ def elaborate(code) -> TestBench:
     ast = parser.ast
 
     builder = Builder(ast)
-    model = builder.get_component()
+    ir = builder.ir
 
-    test_bench = TestBench(model)
+    render = Render(ir)
+    component = render.component
+
+    test_bench = TestBench(component)
 
     return test_bench
 

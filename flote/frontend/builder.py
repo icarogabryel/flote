@@ -1,4 +1,5 @@
 import copy
+from json import dumps
 from typing import Optional, Tuple
 from warnings import warn
 
@@ -29,10 +30,13 @@ class Builder:
         self.symbol_table: SymbolTable = SymbolTable()
         self.components: dict[str, ComponentDto] = {}
         self.comp_nodes: dict[str, ast_nodes.Comp] = {}
-        self.main_component: ComponentDto = self.vst_mod(self.ast)
+        self.ir: str = self.get_ir()
 
-    def get_ir(self) -> ComponentDto:
-        return self.main_component
+    def get_ir(self) -> str:
+        component = self.vst_mod(self.ast)
+        component.make_influence_lists()
+
+        return dumps(component.to_json())
 
     def init_component_table(self, comp: ast_nodes.Comp) -> CompTable:
         """Get the component's bus symbol table."""
@@ -281,6 +285,7 @@ class Builder:
             bus_symbol.is_read = True
             size = bus_symbol.size
 
+            #TODO fix type checking
             bus_ref = expr_nodes.BusRef(self.symbol_table.components[component_id].busses[expr_elem.id].object)
 
             return bus_ref, size

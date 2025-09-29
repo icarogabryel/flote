@@ -1,48 +1,54 @@
+from collections import deque
+
 from .busses import Bus
 
 
-class Component:
-    def __init__(self) -> None:
+class Component():
+    """This class represents a component."""
+    def __init__(self, id_: str) -> None:
+        self.id_: str = id_
         self.busses: dict[str, Bus] = {}
 
     def __repr__(self):
-        return f'{'\n'.join([bus.__str__() for bus in self.busses.values()])}'
+        repr = ''
+        for bus_id, bus in self.busses.items():
+            repr += f'{bus_id}: {bus} {bus.influence_list}\n'
 
-    def __str__(self) -> str:
-        return self.__repr__()
+        return repr
 
-    def add_bus(self, bus_id: str, bus: Bus) -> None:
+    def get_values(self) -> dict[str, str]:
         """
-        This method adds a bus to the component.
-
-        Args:
-            bus (Bus): The bus to be added.
+        This method returns the values of the component as a dictionary.
+        The keys are the bit names and the values are the bit values.
         """
-        assert bus_id not in self.busses, f'Bus with id "{bus_id}" already exists.'
+        return {
+            bit_name: str(bit.value) for bit_name, bit in self.busses.items()
+        }
 
-        self.busses[bus_id] = bus
-
-    def add_busses(self, component_id, buses: dict[str, Bus]) -> None:
+    def stabilize(self):
         """
-        This method adds multiple buses to the component.
+        This method stabilizes the bits of the component.
 
-        Args:
-            buses (dict[str, Bus]): The buses to be added.
+        It is wanted new values (an input stimulus) to the component.
         """
-        for bus_id, bus in buses.items():
-            key = f'{component_id}.{bus_id}'
-            self.busses[key] = bus
+        queue = deque(self.busses.values())
 
-    def add_component(self, component_id: str, component: 'Component') -> None:
-        """
-        This method adds the busses of a component to the current component.
+        while queue:
+            bus = queue.popleft()
 
-        Args:
-            component (Component): The component to be added.
-        """
-        for bus_id, bus in component.busses.items():
-            new_id = f'{component_id}.{bus_id}'
+            p_value = bus.value
+            bus.assign()
+            a_value = bus.value
 
-            assert new_id not in self.busses, f'Bus with id "{new_id}" already exists.'
+            #TODO Verifica se esse condicional escapa todas as vezes ou não.
+            # Dynamic programming: Only add the bits that changed
+            if p_value != a_value:
+                for bus_influenced in bus.influence_list:
+                    if bus_influenced not in queue:
+                        queue.append(bus_influenced)
 
-            self.busses[new_id] = bus
+    def update_signals(self, new_values: dict[str, str]) -> None:
+        for id, new_value in new_values.items():
+            self.busses[id].insert_value(new_value)
+
+        self.stabilize()

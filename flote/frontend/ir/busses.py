@@ -5,7 +5,7 @@ class and its std subclasses.
 from abc import abstractmethod
 from typing import Any, Optional
 
-from .expr_nodes import ExprNode
+from .expr_node import ExprNode
 from .representation import JsonRepresentation
 
 
@@ -55,6 +55,7 @@ class BusDto(JsonRepresentation):
         else:
             assignment_json = self.assignment.to_json()
 
+        #TODO add type of bus
         return {
             'id': self.id_,
             'assignment': assignment_json,

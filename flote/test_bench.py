@@ -4,6 +4,7 @@ controlling time in them simulation.
 """
 from datetime import datetime
 
+#TODO use api
 from .backend.python.core.component import Component
 
 
@@ -67,9 +68,9 @@ class TestBench:
 
         header_metadata += '\n$comment Hello from Theresina. $end\n'
 
-        header_declaration = f'\n$scope module {self.component.id} $end\n'
+        header_declaration = f'\n$scope module {self.component.id_} $end\n'
 
-        for bit_name, bit_bus in self.component.bus_dict.items():
+        for bit_name, bit_bus in self.component.busses.items():
             header_declaration += (
                 f'\t$var wire {len(bit_bus.value.raw_value)} {bit_name} {bit_name} $end\n'
             )
@@ -104,7 +105,7 @@ class TestBench:
 
         sample = WaveSample(self.s_time, [])
 
-        for id, bit in self.component.bus_dict.items():
+        for id, bit in self.component.busses.items():
             sample.signals.append(Signal(id, bit.value.get_vcd_repr()))
 
         self.samples.append(sample)

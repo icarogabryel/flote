@@ -22,7 +22,7 @@ def make_ir(dut: str) -> str:
     ast = parser.ast
 
     builder = Builder(ast)
-    ir = builder.get_ir()
+    ir = builder.ir
     ir.make_influence_lists()
 
     ir_json = dumps(ir.to_json(), indent=4)

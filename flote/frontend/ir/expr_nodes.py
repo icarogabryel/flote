@@ -1,18 +1,11 @@
 """This module defines the expression nodes used in the assignment of a bus."""
-from abc import abstractmethod
-
-from .representation import JsonRepresentation
-
-
-class ExprNode(JsonRepresentation):
-    @abstractmethod
-    def get_sensitivity_list(self) -> list:
-        return []
+from .busses import BusDto, BusValueDto
+from .expr_node import ExprNode
 
 
 class BusRef(ExprNode):
     """This class represents a reference to a bus in the circuit."""
-    def __init__(self, bus):
+    def __init__(self, bus: BusDto):
         self.bus = bus
 
     def __repr__(self) -> str:
@@ -25,12 +18,12 @@ class BusRef(ExprNode):
         return [self.bus]
 
     def to_json(self):
-        return {'bus_ref': self.bus.id_}
+        return {'type': 'bus_ref', 'args': {'id': self.bus.id_}}
 
 
 class Const(ExprNode):
     """This class represents a constant value in the circuit."""
-    def __init__(self, value) -> None:
+    def __init__(self, value: BusValueDto) -> None:
         self.value = value
 
     def __repr__(self) -> str:
@@ -40,7 +33,7 @@ class Const(ExprNode):
         return f'Const ({self.value})'
 
     def to_json(self):
-        return {'const': self.value.to_json()}
+        return {'type': 'const', 'args': {'value': self.value.to_json()}}
 
     def get_sensitivity_list(self):
         return []
@@ -73,7 +66,7 @@ class Not(UnaryOperation):
         return f'Not ({self.expr})'
 
     def to_json(self):
-        return {'not': self.expr.to_json()}
+        return {'type': 'not', 'args': {'expr': self.expr.to_json()}}
 
 
 class And(BinaryOperation):
@@ -84,7 +77,10 @@ class And(BinaryOperation):
         return f'And ({self.l_expr}, {self.r_expr})'
 
     def to_json(self):
-        return {'and': {'l_expr': self.l_expr.to_json(), 'r_expr': self.r_expr.to_json()}}
+        return {
+            'type': 'and',
+            'args': {'l_expr': self.l_expr.to_json(), 'r_expr': self.r_expr.to_json()}
+        }
 
 
 class Or(BinaryOperation):
@@ -95,7 +91,10 @@ class Or(BinaryOperation):
         return f'Or ({self.l_expr}, {self.r_expr})'
 
     def to_json(self):
-        return {'or': {'l_expr': self.l_expr.to_json(), 'r_expr': self.r_expr.to_json()}}
+        return {
+            'type': 'or',
+            'args': {'l_expr': self.l_expr.to_json(), 'r_expr': self.r_expr.to_json()}
+        }
 
 
 class Xor(BinaryOperation):
@@ -106,7 +105,10 @@ class Xor(BinaryOperation):
         return f'Xor ({self.l_expr}, {self.r_expr})'
 
     def to_json(self):
-        return {'xor': {'l_expr': self.l_expr.to_json(), 'r_expr': self.r_expr.to_json()}}
+        return {
+            'type': 'xor',
+            'args': {'l_expr': self.l_expr.to_json(), 'r_expr': self.r_expr.to_json()}
+        }
 
 
 class Nand(BinaryOperation):
@@ -117,7 +119,10 @@ class Nand(BinaryOperation):
         return f'Nand ({self.l_expr}, {self.r_expr})'
 
     def to_json(self):
-        return {'nand': {'l_expr': self.l_expr.to_json(), 'r_expr': self.r_expr.to_json()}}
+        return {
+            'type': 'nand',
+            'args': {'l_expr': self.l_expr.to_json(), 'r_expr': self.r_expr.to_json()}
+        }
 
 
 class Nor(BinaryOperation):
@@ -128,7 +133,10 @@ class Nor(BinaryOperation):
         return f'Nor ({self.l_expr}, {self.r_expr})'
 
     def to_json(self):
-        return {'nor': {'l_expr': self.l_expr.to_json(), 'r_expr': self.r_expr.to_json()}}
+        return {
+            'type': 'nor',
+            'args': {'l_expr': self.l_expr.to_json(), 'r_expr': self.r_expr.to_json()}
+        }
 
 
 class Xnor(BinaryOperation):
@@ -139,7 +147,10 @@ class Xnor(BinaryOperation):
         return f'Xnor ({self.l_expr}, {self.r_expr})'
 
     def to_json(self):
-        return {'xnor': {'l_expr': self.l_expr.to_json(), 'r_expr': self.r_expr.to_json()}}
+        return {
+            'type': 'xnor',
+            'args': {'l_expr': self.l_expr.to_json(), 'r_expr': self.r_expr.to_json()}
+        }
 
 
 Operations = And | Or | Xor | Nand | Nor | Xnor | Not

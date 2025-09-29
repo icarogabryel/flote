@@ -3,15 +3,6 @@ from abc import ABC, abstractmethod
 from typing import Any, Optional
 
 
-class SimulationError(Exception):
-    """This class represents an error in the simulation."""
-    def __init__(self, message: str) -> None:
-        self.message = message
-
-    def __str__(self) -> str:
-        return self.message
-
-
 class Evaluator(ABC):
     """Base class for all evaluators."""
     @abstractmethod
@@ -19,11 +10,14 @@ class Evaluator(ABC):
         """Evaluate the expression."""
         pass
 
-    # TODO FAZER BUS não ser avaliator
-    # @abstractmethod
-    # def get_sensitivity_list(self):
-    #     """Get the sensitivity list of the expression."""
-    #     pass
+
+class SimulationError(Exception):
+    """This class represents an error in the simulation."""
+    def __init__(self, message: str) -> None:
+        self.message = message
+
+    def __str__(self) -> str:
+        return self.message
 
 
 class VcdValue(ABC):
@@ -59,9 +53,10 @@ class BusValue(VcdValue):
         pass
 
 
-class Bus(Evaluator):
+class Bus(ABC):
     """This class represents a bus in the circuit."""
     def __init__(self) -> None:
+        # Id to help debugging
         self.id: Optional[str] = None  # The id of the bus.
         # The assignment of the bus. It can be an expression or None.
         self.assignment: Optional[Evaluator] = None
@@ -92,19 +87,6 @@ class Bus(Evaluator):
     def insert_value(self, value) -> None:
         """This method inserts a value into the bus if it is valid"""
         pass
-
-    def set_assignment(self, expr: Evaluator) -> None:
-        """This method adds an assignment to the bus."""
-        self.assignment = expr
-
-        sensitivity_list = expr.get_sensitivity_list()
-
-        for bit in sensitivity_list:
-            if self not in bit.influence_list:
-                bit.influence_list.append(self)
-
-    def evaluate(self):
-        return self.value
 
     def assign(self):
         """Do the assignment of the bus when not None."""
