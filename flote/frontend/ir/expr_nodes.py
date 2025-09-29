@@ -1,22 +1,19 @@
 """This module defines the expression nodes used in the assignment of a bus."""
 from abc import abstractmethod
 
-from .busses import BusDto
-from .component import ComponentDto
 from .representation import JsonRepresentation
 
 
 class ExprNode(JsonRepresentation):
     @abstractmethod
-    def get_sensitivity_list(self) -> list[BusDto]:
+    def get_sensitivity_list(self) -> list:
         return []
 
 
 class BusRef(ExprNode):
     """This class represents a reference to a bus in the circuit."""
-    def __init__(self, component: ComponentDto, bus: BusDto):
+    def __init__(self, bus):
         self.bus = bus
-        self.component = component
 
     def __repr__(self) -> str:
         return f'BusRef({self.bus.id_})'
@@ -33,8 +30,8 @@ class BusRef(ExprNode):
 
 class Const(ExprNode):
     """This class represents a constant value in the circuit."""
-    def __init__(self, value: str) -> None:
-        self.value: str = value
+    def __init__(self, value) -> None:
+        self.value = value
 
     def __repr__(self) -> str:
         return f'Const({self.value})'
@@ -43,7 +40,7 @@ class Const(ExprNode):
         return f'Const ({self.value})'
 
     def to_json(self):
-        return {'const': self.value}
+        return {'const': self.value.to_json()}
 
     def get_sensitivity_list(self):
         return []

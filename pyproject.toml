@@ -14,4 +14,4 @@ dynamic = ["version"]
 
 [tool.maturin]
 features = ["pyo3/extension-module"]
-module-name = "flote.simulation.backend.rust.core"
+module-name = "flote.backend.rust.core"

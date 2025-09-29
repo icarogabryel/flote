@@ -14,10 +14,10 @@ main comp Inverter {
     in bit s;
     out bit y;
 
-    sub Mux;
+    sub Mux as TestMux;
 
-    Mux.a = a;
-    Mux.b = not a;
-    Mux.s = s;
-    y = Mux.y;
+    TestMux.a = a;
+    TestMux.b = not a;
+    TestMux.s = s;
+    y = TestMux.y;
 }

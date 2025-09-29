@@ -68,7 +68,7 @@ class Scanner():
         self.code = code + END_OF_FILE
         self.line_number = 1
         self.index = 0  # Current index in the code string
-        self.token_stream = []
+        self.token_stream: list[Token] = []
 
         self.get_token_stream()
 

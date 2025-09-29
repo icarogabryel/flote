@@ -4,8 +4,8 @@ from warnings import warn
 
 from . import ast_nodes
 from .ir import expr_nodes
-from .ir.busses import BitBus, BitBusValue, Evaluator
-from .ir.component import Component
+from .ir.busses import BitBusDto, BitBusValueDto
+from .ir.component import ComponentDto
 from .symbol_table import BusSymbol, CompTable, SymbolTable
 
 
@@ -27,11 +27,11 @@ class Builder:
     def __init__(self, ast) -> None:
         self.ast: ast_nodes.Mod = ast
         self.symbol_table: SymbolTable = SymbolTable()
-        self.components: dict[str, Component] = {}
+        self.components: dict[str, ComponentDto] = {}
         self.comp_nodes: dict[str, ast_nodes.Comp] = {}
-        self.main_component: Component = self.vst_mod(self.ast)
+        self.main_component: ComponentDto = self.vst_mod(self.ast)
 
-    def get_component(self) -> Component:
+    def get_ir(self) -> ComponentDto:
         return self.main_component
 
     def init_component_table(self, comp: ast_nodes.Comp) -> CompTable:
@@ -86,7 +86,7 @@ class Builder:
                     warn(f'Bus "{bus_id}" is never read', UserWarning)
 
     #TODO change to return a module of components
-    def vst_mod(self, mod: ast_nodes.Mod) -> Component:
+    def vst_mod(self, mod: ast_nodes.Mod) -> ComponentDto:
         if not mod.comps:
             raise SemanticalError('Module is empty.')
 
@@ -101,7 +101,7 @@ class Builder:
             return component
         else:  # If there are multiple components, we assume one of them is the main
             is_main_comp_found = False
-            main_component: Optional[Component] = None
+            main_component: Optional[ComponentDto] = None
 
             for comp in mod.comps:  # Search for the main component
                 if comp.id in self.components:
@@ -136,7 +136,7 @@ class Builder:
 
         return main_component
 
-    def vst_comp(self, comp: ast_nodes.Comp) -> Component:
+    def vst_comp(self, comp: ast_nodes.Comp) -> ComponentDto:
         if comp.id in self.symbol_table.components.keys():
             raise SemanticalError(
                 f'Component "{comp.id}" has already been declared.',
@@ -144,10 +144,11 @@ class Builder:
             )
 
         component_id = comp.id
-        component = Component()
+        component = ComponentDto(component_id)
         self.symbol_table.components[component_id] = self.init_component_table(
             comp,
         )
+        self.symbol_table.components[component_id].object = component
 
         for stmt in comp.stmts:
             if isinstance(stmt, ast_nodes.Decl):
@@ -161,14 +162,15 @@ class Builder:
 
         return component
 
-    def vst_decl(self, decl: ast_nodes.Decl, component_id: str, component: Component) -> None:
+    def vst_decl(self, decl: ast_nodes.Decl, component_id: str, component: ComponentDto) -> None:
         assert decl.id in self.symbol_table.components[component_id].busses.keys(), (
             f'Bus "{decl.id}" has not been declared in the symbol table.'
         )
 
         bus_symbol = self.symbol_table.components[component_id].busses[decl.id]
-        bit_bus = BitBus()
-        bit_bus.id = decl.id
+        bit_bus = BitBusDto()
+        bit_bus.id_ = decl.id
+        bus_symbol.object = bit_bus
 
         # if decl.conn == ast_nodes.Connection.INPUT:
         #     component.interface.append(decl.id)
@@ -181,8 +183,9 @@ class Builder:
         if decl.assign is not None:
             # Create the bus assignment
             assignment, size = self.vst_expr(decl.assign, component_id, component)
-            bit_bus.set_assignment(assignment)
+            bit_bus.assignment = assignment
 
+            #TODO improve using symbol table
             if size != bus_symbol.size:
                 raise SemanticalError(
                     (
@@ -192,9 +195,9 @@ class Builder:
                     decl.line_number
                 )
 
-        component.busses[decl.id] = bit_bus
+        component.busses.append(bit_bus)
 
-    def vst_assign(self, assign: ast_nodes.Assign, component_id: str, component: Component) -> None:
+    def vst_assign(self, assign: ast_nodes.Assign, component_id: str, component: ComponentDto) -> None:
         if assign.destiny.id not in self.symbol_table.components[component_id].busses.keys():
             # All destiny signals must be declared previously
             raise SemanticalError(
@@ -224,7 +227,7 @@ class Builder:
 
         # Create the assignment and put in the assignment field
         # TODO change to make run if declaration is after assignment
-        if component.busses.get(assign.destiny.id) is None:
+        if self.symbol_table.components[component_id].busses.get(assign.destiny.id) is None:
             raise SemanticalError(
                 (
                     f'Identifier "{assign.destiny.id}" has not been declared '
@@ -248,16 +251,17 @@ class Builder:
                 assign.destiny.line_number
             )
 
-        component.busses[assign.destiny.id].assignment = assignment
+        #TODO improve picking an object from symbol table
+        self.symbol_table.components[component_id].busses[assign.destiny.id].object.assignment = assignment
 
-    def vst_expr(self, expr, component_id: str, component: Component) -> Tuple[Evaluator, int]:
+    def vst_expr(self, expr, component_id: str, component: ComponentDto) -> Tuple[expr_nodes.ExprNode, int]:
         assignment = self.vst_expr_elem(expr, component_id, component)
 
         return assignment
 
     def vst_expr_elem(
-        self, expr_elem: ast_nodes.ExprElem, component_id: str, component: Component
-    ) -> Tuple[Evaluator, int]:
+        self, expr_elem: ast_nodes.ExprElem, component_id: str, component: ComponentDto
+    ) -> Tuple[expr_nodes.ExprNode, int]:
         """
         Visit an expression element, validate it, and return a callable for evaluation."""
         if expr_elem is None:
@@ -277,12 +281,12 @@ class Builder:
             bus_symbol.is_read = True
             size = bus_symbol.size
 
-            bus_ref = expr_nodes.BusRef(component.busses[expr_elem.id])
+            bus_ref = expr_nodes.BusRef(self.symbol_table.components[component_id].busses[expr_elem.id].object)
 
             return bus_ref, size
         elif isinstance(expr_elem, ast_nodes.BitField):
             bit_field = expr_elem
-            bit_value = BitBusValue([bool(int(bit)) for bit in bit_field.value])
+            bit_value = BitBusValueDto(bit_field.value)
             const = expr_nodes.Const(bit_value)
 
             return const, bit_field.size
@@ -404,23 +408,27 @@ class Builder:
         else:
             assert False, f'Invalid expression element: {expr_elem}'
 
-    def vst_inst(self, inst: ast_nodes.Inst, component_id: str, component: Component) -> None:
+    def vst_inst(self, inst: ast_nodes.Inst, component_id: str, component: ComponentDto) -> None:
         assert inst.comp_id is not None, 'Instance component cannot be None.'
 
+        # Check if the subcomponent was already processed
         if inst.comp_id not in self.components.keys():
             self.components[inst.comp_id] = self.vst_comp(self.comp_nodes[inst.comp_id])
 
         alias = inst.comp_id if inst.sub_alias is None else inst.sub_alias
-
+        subcomponent = copy.deepcopy(self.components[inst.comp_id])
 
         top_busses = self.symbol_table.components[component_id].busses
         bottom_busses = copy.deepcopy(self.symbol_table.components[inst.comp_id].busses)
 
+        # Add the subcomponent's buses to the top component's symbol table
         top_busses |= {
             f'{alias}.{bus_id}': bus for bus_id, bus in bottom_busses.items()
         }
 
-        component.add_component(
-            alias,
-            copy.deepcopy(self.components[inst.comp_id])
-        )
+        # Link the new subcomponent's bus objects to the top component's symbol table because
+        # deepcopy still makes references to the old objects.
+        for bus in subcomponent.busses:
+            self.symbol_table.components[component_id].busses[f'{alias}.{bus.id_}'].object = bus
+
+        component.add_subcomponent(subcomponent, alias)

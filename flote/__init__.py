@@ -1,7 +1,7 @@
 from .frontend.builder import Builder
 from .frontend.parser import Parser
 from .frontend.scanner import Scanner
-from .backend.test_bench import TestBench
+from .test_bench import TestBench
 
 
 def elaborate(code) -> TestBench:

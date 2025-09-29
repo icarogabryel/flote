@@ -1,3 +1,7 @@
+from .ir.busses import BusDto
+from .ir.component import ComponentDto
+
+
 class BusSymbol:
     """Class that represents a bus symbol in the symbol table."""
     def __init__(self, type, is_assigned, connection_type, size: int):
@@ -6,6 +10,7 @@ class BusSymbol:
         self.connection_type = connection_type
         self.size = size
         self.is_read = False
+        self.object: None | BusDto = None
 
     def __repr__(self):
         return (
@@ -18,6 +23,7 @@ class CompTable:
     """Class that represents a component's symbol table."""
     def __init__(self):
         self.busses: dict[str, BusSymbol] = {}
+        self.object: None | ComponentDto = None
 
     def __str__(self):
         return '\n'.join(
