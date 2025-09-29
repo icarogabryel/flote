@@ -6,11 +6,11 @@ from .frontend.scanner import Scanner
 from .test_bench import TestBench
 
 try:
-    from .backend.rust.core.render import Render
+    from .backend.rust.core.render import Renderer
 except ImportError:
     warn('Rust backend not available, using Python backend.')
 
-    from .backend.python.core.render import Render
+    from .backend.python.core.render import Renderer
 
 
 def elaborate(code: str) -> TestBench:
@@ -23,7 +23,7 @@ def elaborate(code: str) -> TestBench:
     builder = Builder(ast)
     ir = builder.ir
 
-    render = Render(ir)
+    render = Renderer(ir)
     component = render.component
 
     test_bench = TestBench(component)

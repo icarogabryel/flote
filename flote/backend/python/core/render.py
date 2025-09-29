@@ -5,7 +5,7 @@ from .busses import BitBus, BitBusValue, Bus
 from .component import Component
 
 
-class Render:
+class Renderer:
     def __init__(self, ir: str):
         self.ir = ir
         self.buffer_bus_dict: dict[str, Bus] = {}
