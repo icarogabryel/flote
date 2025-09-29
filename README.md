@@ -90,11 +90,16 @@ To finish the beta version, the following tasks need to be completed:
   - [X] Implement the IR render to use the Python backend
   - [ ] Implement the Rust backend
 - [ ] Improve README
+- [ ] Change license to .txt
+- [ ] Make automated tests
+- [ ] Create GitHub Actions for CI/CD
 - [ ] Create documentation
 - [ ] Create site with GitHub Pages
 
 For future releases, the following features are planned:
 
+- [ ] Create import feature
+- [ ] Create std libs
 - [ ] Add generate statement support
 - [ ] Add multi-assignment support
 - [ ] Add in-out signals support
