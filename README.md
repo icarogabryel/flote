@@ -7,12 +7,13 @@
 <br>
 <div align="center">
   <img alt="GitHub Repo stars" src="https://img.shields.io/github/stars/icarogabryel/flote?style=flat&logo=github">
+  <img alt="GitHub Workflow" src="https://img.shields.io/github/actions/workflow/status/icarogabryel/flote/CI.yml">
   <img alt="GitHub Release" src="https://img.shields.io/github/v/release/icarogabryel/flote?color=green">
   <img alt="PyPI - Version" src="https://img.shields.io/pypi/v/flote?color=green">
   <img src="https://img.shields.io/github/license/icarogabryel/flote" alt="license"/>
 </div>
 
-<!-- stars, last release, pypi, readthedocs, reddit, license-->
+<!-- stars, build workflow, last release, pypi, readthedocs, reddit, license-->
 
 ## 🛸 Introduction
 
