@@ -117,11 +117,11 @@ class Renderer:
 
                 bit_bus.assignment = assignment
 
-                for influenced_bus_id in j_bus['influence_list']:
-                    influenced_bus = self.buffer_bus_dict[influenced_bus_id]
+            for influenced_bus_id in j_bus['influence_list']:
+                influenced_bus = self.buffer_bus_dict[influenced_bus_id]
 
-                    if influenced_bus not in bit_bus.influence_list:
-                        bit_bus.influence_list.append(influenced_bus)
+                if influenced_bus not in bit_bus.influence_list:
+                    bit_bus.influence_list.append(influenced_bus)
 
         component.busses = self.buffer_bus_dict
 
