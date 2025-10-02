@@ -9,7 +9,7 @@ class ComponentDto(JsonRepresentation):
         self.busses: list[BusDto] = []
 
     def __repr__(self):
-        return f'{"\n".join([bus.__str__() for bus in self.busses])}'
+        return '\n'.join([bus.__str__() for bus in self.busses])
 
     def __str__(self) -> str:
         return f'Component {self.id_}:\n{self.__repr__()}'
