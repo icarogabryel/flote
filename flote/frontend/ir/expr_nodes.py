@@ -3,22 +3,23 @@ from .busses import BusDto, BusValueDto
 from .expr_node import ExprNode
 
 
-class BusRef(ExprNode):
+class Ref(ExprNode):
     """This class represents a reference to a bus in the circuit."""
-    def __init__(self, bus: BusDto):
+    def __init__(self, bus: BusDto, slice: None | int):
         self.bus = bus
+        self.slice = slice
 
     def __repr__(self) -> str:
-        return f'BusRef({self.bus.id_})'
+        return f'Ref({self.bus.id_})'
 
     def __str__(self) -> str:
-        return f'BusRef ({self.bus.id_})'
+        return f'Ref ({self.bus.id_})'
 
     def get_sensitivity_list(self):
         return [self.bus]
 
     def to_json(self):
-        return {'type': 'bus_ref', 'args': {'id': self.bus.id_}}
+        return {'type': 'ref', 'args': {'id': self.bus.id_, 'slice': self.slice}}
 
 
 class Const(ExprNode):

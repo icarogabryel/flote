@@ -1,9 +1,9 @@
 mod = comp, {comp};
 comp = ['main'], 'comp', ID, '{', {stmt}, '}';
-stmt = decl | assign | inst;
-decl = ['in' | 'out'], 'bit', ID, [dimension], ['=', expr], ';';
-dimension = '[', ['-'], DEC, ']';
-assign = ID, '=', expr, ';';
+stmt = decl | asmt | inst;
+decl = ['in' | 'out'], 'bit', ID, [dim], ['=', expr], ';';
+dim = '[', ['-'], DEC, ']';
+asmt = ID, '=', expr, ';';
 inst = 'sub', ID, ['as' ID],';';
 
 (* Expression rules *)
@@ -11,9 +11,10 @@ expr = term, exprDash;
 exprDash = ('or' | 'nor'), term, exprDash | ε;
 term = fact, termDash;
 termDash = ('xor' | 'xnor'), fact, termDash | ε;
-fact = primary, factDash;
-factDash = ('and' | 'nand'), primary, factDash | ε;
-primary = 'not', primary | '(', expr, ')' | ID | BIT_FIELD;
+fact = prim, factDash;
+factDash = ('and' | 'nand'), prim, factDash | ε;
+prim = 'not', prim | '(', expr, ')' | ref | BIT_FIELD;
+ref = ID, ["[", DEC, "]"]
 
 (* Lexical rules *)
 ID = ? [a-zA-Z_][a-zA-Z0-9_]* ?;

@@ -1,4 +1,4 @@
-import copy
+from copy import deepcopy
 from json import dumps
 from typing import Optional, Tuple
 from warnings import warn
@@ -273,20 +273,24 @@ class Builder:
                 'Expression element cannot be None.'
             )
 
-        if isinstance(expr_elem, ast_nodes.Identifier):
-            if expr_elem.id not in \
-                    self.symbol_table.components[component_id].busses.keys():
+        if isinstance(expr_elem, ast_nodes.Ref):
+            ref = expr_elem
+
+            if (ref_id := ref.id_.id) not in self.symbol_table.components[component_id].busses.keys():
                 raise SemanticalError(
-                    f'Identifier "{expr_elem.id}" has not been declared.',
-                    expr_elem.line_number
+                    f'Bus reference "{ref_id}" has not been declared.',
+                   ref.id_.line_number
                 )
 
-            bus_symbol = self.symbol_table.components[component_id].busses[expr_elem.id]
+            bus_symbol = self.symbol_table.components[component_id].busses[expr_elem.id_.id]
             bus_symbol.is_read = True
             size = bus_symbol.size
 
             #TODO fix type checking
-            bus_ref = expr_nodes.BusRef(self.symbol_table.components[component_id].busses[expr_elem.id].object)
+            bus_ref = expr_nodes.Ref(
+                self.symbol_table.components[component_id].busses[expr_elem.id_.id].object,
+                ref.slice
+            )
 
             return bus_ref, size
         elif isinstance(expr_elem, ast_nodes.BitField):
@@ -421,10 +425,10 @@ class Builder:
             self.components[inst.comp_id] = self.vst_comp(self.comp_nodes[inst.comp_id])
 
         alias = inst.comp_id if inst.sub_alias is None else inst.sub_alias
-        subcomponent = copy.deepcopy(self.components[inst.comp_id])
+        subcomponent = deepcopy(self.components[inst.comp_id])
 
         top_busses = self.symbol_table.components[component_id].busses
-        bottom_busses = copy.deepcopy(self.symbol_table.components[inst.comp_id].busses)
+        bottom_busses = deepcopy(self.symbol_table.components[inst.comp_id].busses)
 
         # Add the subcomponent's buses to the top component's symbol table
         top_busses |= {

@@ -363,10 +363,20 @@ class Parser:
         if (token_label := token.label) == 'id':
             identifier = ast_nodes.Identifier(token.lexeme)
             identifier.line_number = token.line_number
-
+            ref = ast_nodes.Ref(identifier)
             self.advance()
 
-            return identifier
+            if self.get_current_token().label == 'l_bracket':
+                self.advance()
+
+                self.match_label('dec')
+                ref.slice = int(self.get_current_token().lexeme)
+                self.advance()
+
+                self.match_label('r_bracket')
+                self.advance()
+
+            return ref
 
         elif token_label == 'bit_field':
             value = self.get_current_token().lexeme.strip('"')

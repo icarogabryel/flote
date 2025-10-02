@@ -41,7 +41,7 @@ def elaborate_from_file(file_path):
     return elaborate(code)
 
 
-def comp_ir(code: str) -> str:
+def get_ir(code: str) -> str:
     scanner = Scanner(code)
     tokens_stream = scanner.token_stream
 

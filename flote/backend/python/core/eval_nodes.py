@@ -1,15 +1,19 @@
 from .busses import BusValue, Bus, Evaluator
 
 
-class BusRef(Evaluator):
+class Ref(Evaluator):
     """This class represents a reference to a bus in the circuit."""
-    def __init__(self, bus: Bus):
+    def __init__(self, bus: Bus, index: None | int):
         self.bus = bus
+        self.index = index
 
     def __repr__(self) -> str:
         return f'{self.bus.id}'
 
     def evaluate(self) -> BusValue:
+        if self.index:
+            return self.bus.value[self.index]
+
         return self.bus.value
 
 

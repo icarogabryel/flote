@@ -1,6 +1,6 @@
 from json import loads
 
-from . import expr_nodes
+from . import eval_nodes
 from .busses import BitBus, BitBusValue, Bus
 from .component import Component
 
@@ -11,7 +11,7 @@ class Renderer:
         self.buffer_bus_dict: dict[str, Bus] = {}
         self.component = self.render()
 
-    def render_expr(self, j_expr) -> expr_nodes.Evaluator | None:
+    def render_expr(self, j_expr) -> eval_nodes.Evaluator | None:
         """Render an expression from an intermediate representation (IR) json string.
 
         Args:
@@ -25,17 +25,19 @@ class Renderer:
         if expr_type == 'const':
             value = BitBusValue(j_expr['args']['value'])
 
-            return expr_nodes.Const(value)
-        elif expr_type == 'bus_ref':
+            return eval_nodes.Const(value)
+        elif expr_type == 'ref':
             bus_id = j_expr['args']['id']
             bus = self.buffer_bus_dict[bus_id]
+            ref_slice = j_expr['args']['slice']
 
-            return expr_nodes.BusRef(bus)
+            return eval_nodes.Ref(bus, ref_slice)
         elif expr_type == 'not':
             expr = self.render_expr(j_expr['args']['expr'])
             assert expr is not None, "Failed to render NOT expression"
 
-            return expr_nodes.Not(expr)
+            return eval_nodes.Not(expr)
+        #TODO also put in a func/dict
         elif expr_type in ('and', 'or', 'xor', 'nand', 'nor', 'xnor'):
             l_expr = self.render_expr(j_expr['args']['l_expr'])
             r_expr = self.render_expr(j_expr['args']['r_expr'])
@@ -44,32 +46,32 @@ class Renderer:
                 assert l_expr is not None, "Failed to render AND left expression"
                 assert r_expr is not None, "Failed to render AND right expression"
 
-                return expr_nodes.And(l_expr, r_expr)
+                return eval_nodes.And(l_expr, r_expr)
             elif expr_type == 'or':
                 assert l_expr is not None, "Failed to render OR left expression"
                 assert r_expr is not None, "Failed to render OR right expression"
 
-                return expr_nodes.Or(l_expr, r_expr)
+                return eval_nodes.Or(l_expr, r_expr)
             elif expr_type == 'xor':
                 assert l_expr is not None, "Failed to render XOR left expression"
                 assert r_expr is not None, "Failed to render XOR right expression"
 
-                return expr_nodes.Xor(l_expr, r_expr)
+                return eval_nodes.Xor(l_expr, r_expr)
             elif expr_type == 'nand':
                 assert l_expr is not None, "Failed to render NAND left expression"
                 assert r_expr is not None, "Failed to render NAND right expression"
 
-                return expr_nodes.Nand(l_expr, r_expr)
+                return eval_nodes.Nand(l_expr, r_expr)
             elif expr_type == 'nor':
                 assert l_expr is not None, "Failed to render NOR left expression"
                 assert r_expr is not None, "Failed to render NOR right expression"
 
-                return expr_nodes.Nor(l_expr, r_expr)
+                return eval_nodes.Nor(l_expr, r_expr)
             elif expr_type == 'xnor':
                 assert l_expr is not None, "Failed to render XNOR left expression"
                 assert r_expr is not None, "Failed to render XNOR right expression"
 
-                return expr_nodes.Xnor(l_expr, r_expr)
+                return eval_nodes.Xnor(l_expr, r_expr)
 
         else:
             assert False, f'Unknown expression type: {expr_type}'

@@ -77,10 +77,12 @@ class Comp:
 
 class Decl:
     def __init__(self) -> None:
+        #TODO make id be an identifier object, not string
         self.id = ''
         self.conn = Connection.INTERNAL
         self.type = 'bit'
         self.dimension: Optional[Dimension] = None
+        #TODO change atribute name to 'assignment_expr'
         self.assign: Optional[ExprElem] = None
         self.line_number = 0
 
@@ -107,6 +109,18 @@ class Decl:
         return desc
 
 
+class Identifier:
+    def __init__(self, id: str) -> None:
+        self.id = id
+        self.line_number: Optional[int] = None
+
+    def __repr__(self) -> str:
+        return f'Id: "{self.id}"'
+
+    def __str__(self) -> str:
+        return self.__repr__()
+
+
 class Dimension:
     def __init__(self, size=1, msb=Msb.ASCENDING) -> None:
         # Private to ensure size is set through the setter method
@@ -122,9 +136,10 @@ class Dimension:
         return f'Dimension: {self.size}, MSB={msb_name}'
 
 
-ExprElem = Union['Identifier', 'BitField', 'UnaryOp', 'BinaryOp']
+ExprElem = Union['Ref', 'BitField', 'UnaryOp', 'BinaryOp']
 
 
+#TODO change name to 'Assignment'
 class Assign:
     def __init__(self, destiny: 'Identifier', expr: ExprElem) -> None:
         self.destiny = destiny
@@ -210,16 +225,10 @@ class XnorOp(BinaryOp):
         return f'Xnor {self.l_expr} {self.r_expr}'
 
 
-class Identifier:
-    def __init__(self, id: str) -> None:
-        self.id = id
-        self.line_number: Optional[int] = None
-
-    def __repr__(self) -> str:
-        return f'Id: "{self.id}"'
-
-    def __str__(self) -> str:
-        return self.__repr__()
+class Ref():
+    def __init__(self, id_):
+        self.id_: Identifier = id_
+        self.slice: None | int = None
 
 
 class BitField:
