@@ -1,0 +1,23 @@
+comp Mux {
+    in bit a;
+    in bit b;
+    in bit s;
+
+    bit w1 = not s and a;
+    bit w2 = s and b;
+
+    out bit y = w1 or w2;
+}
+
+main comp Inverter {
+    in bit a;
+    in bit s;
+    out bit y;
+
+    sub Mux as TestMux;
+
+    TestMux.a = a;
+    TestMux.b = not a;
+    TestMux.s = s;
+    y = TestMux.y;
+}

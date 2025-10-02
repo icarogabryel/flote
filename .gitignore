@@ -1,18 +1,20 @@
 # IDE files
 .vscode/
 
-# Python cache files
-__pycache__/
-.pytest_cache/
-*.pyc
-
 # Virtual environment
 .env/
 env/
 .venv/
 venv/
 
-# Distribution files
-build/
-dist/
-*.egg-info/
+# Python cache files
+__pycache__/
+.pytest_cache/
+*.py[cod]
+
+# Compiled shared objects
+*.so
+
+# Rust/Cargo files
+target/
+Cargo.lock

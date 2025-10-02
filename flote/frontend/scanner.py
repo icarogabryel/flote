@@ -18,6 +18,8 @@ KEY_WORDS = [
     'xor',
     'nor',
     'or',
+    'sub',
+    'as',
 ]
 SYMBOLS_LABELS = {
     ';': 'semicolon',
@@ -66,7 +68,7 @@ class Scanner():
         self.code = code + END_OF_FILE
         self.line_number = 1
         self.index = 0  # Current index in the code string
-        self.token_stream = []
+        self.token_stream: list[Token] = []
 
         self.get_token_stream()
 
@@ -149,7 +151,7 @@ class Scanner():
                 # The label is the lexeme itself in case of keywords
                 token = Token(self.line_number, lexeme, lexeme)
             # Check if the lexeme is a valid identifier
-            elif re.match(r'^[a-zA-Z]\w*$', lexeme):
+            elif re.match(r'^[A-Za-z_]\w*(?:\.[A-Za-z_]\w*)?$', lexeme):
                 token = Token(self.line_number, 'id', lexeme)
             # Check if the lexeme is a valid binary number
             elif re.match(r'^\"[0-1]+\"$', lexeme):

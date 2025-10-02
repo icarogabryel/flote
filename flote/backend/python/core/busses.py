@@ -3,6 +3,14 @@ from abc import ABC, abstractmethod
 from typing import Any, Optional
 
 
+class Evaluator(ABC):
+    """Base class for all evaluators."""
+    @abstractmethod
+    def evaluate(self) -> 'BusValue':
+        """Evaluate the expression."""
+        pass
+
+
 class SimulationError(Exception):
     """This class represents an error in the simulation."""
     def __init__(self, message: str) -> None:
@@ -10,14 +18,6 @@ class SimulationError(Exception):
 
     def __str__(self) -> str:
         return self.message
-
-
-class Evaluator(ABC):
-    """Base class for all evaluators."""
-    @abstractmethod
-    def evaluate(self) -> Any:
-        """Evaluate the expression."""
-        pass
 
 
 class VcdValue(ABC):
@@ -37,6 +37,10 @@ class BusValue(VcdValue):
         pass
 
     @abstractmethod
+    def __getitem__(self, index) -> 'BusValue':
+        pass
+
+    @abstractmethod
     def __invert__(self) -> 'BusValue':
         pass
 
@@ -53,14 +57,25 @@ class BusValue(VcdValue):
         pass
 
 
-class Bus(Evaluator):
+class Bus(ABC):
     """This class represents a bus in the circuit."""
     def __init__(self) -> None:
+        # Id to help debugging
+        self.id: Optional[str] = None  # The id of the bus.
         # The assignment of the bus. It can be an expression or None.
         self.assignment: Optional[Evaluator] = None
         self.value: BusValue = self.get_default()  # The value of the bus.
         # The list of buses that the current bus depends on.
-        self.sensitivity_list: list[str] = []
+        self.influence_list: list[Bus] = []
+
+    def __str__(self) -> str:
+        return (
+            f'id: {self.id} assign: {self.assignment} IL: {[bus.id for bus in self.influence_list]}'
+            f' Value: {self.value}'
+        )
+
+    def __repr__(self) -> str:
+        return self.__str__()
 
     @abstractmethod
     def get_default(self) -> BusValue:
@@ -76,9 +91,6 @@ class Bus(Evaluator):
     def insert_value(self, value) -> None:
         """This method inserts a value into the bus if it is valid"""
         pass
-
-    def evaluate(self):
-        return self.value
 
     def assign(self):
         """Do the assignment of the bus when not None."""
@@ -100,6 +112,9 @@ class BitBusValue(BusValue):
         return [False]
 
     #* Operators overloading
+    def __getitem__(self, index) -> 'BitBusValue':
+        return self.raw_value[index]
+
     def __invert__(self) -> 'BitBusValue':
         return BitBusValue([not bit for bit in self.raw_value])
 
@@ -139,9 +154,3 @@ class BitBus(Bus):
             )
 
         self.value = BitBusValue([bool(int(bit)) for bit in value.strip('"')])
-
-    def __repr__(self):
-        return (
-            f'Assignment: {self.assignment}, Current Value: '
-            f'{self.value}, SL: {self.sensitivity_list}'
-        )

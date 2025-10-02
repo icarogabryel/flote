@@ -1,18 +1,20 @@
-from .busses import BusValue, Evaluator
-from .component import Component
+from .busses import BusValue, Bus, Evaluator
 
 
-class BusRef(Evaluator):
+class Ref(Evaluator):
     """This class represents a reference to a bus in the circuit."""
-    def __init__(self, component: Component, id: str):
-        self.component = component
-        self.id = id
+    def __init__(self, bus: Bus, index: None | int):
+        self.bus = bus
+        self.index = index
 
     def __repr__(self) -> str:
-        return self.id
+        return f'{self.bus.id}'
 
     def evaluate(self) -> BusValue:
-        return self.component.bus_dict[self.id].value
+        if self.index:
+            return self.bus.value[self.index]
+
+        return self.bus.value
 
 
 class Const(Evaluator):
@@ -26,7 +28,6 @@ class Const(Evaluator):
         return self.value
 
 
-#TODO type all this
 class UnaryOperation(Evaluator):
     def __init__(self, expr: Evaluator) -> None:
         self.expr = expr
