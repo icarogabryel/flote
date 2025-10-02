@@ -8,7 +8,7 @@ from datetime import datetime
 from .backend.python.core.component import Component
 
 
-VERSION = '0.2.0'
+VERSION = '0.3.0'
 CODENAME = 'Gambiarra'
 VALID_UNITS = ['fs', 'ps', 'ns', 'us', 'ms', 's']
 
