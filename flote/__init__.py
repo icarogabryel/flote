@@ -3,7 +3,7 @@
 from .frontend.builder import Builder
 from .frontend.parser import Parser
 from .frontend.scanner import Scanner
-from .test_bench import TestBench
+from .testbench import TestBench
 
 #TODO implement Rust backend
 # try:
