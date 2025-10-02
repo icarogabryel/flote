@@ -97,7 +97,14 @@ class Renderer:
         for j_bus in j_busses:
             bit_bus = BitBus()
             bit_bus.id = j_bus['id']
-            bit_bus.value = BitBusValue(j_bus['value'])
+            type = j_bus['type']
+
+            #TODO add other types
+            if type == 'bit_bus':
+                bit_bus.value = BitBusValue(j_bus['value'])
+            else:
+                assert False, 'Invalid IR.'
+
             self.buffer_bus_dict[j_bus['id']] = bit_bus
 
         for j_bus in j_busses:

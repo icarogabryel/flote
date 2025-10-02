@@ -159,8 +159,8 @@ class Builder:
                 self.vst_decl(stmt, component_id, component)
             elif isinstance(stmt, ast_nodes.Assign):
                 self.vst_assign(stmt, component_id, component)
-            elif isinstance(stmt, ast_nodes.Inst):
-                self.vst_inst(stmt, component_id, component)
+            # elif isinstance(stmt, ast_nodes.Inst):
+            #     self.vst_inst(stmt, component_id, component)
             else:
                 assert False, f'Invalid statement: {stmt}'
 
@@ -283,8 +283,19 @@ class Builder:
                 )
 
             bus_symbol = self.symbol_table.components[component_id].busses[expr_elem.id_.id]
+
+            if ref.slice is not None:
+                if (size := bus_symbol.size) <= ref.slice:
+                    raise SemanticalError(
+                        f'Index [{ref.slice}] out of bounds for "{ref_id}".',
+                        ref.id_.line_number
+                    )
+
+                size = 1  #TODO change when slice implemented
+            else:
+                size = bus_symbol.size
+
             bus_symbol.is_read = True
-            size = bus_symbol.size
 
             #TODO fix type checking
             bus_ref = expr_nodes.Ref(

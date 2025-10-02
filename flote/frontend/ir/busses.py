@@ -9,18 +9,14 @@ from .expr_node import ExprNode
 from .representation import JsonRepresentation
 
 
+#TODO see if i really need this?
 class BusValueDto(JsonRepresentation):
     """This class represents a value in the circuit."""
     def __init__(self, value=None) -> None:
-        self.raw_value: Any = self.get_default() if value is None else self.format_value(value)
+        self.raw_value: Any = self.get_default() if value is None else value
 
     @abstractmethod
     def get_default(self) -> Any:
-        pass
-
-    @abstractmethod
-    def format_value(self, value: Any) -> Any:
-        """Converts the input string to the internal representation."""
         pass
 
 
@@ -49,19 +45,9 @@ class BusDto(JsonRepresentation):
         """This method returns the default value of the bus."""
         pass
 
-    def to_json(self):
-        if self.assignment is None:
-            assignment_json = None
-        else:
-            assignment_json = self.assignment.to_json()
-
-        #TODO add type of bus
-        return {
-            'id': self.id_,
-            'assignment': assignment_json,
-            'value': self.value.to_json(),
-            'influence_list': [bus.id_ for bus in self.influence_list]
-        }
+    @abstractmethod
+    def to_json(self) -> dict[str, Any]:
+        pass
 
     def make_influence_list(self) -> None:
         """This method adds an assignment to the bus."""
@@ -80,22 +66,8 @@ class BitBusValueDto(BusValueDto):
     def get_default(self) -> list[bool]:
         return [False]
 
-    def format_value(self, value: str) -> list[bool]:
-        """Converts the input string to a list of booleans."""
-        formatted_value = []
-
-        for char in value.strip('"'):
-            if char == '0':
-                formatted_value.append(False)
-            elif char == '1':
-                formatted_value.append(True)
-            else:
-                assert False, f'Invalid bit value: {char}'
-
-        return formatted_value
-
     def to_json(self) -> dict[str, Any]:
-        return {'bit_bus_value': self.raw_value}
+        return self.raw_value
 
 
 class BitBusDto(BusDto):
@@ -105,3 +77,18 @@ class BitBusDto(BusDto):
 
     def set_dimension(self, dimension: int) -> None:
         self.value = BitBusValueDto([False] * dimension)
+
+    def to_json(self):
+        if self.assignment is None:
+            assignment_json = None
+        else:
+            assignment_json = self.assignment.to_json()
+
+        #TODO add type of bus
+        return {
+            'id': self.id_,
+            'type': 'bit_bus',
+            'value': self.value.to_json(),
+            'assignment': assignment_json,
+            'influence_list': [bus.id_ for bus in self.influence_list]
+        }
