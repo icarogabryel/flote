@@ -73,21 +73,21 @@ To finish the beta version, the following tasks need to be completed:
   - [X] Operation
   - [X] Error handling for declaration and assignment
   - [X] .vcd dump support for multi-dimensional bit signals
-  - [ ] Indexing
+  - [X] Indexing
   - [ ] Slicing
-  - [ ] Error handling for indexing and slicing
+  - [-] Error handling for indexing and slicing
   - [ ] Concatenation
   - [ ] Big endian support
   - [ ] N-Dimensional arrays support with concatenation
 - [ ] Add sub-components support
   - [X] Instantiation
   - [X] Connection
-  - [ ] Error handling for declaration, instantiation and connection
+  - [ ] Error handling for instantiation and connection
   - [ ] .vcd dump support for sub-components
 - [ ] Implement Rust backend for faster simulation
   - [X] Connect Python with Rust using pyo3 and maturin
   - [X] Create IR (Intermediate Representation) to communicate frontend with backend
-  - [X] Implement the IR render to use the Python backend
+  - [X] Implement the IR render to use the Python backend previously created
   - [ ] Implement the Rust backend
 - [ ] Improve README
 - [ ] Change license to .txt
