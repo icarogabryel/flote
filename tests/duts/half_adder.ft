@@ -1,8 +1,7 @@
-main comp halfAdder {
+main comp HalfAdder {
     in bit a;
     in bit b;
 
     out bit sum = a xor b;
     out bit carry = a and b;
-
 }
