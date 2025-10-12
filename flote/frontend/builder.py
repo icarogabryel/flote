@@ -203,6 +203,7 @@ class Builder:
 
     def vst_assign(self, assign: ast_nodes.Assign, component_id: str, component: ComponentDto) -> None:
         if assign.destiny.id not in self.symbol_table.components[component_id].busses.keys():
+            #TODO change to accept after declaration
             # All destiny signals must be declared previously
             raise SemanticalError(
                 f'Identifier "{assign.destiny.id}" has not been declared.',
@@ -211,7 +212,7 @@ class Builder:
 
         bus_symbol = self.symbol_table.components[component_id].busses[assign.destiny.id]
 
-        if bus_symbol.is_assigned == True:
+        if bus_symbol.is_assigned is True:
             # Destiny signal cannot be assigned more than once
             raise SemanticalError(
                 f'Identifier "{assign.destiny.id}" already assigned.',
@@ -229,17 +230,6 @@ class Builder:
         # Mark the bus as assigned in the symbol table
         bus_symbol.is_assigned = True
 
-        # Create the assignment and put in the assignment field
-        # TODO change to make run if declaration is after assignment
-        if self.symbol_table.components[component_id].busses.get(assign.destiny.id) is None:
-            raise SemanticalError(
-                (
-                    f'Identifier "{assign.destiny.id}" has not been declared '
-                    'before.'
-                ),
-                assign.destiny.line_number
-            )
-
         assignment, size = self.vst_expr(
             assign.expr,
             component_id,
@@ -249,8 +239,8 @@ class Builder:
         if size != bus_symbol.size:
             raise SemanticalError(
                 (
-                    f'Assignment size ({size}) does not match bus size '
-                    f'({bus_symbol.size}) for "{assign.destiny.id}".'
+                    f'Assignment size ({size}) does not match target bus range ({bus_symbol.size}'
+                    f') for "{assign.destiny.id}".'
                 ),
                 assign.destiny.line_number
             )
@@ -284,10 +274,10 @@ class Builder:
 
             bus_symbol = self.symbol_table.components[component_id].busses[expr_elem.id_.id]
 
-            if ref.slice is not None:
-                if (size := bus_symbol.size) <= ref.slice:
+            if ref.range_ is not None:
+                if (size := bus_symbol.size) <= ref.range_:
                     raise SemanticalError(
-                        f'Index [{ref.slice}] out of bounds for "{ref_id}".',
+                        f'Index [{ref.range_}] out of bounds for "{ref_id}".',
                         ref.id_.line_number
                     )
 
@@ -300,7 +290,7 @@ class Builder:
             #TODO fix type checking
             bus_ref = expr_nodes.Ref(
                 self.symbol_table.components[component_id].busses[expr_elem.id_.id].object,
-                ref.slice
+                ref.range_
             )
 
             return bus_ref, size

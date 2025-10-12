@@ -360,6 +360,7 @@ class Parser:
     def primary(self) -> ast_nodes.ExprElem:
         token = self.get_current_token()
 
+        # ref = ID, ["[", DEC, "]"];
         if (token_label := token.label) == 'id':
             identifier = ast_nodes.Identifier(token.lexeme)
             identifier.line_number = token.line_number
@@ -370,7 +371,7 @@ class Parser:
                 self.advance()
 
                 self.match_label('dec')
-                ref.slice = int(self.get_current_token().lexeme)
+                ref.range_ = int(self.get_current_token().lexeme)
                 self.advance()
 
                 self.match_label('r_bracket')

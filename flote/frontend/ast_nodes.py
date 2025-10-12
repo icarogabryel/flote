@@ -228,7 +228,7 @@ class XnorOp(BinaryOp):
 class Ref():
     def __init__(self, id_):
         self.id_: Identifier = id_
-        self.slice: None | int = None
+        self.range_: None | int = None
 
 
 class BitField:
