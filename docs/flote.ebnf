@@ -1,20 +1,20 @@
 mod = comp, {comp};
-comp = ['main'], 'comp', ID, '{', {stmt}, '}';
+comp = ["main"], "comp", ID, "{", {stmt}, "}";
 stmt = decl | asmt | inst;
-decl = ['in' | 'out'], 'bit', ID, [dim], ['=', expr], ';';
-dim = '[', ['-'], DEC, ']';
-asmt = ID, '=', expr, ';';
-inst = 'sub', ID, ['as' ID],';';
+decl = ["in" | "out"], "bit", ID, [dim], ["=", expr], ";";
+dim = "[", ["-"], DEC, "]";
+asmt = ID, "=", expr, ";";
+inst = "sub", ID, ["as", ID],";";
 
 (* Expression rules *)
 expr = term, exprDash;
-exprDash = ('or' | 'nor'), term, exprDash | ε;
+exprDash = ("or" | "nor"), term, exprDash | ε;
 term = fact, termDash;
-termDash = ('xor' | 'xnor'), fact, termDash | ε;
+termDash = ("xor" | "xnor"), fact, termDash | ε;
 fact = prim, factDash;
-factDash = ('and' | 'nand'), prim, factDash | ε;
-prim = 'not', prim | '(', expr, ')' | ref | BIT_FD;
-ref = ID, ["[", DEC, "]"]
+factDash = ("and" | "nand"), prim, factDash | ε;
+prim = "not", prim | "(", expr, ")" | ref | BIT_FD;
+ref = ID, ["[", DEC, "]"];
 
 (* Lexical rules *)
 ID = ? [a-zA-Z_][a-zA-Z0-9_]* ?;
