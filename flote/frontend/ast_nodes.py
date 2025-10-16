@@ -226,9 +226,16 @@ class XnorOp(BinaryOp):
 
 
 class Ref():
-    def __init__(self, id_):
+    def __init__(self, id_, range_begin: None | int = None, range_end: None | int = None) -> None:
         self.id_: Identifier = id_
-        self.range_: None | int = None
+        self.range_begin: None | int = range_begin
+        self.range_end: None | int = range_end
+
+    def __repr__(self) -> str:
+        return f'Ref: {self.id_}[{self.range_begin}:{self.range_end}]'
+
+    def __str__(self) -> str:
+        return self.__repr__()
 
 
 class BitField:

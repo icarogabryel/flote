@@ -15,12 +15,15 @@ def make_ir(source_code: str) -> str:
 
     scanner = Scanner(source_code)
     token_stream = scanner.token_stream
+    print(token_stream)
 
     parser = Parser(token_stream)
     ast = parser.ast
+    print(ast)
 
     builder = Builder(ast)
     ir = builder.ir
+    print(ir)
 
     return ir
 

@@ -274,26 +274,47 @@ class Builder:
 
             bus_symbol = self.symbol_table.components[component_id].busses[expr_elem.id_.id]
 
-            if ref.range_ is not None:
-                if (size := bus_symbol.size) <= ref.range_:
+            if ref.range_begin is not None:
+                if (size := bus_symbol.size) <= ref.range_begin:
                     raise SemanticalError(
-                        f'Index [{ref.range_}] out of bounds for "{ref_id}".',
+                        f'Index [{ref.range_begin}:] out of bounds for "{ref_id}".',
                         ref.id_.line_number
                     )
 
-                size = 1  #TODO change when slice implemented
+                if ref.range_end is not None:
+                    if ref.range_end > size:
+                        raise SemanticalError(
+                            f'Index [:{ref.range_end - 1}] out of bounds for "{ref_id}".',
+                            ref.id_.line_number
+                        )
+
+                    if ref.range_begin > ref.range_end:
+                        raise SemanticalError(
+                            (
+                                f'Invalid range [:{ref.range_end - 1}] for "{ref_id}". '
+                                'The end index must be greater than or equal to the begin index.'
+                            ),
+                            ref.id_.line_number
+                        )
+
+                    ref.range_end += 1
+                else:
+                    ref.range_end = ref.range_begin + 1
+
+                slice_size = ref.range_end - ref.range_begin
             else:
-                size = bus_symbol.size
+                slice_size = bus_symbol.size
 
             bus_symbol.is_read = True
 
             #TODO fix type checking
             bus_ref = expr_nodes.Ref(
                 self.symbol_table.components[component_id].busses[expr_elem.id_.id].object,
-                ref.range_
+                ref.range_begin,
+                ref.range_end,
             )
 
-            return bus_ref, size
+            return bus_ref, slice_size
         elif isinstance(expr_elem, ast_nodes.BitField):
             bit_field = expr_elem
             bit_value = BitBusValueDto(bit_field.value)

@@ -23,6 +23,7 @@ KEY_WORDS = [
 ]
 SYMBOLS_LABELS = {
     ';': 'semicolon',
+    ':': 'colon',
     '(': 'l_paren',
     ')': 'r_paren',
     '{': 'l_brace',

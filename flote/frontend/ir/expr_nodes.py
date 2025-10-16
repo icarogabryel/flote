@@ -5,9 +5,10 @@ from .expr_node import ExprNode
 
 class Ref(ExprNode):
     """This class represents a reference to a bus in the circuit."""
-    def __init__(self, bus: BusDto, slice: None | int):
+    def __init__(self, bus: BusDto, slice_begin: int, slice_end: int) -> None:
         self.bus = bus
-        self.slice = slice
+        self.slice_begin = slice_begin
+        self.slice_end = slice_end
 
     def __repr__(self) -> str:
         return f'Ref({self.bus.id_})'
@@ -19,7 +20,12 @@ class Ref(ExprNode):
         return [self.bus]
 
     def to_json(self):
-        return {'type': 'ref', 'args': {'id': self.bus.id_, 'slice': self.slice}}
+        return {
+            'type': 'ref',
+            'args': {
+                'id': self.bus.id_, 'slice_begin': self.slice_begin, 'slice_end': self.slice_end
+            }
+        }
 
 
 class Const(ExprNode):
