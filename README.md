@@ -76,7 +76,7 @@ To finish the beta version, the following tasks need to be completed:
   - [X] .vcd dump support for multi-dimensional bit signals
   - [X] Indexing
   - [ ] Slicing
-  - [-] Error handling for indexing and slicing
+  - [X] Error handling for indexing and slicing
   - [ ] Concatenation
   - [ ] Big endian support
   - [ ] N-Dimensional arrays support with concatenation
