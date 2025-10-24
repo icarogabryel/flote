@@ -2,7 +2,7 @@
 
 <br>
 <div align="center">
-  <img src="https://raw.githubusercontent.com/icarogabryel/flote/refs/heads/main/docs/logo.png" width="40%" alt="Flote logo"/>
+  <img src="https://raw.githubusercontent.com/icarogabryel/flote/docs/logo.png" width="40%" alt="Flote logo"/>
 </div>
 <br>
 <div align="center">
@@ -20,7 +20,7 @@
 Flote is a hardware description language and Python framework for hardware simulation. It is designed to be **friendly, simple, light and productive**. More easy to use and learn than Verilog and VHDL. Using Flote, you can create integrated circuits component by using it's HDL and/or Python framework that work by the HLS (High Level Synthesis) concept.
 
 <div align="center">
-  <img src="https://raw.githubusercontent.com/icarogabryel/flote/refs/heads/main/docs/print.png" width="90%" alt="Flote in VS Code"/>
+  <img src="https://raw.githubusercontent.com/icarogabryel/flote/docs/print.png" width="90%" alt="Flote in VS Code"/>
 </div>
 
 Here is an example of a half adder in Flote:
