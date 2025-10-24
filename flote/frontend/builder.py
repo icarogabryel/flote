@@ -275,33 +275,31 @@ class Builder:
             bus_symbol = self.symbol_table.components[component_id].busses[expr_elem.id_.id]
 
             if ref.range_begin is not None:
-                if (size := bus_symbol.size) <= ref.range_begin:
+                if ref.range_begin >= (size := bus_symbol.size):
                     raise SemanticalError(
                         f'Index [{ref.range_begin}:] out of bounds for "{ref_id}".',
                         ref.id_.line_number
                     )
 
                 if ref.range_end is not None:
-                    if ref.range_end > size:
+                    if ref.range_end >= size:
                         raise SemanticalError(
-                            f'Index [:{ref.range_end - 1}] out of bounds for "{ref_id}".',
+                            f'Index [:{ref.range_end}] out of bounds for "{ref_id}".',
                             ref.id_.line_number
                         )
 
                     if ref.range_begin > ref.range_end:
                         raise SemanticalError(
                             (
-                                f'Invalid range [:{ref.range_end - 1}] for "{ref_id}". '
-                                'The end index must be greater than or equal to the begin index.'
+                                f'Invalid range [:{ref.range_end}] for "{ref_id}". '
+                                'The end index must be equal or greater than to the begin index.'
                             ),
                             ref.id_.line_number
                         )
 
-                    ref.range_end += 1
+                    slice_size = (ref.range_end - ref.range_begin) + 1
                 else:
-                    ref.range_end = ref.range_begin + 1
-
-                slice_size = ref.range_end - ref.range_begin
+                    slice_size = 1
             else:
                 slice_size = bus_symbol.size
 
@@ -341,7 +339,7 @@ class Builder:
 
             if l_size != r_size:
                 raise SemanticalError(
-                    'Left and right expressions of And operation must be the same size.',
+                    f'Left ({l_expr}) and right ({r_expr}) expressions of And operation must be the same size.',
                     expr_elem.line_number
                 )
 

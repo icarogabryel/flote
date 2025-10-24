@@ -356,7 +356,7 @@ class Parser:
 
             return current_node
 
-    #* primary = 'not', primary | '(', expr, ')' | ID | BIN
+    #* prim = "not", prim | "(", expr, ")" | ref | BIT_FD;
     def primary(self) -> ast_nodes.ExprElem:
         token = self.get_current_token()
 
