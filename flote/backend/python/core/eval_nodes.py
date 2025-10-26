@@ -3,18 +3,16 @@ from .busses import BusValue, Bus, Evaluator
 
 class Ref(Evaluator):
     """This class represents a reference to a bus in the circuit."""
-    def __init__(self, bus: Bus, index: None | int):
+    def __init__(self, bus: Bus, range_begin: int, range_end: int):
         self.bus = bus
-        self.index = index
+        self.range_begin = range_begin
+        self.range_end = range_end
 
     def __repr__(self) -> str:
         return f'{self.bus.id}'
 
     def evaluate(self) -> BusValue:
-        if self.index:
-            return self.bus.value[self.index]
-
-        return self.bus.value
+        return self.bus.value[self.range_begin:self.range_end + 1]
 
 
 class Const(Evaluator):

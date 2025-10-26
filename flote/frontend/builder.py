@@ -297,19 +297,23 @@ class Builder:
                             ref.id_.line_number
                         )
 
-                    slice_size = (ref.range_end - ref.range_begin) + 1
+                    range_begin = ref.range_begin
+                    range_end = ref.range_end
                 else:
-                    slice_size = 1
+                    range_begin = ref.range_begin
+                    range_end = range_begin
             else:
-                slice_size = bus_symbol.size
+                range_begin = 0
+                range_end = bus_symbol.size - 1
 
+            slice_size = (range_end - range_begin) + 1
             bus_symbol.is_read = True
 
             #TODO fix type checking
             bus_ref = expr_nodes.Ref(
                 self.symbol_table.components[component_id].busses[expr_elem.id_.id].object,
-                ref.range_begin,
-                ref.range_end,
+                range_begin,
+                range_end,
             )
 
             return bus_ref, slice_size

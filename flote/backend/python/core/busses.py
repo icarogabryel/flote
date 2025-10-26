@@ -112,8 +112,8 @@ class BitBusValue(BusValue):
         return [False]
 
     #* Operators overloading
-    def __getitem__(self, index) -> 'BitBusValue':
-        return self.raw_value[index]
+    def __getitem__(self, slice: slice) -> 'BitBusValue':
+        return BitBusValue(self.raw_value[slice])
 
     def __invert__(self) -> 'BitBusValue':
         return BitBusValue([not bit for bit in self.raw_value])

@@ -29,9 +29,11 @@ class Renderer:
         elif expr_type == 'ref':
             bus_id = j_expr['args']['id']
             bus = self.buffer_bus_dict[bus_id]
-            ref_slice = j_expr['args']['slice']
 
-            return eval_nodes.Ref(bus, ref_slice)
+            ref_slice_begin = j_expr['args']['slice_begin']
+            ref_slice_end = j_expr['args']['slice_end']
+
+            return eval_nodes.Ref(bus, ref_slice_begin, ref_slice_end)
         elif expr_type == 'not':
             expr = self.render_expr(j_expr['args']['expr'])
             assert expr is not None, "Failed to render NOT expression"

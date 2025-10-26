@@ -1,7 +1,12 @@
+from pathlib import Path
+
 from flote import elaborate_from_file
 
+BASE_DIR = Path(__file__).parent.parent.parent
+TESTS_DIR = BASE_DIR / 'tests'
+
 byte_and_gate = elaborate_from_file(
-    'tests/examples/ByteAndGate.ft'
+    TESTS_DIR / 'duts' / 'byte_and_gate.ft'
 )
 
 print(byte_and_gate)

@@ -1,11 +1,14 @@
+from pathlib import Path
+
 import flote as ft
 
-from tests.utils import BASE_DIR
+BASE_DIR = Path(__file__).parent.parent.parent
+TESTS_DIR = BASE_DIR / 'tests'
 
 
 def test():
     half_adder = ft.elaborate_from_file(
-        BASE_DIR / 'tests/duts/HalfAdder.ft'
+        TESTS_DIR / 'duts' / 'half_adder.ft'
     )
     print(half_adder)
 
@@ -29,7 +32,7 @@ def test():
 
     print(half_adder)
 
-    #half_adder.save_vcd('HalfAdder.vcd')
+    half_adder.save_vcd('HalfAdder.vcd')
 
 
 if __name__ == '__main__':
