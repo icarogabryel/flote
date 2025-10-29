@@ -1,4 +1,4 @@
-from .buses import BusValue, Bus, Evaluator
+from .buses import BitBusValue, BusValue, Bus, Evaluator
 
 
 class Ref(Evaluator):
@@ -13,6 +13,24 @@ class Ref(Evaluator):
 
     def evaluate(self) -> BusValue:
         return self.bus.value[self.range_begin:self.range_end + 1]
+
+
+class Conc(Evaluator):
+    """This class represents a concatenation of expressions."""
+    def __init__(self, exprs: list[Evaluator]) -> None:
+        self.exprs = exprs
+
+    def __repr__(self) -> str:
+        return f'Conc({self.exprs})'
+
+    def evaluate(self) -> BusValue:
+        #TODO Trate types
+        result = BitBusValue([])
+
+        for expr in self.exprs:
+            result += expr.evaluate()
+
+        return result
 
 
 class Const(Evaluator):

@@ -1,4 +1,4 @@
-comp AndGate{
+comp ByteAndGate{
     in bit a[-8];
     in bit b[-8];
 

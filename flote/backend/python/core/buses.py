@@ -41,6 +41,10 @@ class BusValue(VcdValue):
         pass
 
     @abstractmethod
+    def __add__(self, other: 'BusValue') -> 'BusValue':
+        pass
+
+    @abstractmethod
     def __invert__(self) -> 'BusValue':
         pass
 
@@ -114,6 +118,9 @@ class BitBusValue(BusValue):
     #* Operators overloading
     def __getitem__(self, slice: slice) -> 'BitBusValue':
         return BitBusValue(self.raw_value[slice])
+
+    def __add__(self, other) -> 'BitBusValue':
+        return BitBusValue(self.raw_value + other.raw_value)
 
     def __invert__(self) -> 'BitBusValue':
         return BitBusValue([not bit for bit in self.raw_value])

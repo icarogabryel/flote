@@ -39,6 +39,11 @@ class Renderer:
             assert expr is not None, "Failed to render NOT expression"
 
             return eval_nodes.Not(expr)
+        elif expr_type == 'conc':
+            exprs = j_expr['args']['exprs']
+            rendered_exprs = [self.render_expr(expr) for expr in exprs]
+
+            return eval_nodes.Conc(rendered_exprs)
         #TODO also put in a func/dict
         elif expr_type in ('and', 'or', 'xor', 'nand', 'nor', 'xnor'):
             l_expr = self.render_expr(j_expr['args']['l_expr'])

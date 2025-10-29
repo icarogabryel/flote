@@ -6,7 +6,7 @@ BASE_DIR = Path(__file__).parent.parent.parent
 TESTS_DIR = BASE_DIR / 'tests'
 
 byte_and_gate = elaborate_from_file(
-    TESTS_DIR / 'duts' / 'byte_and_gate.ft'
+    TESTS_DIR / 'duts' / 'ByteAndGate.ft'
 )
 
 print(byte_and_gate)

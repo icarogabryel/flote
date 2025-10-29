@@ -8,7 +8,7 @@ TESTS_DIR = BASE_DIR / 'tests'
 
 def test():
     half_adder = ft.elaborate_from_file(
-        TESTS_DIR / 'duts' / 'half_adder.ft'
+        TESTS_DIR / 'duts' / 'HalfAdder.ft'
     )
     print(half_adder)
 

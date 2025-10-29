@@ -6,7 +6,7 @@ BASE_DIR = Path(__file__).parent.parent.parent
 TESTS_DIR = BASE_DIR / 'tests'
 
 inverter = elaborate_from_file(
-    TESTS_DIR / 'duts' / 'inverter.ft'
+    TESTS_DIR / 'duts' / 'SelInverter.ft'
 )
 
 print(inverter)
@@ -20,4 +20,4 @@ inverter.wait(10)
 inverter.update({'a': '1', 's': '1'})
 inverter.wait(10)
 
-inverter.save_vcd('Inverter.vcd')
+inverter.save_vcd('SelInverter.vcd')

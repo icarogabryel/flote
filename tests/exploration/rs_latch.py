@@ -35,7 +35,7 @@ def test_rs_latch():
     latch.update({'set': '0', 'rst': '0'})
     latch.wait(1)
 
-    # latch.save_vcd(BASE_DIR / 'tests/waves/RsLatch.vcd')
+    latch.save_vcd('RsLatch.vcd')
 
 
 if __name__ == '__main__':
