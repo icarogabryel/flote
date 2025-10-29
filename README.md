@@ -8,12 +8,12 @@
 <div align="center">
   <img alt="GitHub Repo stars" src="https://img.shields.io/github/stars/icarogabryel/flote?style=flat&logo=github">
   <img alt="GitHub Workflow" src="https://img.shields.io/github/actions/workflow/status/icarogabryel/flote/CI.yml">
-  <img alt="GitHub Release" src="https://img.shields.io/github/v/release/icarogabryel/flote?color=green">
   <img alt="PyPI - Version" src="https://img.shields.io/pypi/v/flote?color=green">
   <img src="https://img.shields.io/github/license/icarogabryel/flote" alt="license"/>
 </div>
 
-<!-- stars, build workflow, last release, pypi, readthedocs, reddit, license-->
+<!-- stars, build workflow, pypi, readthedocs*, reddit*, license -->
+<!-- * not created yet -->
 
 ## 🛸 Introduction
 
@@ -38,13 +38,11 @@ comp halfAdder {
 
 ## ⚙️ How it works
 
-Flote's Evaluator uses a structure of a compiler's front-end to elaborate the component. It has a scanner, parser and a builder. This last one is responsible for build the component, an object that can be manipulated in Python and simulates the behavior of the integrated circuit. The model object it's a set of signals buses and uses event driven algorithm and dynamic programming to simulate the behavior of the circuit.
+Flote's elaborator uses a structure of a compiler's front-end to generate a intermediate representation (IR) of the circuit described in Flote HDL. It has a scanner, parser and a builder. This last one is responsible for build the IR. Then, the IR is passed to the backend (Python or Rust) that is responsible for render the IR into a simulation model, an object that can be manipulated with the Python API and simulates the behavior of the integrated circuit. The model object it's a set of signals busses and uses event driven simulation and dynamic programming to simulate the behavior of the circuit. Also with the use of this Python package you can save the simulation values in a waveform file.
 
-Using the HLS side, you can create the component "by hand". Also with the use of the Python package you can manipulate the signals and sava then in a waveform file.
+## ✒️ Grammar and Syntax
 
-## Grammar and Syntax
-
-The language is defined by the EBNF findable [here](docs/flote.ebnf).
+The language is defined by the [EBNF file findable here](docs/flote.ebnf).
 
 ## 🚀 Release
 
@@ -90,6 +88,7 @@ To finish the beta version, the following tasks need to be completed:
   - [X] Create IR (Intermediate Representation) to communicate frontend with backend
   - [X] Implement the IR render to use the Python backend previously created
   - [ ] Implement the Rust backend
+- [ ] Make order not important in signal references
 - [ ] Improve README
 - [ ] Make automated tests
 - [X] Create GitHub Actions for CI/CD
