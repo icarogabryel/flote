@@ -1,4 +1,4 @@
-from .busses import BusValue, Bus, Evaluator
+from .buses import BusValue, Bus, Evaluator
 
 
 class Ref(Evaluator):

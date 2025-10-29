@@ -1,4 +1,4 @@
-from .ir.busses import BusDto
+from .ir.buses import BusDto
 from .ir.component import ComponentDto
 
 

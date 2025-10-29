@@ -5,7 +5,7 @@ from warnings import warn
 
 from . import ast_nodes
 from .ir import expr_nodes
-from .ir.busses import BitBusDto, BitBusValueDto
+from .ir.buses import BitBusDto, BitBusValueDto
 from .ir.component import ComponentDto
 from .symbol_table import BusSymbol, CompTable, SymbolTable
 

@@ -1,6 +1,6 @@
 from collections import deque
 
-from .busses import Bus
+from .buses import Bus
 
 
 class Component():

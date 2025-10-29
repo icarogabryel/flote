@@ -1,7 +1,7 @@
 from json import loads
 
 from . import eval_nodes
-from .busses import BitBus, BitBusValue, Bus
+from .buses import BitBus, BitBusValue, Bus
 from .component import Component
 
 

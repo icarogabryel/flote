@@ -1,5 +1,5 @@
 """This module defines the expression nodes used in the assignment of a bus."""
-from .busses import BusDto, BusValueDto
+from .buses import BusDto, BusValueDto
 from .expr_node import ExprNode
 
 

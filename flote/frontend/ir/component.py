@@ -1,5 +1,5 @@
 """Data transfer object for a component."""
-from .busses import BusDto
+from .buses import BusDto
 from .representation import JsonRepresentation
 
 
