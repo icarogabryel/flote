@@ -107,8 +107,8 @@ class Parser:
             return self.decl()
         elif label in FIRST_SETS['assign']:
             return self.assign()
-        # elif label == 'sub':
-        #     return self.inst()
+        elif label == 'sub':
+            return self.inst()
         else:
             assert False, f'Unexpected Token: {label}'
 
@@ -415,25 +415,25 @@ class Parser:
             )
 
     #* inst = 'sub', ID, ['as' ID],';';
-    # def inst(self):
-    #     self.match_label('sub')
-    #     inst = ast_nodes.Inst()
-    #     inst.line_number = self.get_current_token().line_number
-    #     self.advance()
+    def inst(self):
+        self.match_label('sub')
+        inst = ast_nodes.Inst()
+        inst.line_number = self.get_current_token().line_number
+        self.advance()
 
-    #     self.match_label('id')
-    #     inst.comp_id = self.get_current_token().lexeme
-    #     self.advance()
+        self.match_label('id')
+        inst.comp_id = self.get_current_token().lexeme
+        self.advance()
 
-    #     if self.get_current_token().label == 'as':
-    #         self.advance()
-    #         self.match_label('id')
-    #         inst.sub_alias = self.get_current_token().lexeme
-    #         self.advance()
-    #     else:
-    #         inst.sub_alias = inst.comp_id
+        if self.get_current_token().label == 'as':
+            self.advance()
+            self.match_label('id')
+            inst.sub_alias = self.get_current_token().lexeme
+            self.advance()
+        else:
+            inst.sub_alias = inst.comp_id
 
-    #     self.match_label('semicolon')
-    #     self.advance()
+        self.match_label('semicolon')
+        self.advance()
 
-    #     return inst
+        return inst

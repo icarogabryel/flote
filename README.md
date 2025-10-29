@@ -83,10 +83,10 @@ To finish the beta version, the following tasks need to be completed:
 - [ ] Add sub-components support
   - [X] Instantiation
   - [X] Connection
-  - [ ] Error handling for instantiation and connection
-  - [ ] .vcd dump support for sub-components
+  - [X] Error handling for instantiation and connection
+  - [ ] .vcd dump scope support for sub-components
 - [ ] Implement Rust backend for faster simulation
-  - [X] Connect Python with Rust using pyo3 and maturin
+  - [X] Connect Python with Rust using pyo3 and Maturin
   - [X] Create IR (Intermediate Representation) to communicate frontend with backend
   - [X] Implement the IR render to use the Python backend previously created
   - [ ] Implement the Rust backend

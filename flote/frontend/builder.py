@@ -159,8 +159,8 @@ class Builder:
                 self.vst_decl(stmt, component_id, component)
             elif isinstance(stmt, ast_nodes.Assign):
                 self.vst_assign(stmt, component_id, component)
-            # elif isinstance(stmt, ast_nodes.Inst):
-            #     self.vst_inst(stmt, component_id, component)
+            elif isinstance(stmt, ast_nodes.Inst):
+                self.vst_inst(stmt, component_id, component)
             else:
                 assert False, f'Invalid statement: {stmt}'
 
@@ -212,20 +212,29 @@ class Builder:
 
         bus_symbol = self.symbol_table.components[component_id].busses[assign.destiny.id]
 
+        if (bus_symbol.connection_type == ast_nodes.Connection.INPUT) and \
+                (not bus_symbol.is_lower_lvl):
+            raise SemanticalError(
+                f'Input Buses of top level like "{assign.destiny.id}" cannot be assigned.',
+                assign.destiny.line_number
+            )
+
+        if (bus_symbol.connection_type != ast_nodes.Connection.INPUT) and \
+                (bus_symbol.is_lower_lvl is True):
+            raise SemanticalError(
+                (
+                    f'Internal/out Buses of subcomponents like "{assign.destiny.id}" cannot be '
+                    f'assigned.'
+                ),
+                assign.destiny.line_number
+            )
+
         if bus_symbol.is_assigned is True:
             # Destiny signal cannot be assigned more than once
             raise SemanticalError(
                 f'Identifier "{assign.destiny.id}" already assigned.',
                 assign.destiny.line_number
             )
-
-        #TODO change to accept in subcomponents
-        # if bus_symbol.connection_type == ast_nodes.Connection.INPUT:
-        #     # Input buses cannot be assigned
-        #     raise SemanticalError(
-        #         f'Input Buses like "{assign.destiny.id}" cannot be assigned.',
-        #         assign.destiny.line_number
-        #     )
 
         # Mark the bus as assigned in the symbol table
         bus_symbol.is_assigned = True
@@ -269,11 +278,23 @@ class Builder:
             if (ref_id := ref.id_.id) not in self.symbol_table.components[component_id].busses.keys():
                 raise SemanticalError(
                     f'Bus reference "{ref_id}" has not been declared.',
-                   ref.id_.line_number
+                    ref.id_.line_number
                 )
 
             bus_symbol = self.symbol_table.components[component_id].busses[expr_elem.id_.id]
 
+            # Validate subcomponents busses references
+            if (bus_symbol.is_lower_lvl is True) and \
+                    (bus_symbol.connection_type != ast_nodes.Connection.OUTPUT):
+                raise SemanticalError(
+                    (
+                        f'Input/Internal busses like "{ref_id}" of a subcomponent cannot be '
+                        f'referenced from the higher level component.'
+                    ),
+                    ref.id_.line_number
+                )
+
+            # Validate range
             if ref.range_begin is not None:
                 if ref.range_begin >= (size := bus_symbol.size):
                     raise SemanticalError(
@@ -454,10 +475,14 @@ class Builder:
         top_busses = self.symbol_table.components[component_id].busses
         bottom_busses = deepcopy(self.symbol_table.components[inst.comp_id].busses)
 
+        for bus in bottom_busses.values():
+            bus.is_lower_lvl = True
+
         # Add the subcomponent's buses to the top component's symbol table
         top_busses |= {
             f'{alias}.{bus_id}': bus for bus_id, bus in bottom_busses.items()
         }
+
 
         # Link the new subcomponent's bus objects to the top component's symbol table because
         # deepcopy still makes references to the old objects.

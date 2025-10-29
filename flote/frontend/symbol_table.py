@@ -10,6 +10,7 @@ class BusSymbol:
         self.connection_type = connection_type
         self.size = size
         self.is_read = False
+        self.is_lower_lvl: bool = False
         self.object: None | BusDto = None
 
     def __repr__(self):
