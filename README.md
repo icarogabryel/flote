@@ -75,7 +75,7 @@ To finish the beta version, the following tasks need to be completed:
   - [X] Indexing
   - [X] Slicing
   - [X] Error handling for indexing and slicing
-  - [ ] Concatenation
+  - [X] Concatenation
   - [ ] Big endian support
   - [ ] N-Dimensional arrays support with concatenation
 - [ ] Add sub-components support
