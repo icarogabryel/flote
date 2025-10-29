@@ -24,6 +24,9 @@ KEY_WORDS = [
 SYMBOLS_LABELS = {
     ';': 'semicolon',
     ':': 'colon',
+    ',': 'comma',
+    '<': 'l_angle',
+    '>': 'r_angle',
     '(': 'l_paren',
     ')': 'r_paren',
     '{': 'l_brace',

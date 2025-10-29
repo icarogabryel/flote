@@ -28,6 +28,40 @@ class Ref(ExprNode):
         }
 
 
+class Conc(ExprNode):
+    """This class represents a concatenation of expressions."""
+    def __init__(self, exprs: list[ExprNode]) -> None:
+        self.exprs = exprs
+
+    def __repr__(self) -> str:
+        return f'Conc({self.exprs})'
+
+    def __str__(self) -> str:
+        desc = 'Conc:'
+
+        for expr in self.exprs:
+            expr_desc = str(expr).replace('\n', '\n|  ')
+            desc += f'\n|  |- {expr_desc}'
+
+        return desc
+
+    def to_json(self):
+        return {
+            'type': 'conc',
+            'args': {
+                'exprs': [expr.to_json() for expr in self.exprs]
+            }
+        }
+
+    def get_sensitivity_list(self):
+        sensitivity_list: list[BusDto] = []
+
+        for expr in self.exprs:
+            sensitivity_list += expr.get_sensitivity_list()
+
+        return sensitivity_list
+
+
 class Const(ExprNode):
     """This class represents a constant value in the circuit."""
     def __init__(self, value: BusValueDto) -> None:

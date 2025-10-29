@@ -136,7 +136,7 @@ class Dimension:
         return f'Dimension: {self.size}, MSB={msb_name}'
 
 
-ExprElem = Union['Ref', 'BitField', 'UnaryOp', 'BinaryOp']
+ExprElem = Union['Ref', 'BitField', 'UnaryOp', 'BinaryOp', 'Conc']
 
 
 #TODO change name to 'Assignment'
@@ -248,6 +248,26 @@ class BitField:
 
     def __str__(self) -> str:
         return self.__repr__()
+
+
+class Conc:
+    def __init__(self) -> None:
+        self.exprs: list[ExprElem] = []
+
+    def add_expr(self, elem: ExprElem) -> None:
+        self.exprs.append(elem)
+
+    def __repr__(self) -> str:
+        return f'Conc({self.exprs})'
+
+    def __str__(self) -> str:
+        desc = 'Conc:'
+
+        for expr in self.exprs:
+            expr_desc = str(expr).replace('\n', '\n|  ')
+            desc += f'\n|  |- {expr_desc}'
+
+        return desc
 
 
 class Inst:

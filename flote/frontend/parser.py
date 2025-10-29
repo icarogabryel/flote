@@ -356,11 +356,11 @@ class Parser:
 
             return current_node
 
-    #* prim = "not", prim | "(", expr, ")" | ref | BIT_FD;
+    #* prim = "not", prim | "(", expr, ")" | ref | BIT_FD | conc;
     def primary(self) -> ast_nodes.ExprElem:
         token = self.get_current_token()
 
-        # ref = ID, ["[", DEC, [":", DEC ], "]" ];
+        #* ref = ID, ["[", DEC, [":", DEC ], "]" ];
         if (token_label := token.label) == 'id':
             identifier = ast_nodes.Identifier(token.lexeme)
             identifier.line_number = token.line_number
@@ -384,14 +384,14 @@ class Parser:
                 self.advance()
 
             return ref
-
+        #* prim = BIT_FD
         elif token_label == 'bit_field':
             value = self.get_current_token().lexeme.strip('"')
 
             self.advance()
 
             return ast_nodes.BitField(value)
-
+        #* prim = "not", prim
         elif token_label == 'not':
             self.advance()
 
@@ -399,7 +399,7 @@ class Parser:
             node.expr = self.primary()
 
             return node
-
+        #* prim = "(", expr, ")"
         elif token_label == 'l_paren':
             self.advance()
             expr = self.expr()
@@ -407,7 +407,21 @@ class Parser:
             self.advance()
 
             return expr
+        #* conc = "<", expr, {",", expr }, ">";
+        elif token_label == 'l_angle':
+            self.advance()
+            conc = ast_nodes.Conc()
 
+            conc.add_expr(self.expr())
+
+            while self.get_current_token().label == 'comma':
+                self.advance()
+                conc.add_expr(self.expr())
+
+            self.match_label('r_angle')
+            self.advance()
+
+            return conc
         else:
             raise SyntacticalError(
                 token.line_number,

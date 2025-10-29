@@ -10,7 +10,7 @@ BASE_DIR = Path(__file__).parent.parent.parent
 TESTS_DIR = BASE_DIR / 'tests'
 
 
-def make_ir(source_code: str) -> str:
+def show_steps(source_code: str) -> None:
     """Helper function to create an IR from source code."""
 
     scanner = Scanner(source_code)
@@ -24,8 +24,6 @@ def make_ir(source_code: str) -> str:
     builder = Builder(ast)
     ir = builder.ir
     print(ir)
-
-    return ir
 
 
 if __name__ == '__main__':
@@ -56,7 +54,5 @@ if __name__ == '__main__':
         with open(selected, 'r', encoding='utf-8') as f:
             dut = f.read()
 
-        print('\n')
-        ir_json = make_ir(dut)
-        print(ir_json)
+        show_steps(dut)
         print('\n')

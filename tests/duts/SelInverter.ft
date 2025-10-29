@@ -9,7 +9,7 @@ comp Mux {
     out bit y = w1 or w2;
 }
 
-main comp Inverter {
+main comp SelInverter {
     in bit a;
     in bit s;
     out bit y;

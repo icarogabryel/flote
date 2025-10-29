@@ -350,6 +350,17 @@ class Builder:
             expr, size = self.vst_expr_elem(expr_elem.expr, component_id, component)
 
             return expr_nodes.Not(expr), size
+        elif isinstance(expr_elem, ast_nodes.Conc):
+            conc = expr_elem
+            exprs: list[expr_nodes.ExprNode] = []
+            total_size = 0
+
+            for sub_expr in conc.exprs:
+                expr, size = self.vst_expr_elem(sub_expr, component_id, component)
+                exprs.append(expr)
+                total_size += size
+
+            return expr_nodes.Conc(exprs), total_size
         elif isinstance(expr_elem, ast_nodes.AndOp):
             #TODO put a function for those asserts
             assert expr_elem.l_expr is not None, (
