@@ -70,7 +70,7 @@ class TestBench:
 
         header_declaration = f'\n$scope module {self.component.id_} $end\n'
 
-        for bit_name, bit_bus in self.component.busses.items():
+        for bit_name, bit_bus in self.component.buses.items():
             header_declaration += (
                 f'\t$var wire {len(bit_bus.value.raw_value)} {bit_name} {bit_name} $end\n'
             )
@@ -105,7 +105,7 @@ class TestBench:
 
         sample = WaveSample(self.s_time, [])
 
-        for id, bit in self.component.busses.items():
-            sample.signals.append(Signal(id, bit.value.get_vcd_repr()))
+        for id, bus in self.component.buses.items():
+            sample.signals.append(Signal(id, bus.get_vcd_repr()))
 
         self.samples.append(sample)

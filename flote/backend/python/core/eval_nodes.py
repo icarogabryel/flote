@@ -1,9 +1,9 @@
-from .buses import BitBusValue, BusValue, Bus, Evaluator
+from .buses import BitBusValue, BusValue, BaseBus, Evaluator
 
 
 class Ref(Evaluator):
     """This class represents a reference to a bus in the circuit."""
-    def __init__(self, bus: Bus, range_begin: int, range_end: int):
+    def __init__(self, bus: BaseBus, range_begin: int, range_end: int):
         self.bus = bus
         self.range_begin = range_begin
         self.range_end = range_end

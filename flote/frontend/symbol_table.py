@@ -1,5 +1,5 @@
-from .ir.buses import BusDto
-from .ir.component import ComponentDto
+from .ir.buses import BusDto, HlsBusDto
+from .ir.component import ComponentDto, HlsComponentDto
 
 
 class BusSymbol:
@@ -11,7 +11,7 @@ class BusSymbol:
         self.size = size
         self.is_read = False
         self.is_lower_lvl: bool = False
-        self.object: None | BusDto = None
+        self.object: None | BusDto | HlsBusDto = None
 
     def __repr__(self):
         return (
@@ -20,23 +20,23 @@ class BusSymbol:
         )
 
 
-class CompTable:
+class ComponentTable:
     """Class that represents a component's symbol table."""
     def __init__(self):
-        self.busses: dict[str, BusSymbol] = {}
-        self.object: None | ComponentDto = None
+        self.bus_symbols: dict[str, BusSymbol] = {}
+        self.object: ComponentDto | HlsComponentDto | None = None
 
     def __str__(self):
         return '\n'.join(
             f'| {bus_id} | {bus_symbol} |'
-            for bus_id, bus_symbol in self.busses.items()
+            for bus_id, bus_symbol in self.bus_symbols.items()
         )
 
 
 class SymbolTable:
     """Class that represents the symbol table formed in the builder."""
     def __init__(self):
-        self.components: dict[str, CompTable] = {}
+        self.components: dict[str, ComponentTable] = {}
 
     def __str__(self):
         return '\n'.join(

@@ -148,14 +148,14 @@ class Scanner():
             token = Token(self.line_number, SYMBOLS_LABELS[char], char)
             self.advance()
         # Check if the character can be the start of a word.
-        elif re.match(r'[a-zA-Z_\d\"]', char):
+        elif re.match(r'[@a-zA-Z_\d\"]', char):
             lexeme = self.scan_lexeme()
 
             if lexeme in KEY_WORDS:
                 # The label is the lexeme itself in case of keywords
                 token = Token(self.line_number, lexeme, lexeme)
-            # Check if the lexeme is a valid identifier
-            elif re.match(r'^[A-Za-z_]\w*(?:\.[A-Za-z_]\w*)?$', lexeme):
+            # Check if the lexeme is a valid identifier (may optionally start with @ for HTS comps)
+            elif re.match(r'^@?[A-Za-z_]\w*(?:\.[A-Za-z_]\w*)?$', lexeme):
                 token = Token(self.line_number, 'id', lexeme)
             # Check if the lexeme is a valid binary number
             elif re.match(r'^\"[0-1]+\"$', lexeme):

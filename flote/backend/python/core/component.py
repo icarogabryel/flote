@@ -1,17 +1,17 @@
 from collections import deque
 
-from .buses import Bus
+from .buses import BaseBus
 
 
 class Component():
     """This class represents a component."""
     def __init__(self, id_: str) -> None:
         self.id_: str = id_
-        self.busses: dict[str, Bus] = {}
+        self.buses: dict[str, BaseBus] = {}
 
     def __repr__(self):
         repr = ''
-        for bus_id, bus in self.busses.items():
+        for bus_id, bus in self.buses.items():
             repr += f'{bus_id}: {bus} {bus.influence_list}\n'
 
         return repr
@@ -22,7 +22,7 @@ class Component():
         The keys are the bit names and the values are the bit values.
         """
         return {
-            bit_name: str(bit.value) for bit_name, bit in self.busses.items()
+            bit_name: str(bit.value) for bit_name, bit in self.buses.items()
         }
 
     def stabilize(self):
@@ -31,7 +31,7 @@ class Component():
 
         It is wanted new values (an input stimulus) to the component.
         """
-        queue = deque(self.busses.values())
+        queue = deque(self.buses.values())
 
         while queue:
             bus = queue.popleft()
@@ -49,6 +49,6 @@ class Component():
 
     def update_signals(self, new_values: dict[str, str]) -> None:
         for id, new_value in new_values.items():
-            self.busses[id].insert_value(new_value)
+            self.buses[id].insert_value(new_value)
 
         self.stabilize()

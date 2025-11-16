@@ -1,6 +1,6 @@
 import re
 from abc import ABC, abstractmethod
-from typing import Any, Optional
+from typing import Any, Callable, Optional
 
 
 class Evaluator(ABC):
@@ -20,14 +20,53 @@ class SimulationError(Exception):
         return self.message
 
 
-class VcdValue(ABC):
-    """This base class represents a value that can be represented in a VCD file."""
+class BaseBus(ABC):
+    """This is the base class for all buses."""
+    def __init__(self) -> None:
+        self.id: Optional[str] = None
+        self.assignment: Any = None
+        self.value: Any = None
+        # The list of buses that the current bus depends on.
+        self.influence_list: list['BaseBus'] = []
+
+    @abstractmethod
+    def assign(self) -> None:
+        pass
+
     @abstractmethod
     def get_vcd_repr(self) -> str:
         pass
 
+    def insert_value(self, value) -> None:
+        self.value = value
 
-class BusValue(VcdValue):
+
+class HlsBus(BaseBus):
+    """This class represents a bus coming from an HLS component."""
+    def __init__(
+            self,
+            id_: str,
+            value: Any,
+            vcd_repr_func: Callable,
+            assignment: None | Callable = None,
+            influence_list: list[BaseBus] = [],
+    ) -> None:
+        super().__init__()
+        self.id_ = id_
+        self.value = value
+        self.assignment = assignment
+        self.influence_list: list[BaseBus] = influence_list
+        self.vcd_repr_func = vcd_repr_func
+
+    def assign(self) -> None:
+        if self.assignment:
+            self.value = self.assignment()
+
+    def get_vcd_repr(self) -> str:
+        return self.vcd_repr_func(self.value)
+
+
+class BusValue():
     """This class represents a value in the circuit."""
     def __init__(self, value=None) -> None:
         self.raw_value: Any = self.get_default() if value is None else value
@@ -61,16 +100,10 @@ class BusValue(VcdValue):
         pass
 
 
-class Bus(ABC):
-    """This class represents a bus in the circuit."""
+class Bus(BaseBus):
+    """This class represents a concrete bus in the circuit."""
     def __init__(self) -> None:
-        # Id to help debugging
-        self.id: Optional[str] = None  # The id of the bus.
-        # The assignment of the bus. It can be an expression or None.
-        self.assignment: Optional[Evaluator] = None
-        self.value: BusValue = self.get_default()  # The value of the bus.
-        # The list of buses that the current bus depends on.
-        self.influence_list: list[Bus] = []
+        super().__init__()
 
     def __str__(self) -> str:
         return (
@@ -96,7 +129,7 @@ class Bus(ABC):
         """This method inserts a value into the bus if it is valid"""
         pass
 
-    def assign(self):
+    def assign(self) -> None:
         """Do the assignment of the bus when not None."""
         if self.assignment:
             self.value = self.assignment.evaluate()
@@ -146,6 +179,9 @@ class BitBus(Bus):
 
     def get_valid_values(self) -> list[str]:
         return ['[01]+']
+
+    def get_vcd_repr(self) -> str:
+        return ''.join(['1' if bit else '0' for bit in self.value.raw_value])
 
     def insert_value(self, value: str) -> None:
         if not re.fullmatch(r'[01]+', value):
