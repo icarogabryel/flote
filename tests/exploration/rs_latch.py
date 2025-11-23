@@ -2,11 +2,11 @@ import flote as ft
 from pathlib import Path
 
 
-BASE_DIR = Path(__file__).parent.parent
+BASE_DIR = Path(__file__).parent.parent.parent
 
 
 def test_rs_latch():
-    latch = ft.elaborate_from_file(BASE_DIR / 'tests/examples/RsLatch.ft')
+    latch = ft.elaborate_file(BASE_DIR / 'tests/duts/RsLatch.ft')
 
     print(latch)
 
