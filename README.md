@@ -88,6 +88,7 @@ To finish the beta version, the following tasks need to be completed:
   - [X] Create IR (Intermediate Representation) to communicate frontend with backend
   - [X] Implement the IR render to use the Python backend previously created
   - [ ] Implement the Rust backend
+- [X] Implement abstract Python components
 - [ ] Make order not important in signal references
 - [ ] Improve README
 - [ ] Make automated tests
