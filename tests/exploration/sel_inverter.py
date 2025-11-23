@@ -1,11 +1,11 @@
 from pathlib import Path
 
-from flote import elaborate_from_file
+from flote import elaborate_file
 
 BASE_DIR = Path(__file__).parent.parent.parent
 TESTS_DIR = BASE_DIR / 'tests'
 
-inverter = elaborate_from_file(
+inverter = elaborate_file(
     TESTS_DIR / 'duts' / 'SelInverter.ft'
 )
 
