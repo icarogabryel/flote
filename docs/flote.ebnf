@@ -18,6 +18,7 @@ ref = ID, ["[", DEC, [":", DEC ], "]" ];
 conc = "<", expr, {",", expr }, ">";
 
 (* Lexical rules *)
-ID = ? [a-zA-Z_][a-zA-Z0-9_]* ?;
+(* ¿ used to don't interfere with EBNF parsing *)
+ID = ? @¿[A-Za-z_]\w*(\.[A-Za-z_]\w*)¿ ?;
 DEC = ? 0 | [1-9][0-9]* ?;
 BIT_FD = ? "([01]+)" ?;
