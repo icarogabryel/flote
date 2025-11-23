@@ -15,8 +15,8 @@ class BusSymbol:
 
     def __repr__(self):
         return (
-            f'| {self.type} | {self.is_assigned} | {self.connection_type} | '
-            f'{self.is_read} |'
+            f'| {self.type} | {self.is_assigned} | {self.connection_type} | {self.size} | '
+            f'{self.is_read} | {self.is_lower_lvl} |'
         )
 
 
