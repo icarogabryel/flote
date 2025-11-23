@@ -1,28 +1,14 @@
 from pathlib import Path
 
 import flote as ft
-from flote import Component, Bus, BitBusValue
+
 BASE_DIR = Path(__file__).parent.parent.parent
 TESTS_DIR = BASE_DIR / 'tests'
-
-comp = Component(
-    '@teste',
-    [
-        Bus(
-            'xx',
-            1,
-            lambda: BitBusValue([True]),
-            initial_value=BitBusValue([True]),
-            vcd_repr_func=lambda val: ''.join(['1' if bit else '0' for bit in val.raw_value])
-        ),
-    ]
-)
 
 
 def test():
     half_adder = ft.elaborate_file(
         TESTS_DIR / 'duts' / 'HalfAdder.ft',
-        hls_components=[comp]
     )
     print(half_adder)
 
