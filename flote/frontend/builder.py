@@ -43,7 +43,7 @@ class Builder:
 
     def get_ir(self) -> str:
         component = self.vst_mod(self.ast)
-        component.make_influence_lists()
+        component.make_influence_graph()
 
         return dumps(component.to_json())
 
