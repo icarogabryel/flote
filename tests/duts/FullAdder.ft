@@ -1,0 +1,28 @@
+comp HalfAdder {
+    in bit a;
+    in bit b;
+
+    out bit sum = a xor b;
+    out bit carry = a and b;
+}
+
+main comp FullAdder {
+    in bit a;
+    in bit b;
+    in bit cin;
+
+    out bit sum;
+    out bit cout;
+
+    sub HalfAdder as ha1;
+    sub HalfAdder as ha2;
+
+    ha1.a = a;
+    ha1.b = b;
+
+    ha2.a = ha1.sum;
+    ha2.b = cin;
+
+    sum = ha2.sum;
+    cout = ha1.carry or ha2.carry;
+}
