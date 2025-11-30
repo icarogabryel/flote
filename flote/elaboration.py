@@ -1,10 +1,8 @@
 from pathlib import Path
+from warnings import warn
 
-from flote.frontend.ir.buses import HlsBusDto
-
-from .backend.python.core.buses import HlsBus
-from .backend.python.core.renderer import Renderer
 from .frontend.builder import Builder
+from .frontend.ir.buses import HlsBusDto
 from .frontend.ir.component import HlsComponentDto
 from .frontend.parser import Parser
 from .frontend.scanner import Scanner
@@ -22,44 +20,25 @@ class ElaborationError(Exception):
         return self.message
 
 
-def elaborate(code: str, rust_backend=False, hls_components: list[HlsComponent] = []) -> TestBench:
-    # 1. Lexical analysis and token stream generation
-    scanner = Scanner(code)
-    tokens_stream = scanner.token_stream
+def render(ast, rust_backend, hls_components: list[HlsComponent] = []):
+    if rust_backend:
+        if len(hls_components) > 0:
+            warn('HLS components require Python backend, switching from Rust.')
+        else:
+            try:
+                from .backend.rust.core import Renderer as RustRenderer
 
-    # 2. Syntax analysis and AST generation
-    parser = Parser(tokens_stream)
-    ast = parser.ast
+                builder = Builder(ast)
+                ir = builder.ir
+                render = RustRenderer(ir)
+                return render.component
+            except ImportError:
+                warn('Rust backend not available, falling back to Python backend.')
 
-    # Try to use Rust backend if Python backend is not forced
-    # if rust_backend:
-    #     try:
-    #         from .backend.rust.core import Renderer
-    #     except ImportError:
-    #         warn('Rust backend not available or not found, using Python backend.')
-    #         from .backend.python.core import Renderer
-
-    #     if len(hls_components) > 0:
-    #         raise ElaborationError(
-    #             'HLS components integration is only supported with the Python backend.'
-    #         )
-
-    #     # 3. Semantical analysis and IR generation
-    #     builder = Builder(ast)
-    #     ir = builder.ir
-
-    #     # 4. Rendering the component from the IR
-    #     render = Renderer(ir)
-    #     component = render.component
-
-    #     # 5. Creating the testbench and encapsulating the component
-    #     test_bench = TestBench(component)
-    #     return test_bench
-
-    # Using Python backend, check for HLS components
+    # Process HLS components
     hls_symbol_table: dict[str, ComponentTable] = {}
     hls_components_dtos: dict[str, HlsComponentDto] = {}
-    hls_components_buses: dict[str, HlsBus] = {}
+    hls_components_buses = {}
 
     for hls_component in hls_components:
         hls_symbols, sim_buses = hls_component.render()
@@ -83,22 +62,39 @@ def elaborate(code: str, rust_backend=False, hls_components: list[HlsComponent] 
         hls_component_table.object = hls_component_dto
         hls_symbol_table[hls_component.id_] = hls_component_table
 
-    # 3. Semantical analysis and IR generation
+    # Build IR with HLS components
     builder = Builder(ast, hls_symbol_table, hls_components=hls_components_dtos)
     ir = builder.ir
 
-    # 4. Rendering the component from the IR
-    render = Renderer(ir, hls_components_buses)
-    component = render.component
+    # Render with Python backend
+    from .backend.python.core import Renderer as PythonRenderer
+    render = PythonRenderer(ir, hls_components_buses)
+    return render.component
 
-    # 5. Creating the testbench and encapsulating the component
+
+def elaborate(code: str, rust_backend=True, hls_components: list[HlsComponent] = []) -> TestBench:
+    # 1. Lexical analysis and token stream generation
+    scanner = Scanner(code)
+    tokens_stream = scanner.token_stream
+
+    # 2. Syntax analysis and AST generation
+    parser = Parser(tokens_stream)
+    ast = parser.ast
+
+    # 3. Semantical analysis and IR generation
+    component = render(ast, rust_backend=rust_backend, hls_components=hls_components)
+
+    # 4. Creating the testbench and encapsulating the component
+    assert component is not None, "Elaboration failed: component is None"
     test_bench = TestBench(component)
     return test_bench
 
 
-def elaborate_file(file_path, hls_components: list[HlsComponent] = []) -> TestBench:
+def elaborate_file(
+    file_path, rust_backend=True, hls_components: list[HlsComponent] = []
+) -> TestBench:
     p = Path(file_path)
     with p.open('r', encoding='utf-8') as file:
         code = file.read()
 
-    return elaborate(code, hls_components=hls_components)
+    return elaborate(code, rust_backend=rust_backend, hls_components=hls_components)

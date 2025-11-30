@@ -4,9 +4,8 @@ controlling time in them simulation.
 """
 from datetime import datetime
 
-#TODO use api
-from .backend.python.core.component import Component
-
+from .backend.python.core.component import Component as PythonComponent
+from .backend.rust.core import Component as RustComponent
 
 VERSION = '0.4.0'
 CODENAME = 'Gambiarra'
@@ -37,11 +36,11 @@ class WaveSample:
 
 
 class TestBench:
-    def __init__(self, component: Component) -> None:
-        self.s_time = 0
+    def __init__(self, component: PythonComponent | RustComponent) -> None:
+        self.s_time: int = 0
         self.time_unit: str = 'ns'
         self.samples: list[WaveSample] = []
-        self.component: Component = component
+        self.component = component
 
     def __str__(self) -> str:
         return self.component.__str__()
@@ -70,10 +69,22 @@ class TestBench:
 
         header_declaration = f'\n$scope module {self.component.id_} $end\n'
 
-        for bit_name, bit_bus in self.component.buses.items():
-            header_declaration += (
-                f'\t$var wire {len(bit_bus.value.raw_value)} {bit_name} {bit_name} $end\n'
-            )
+        # Check which backend is being used
+        is_rust = isinstance(self.component, RustComponent)
+
+        if is_rust:
+            # Rust backend: busses is Dict[str, str]
+            buses_dict = self.component.busses
+            for bit_name, bit_value in buses_dict.items():
+                header_declaration += (
+                    f'\t$var wire {len(bit_value)} {bit_name} {bit_name} $end\n'
+                )
+        else:
+            # Python backend: buses is Dict[str, BaseBus]
+            for bit_name, bit_bus in self.component.buses.items():
+                header_declaration += (
+                    f'\t$var wire {len(bit_bus.value.raw_value)} {bit_name} {bit_name} $end\n'
+                )
 
         header_declaration += '$upscope $end\n\n'
 
@@ -105,7 +116,17 @@ class TestBench:
 
         sample = WaveSample(self.s_time, [])
 
-        for id, bus in self.component.buses.items():
-            sample.signals.append(Signal(id, bus.get_vcd_repr()))
+        # Check which backend is being used
+        is_rust = isinstance(self.component, RustComponent)
+
+        if is_rust:
+            # Rust backend: busses is Dict[str, str]
+            buses_dict = self.component.busses
+            for id, value in buses_dict.items():
+                sample.signals.append(Signal(id, value))
+        else:
+            # Python backend: buses is Dict[str, BaseBus]
+            for id, bus in self.component.buses.items():
+                sample.signals.append(Signal(id, bus.get_vcd_repr()))
 
         self.samples.append(sample)

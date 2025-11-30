@@ -6,7 +6,7 @@ from .component import Component
 
 
 class Renderer:
-    def __init__(self, ir: str, hls_buses: dict[str, HlsBus]) -> None:
+    def __init__(self, ir: str, hls_buses: dict[str, HlsBus] = {}) -> None:
         self.ir = ir
         self.buffer_bus_dict: dict[str, BaseBus] = {}
         self.hls_buses = hls_buses

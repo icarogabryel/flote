@@ -96,8 +96,14 @@ pub struct Renderer {
 impl Renderer {
     #[new]
     fn new(ir: String) -> PyResult<Self> {
-        let inner = RustRenderer::new(ir);
-        Ok(Renderer { inner })
+        let mut inner = RustRenderer::new_empty(ir.clone());
+        match inner.render() {
+            Ok(component) => {
+                inner.component = Some(component);
+                Ok(Renderer { inner })
+            },
+            Err(e) => Err(PyRuntimeError::new_err(format!("Failed to render circuit: {}", e)))
+        }
     }
 
     /// Renderiza uma expressão a partir de JSON
@@ -119,15 +125,15 @@ impl Renderer {
 
     /// Obtém referência ao componente renderizado
     #[getter]
-    fn get_component(&self) -> PyResult<Option<Component>> {
+    fn get_component(&self) -> PyResult<Component> {
         match self.inner.get_component() {
             Some(comp) => {
                 // Clona o componente interno para criar um novo wrapper
-                Ok(Some(Component {
+                Ok(Component {
                     inner: comp.clone(),
-                }))
+                })
             }
-            None => Ok(None),
+            None => Err(PyRuntimeError::new_err("Component not available"))
         }
     }
 

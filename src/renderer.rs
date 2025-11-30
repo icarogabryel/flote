@@ -29,6 +29,14 @@ impl Renderer {
         renderer
     }
 
+    pub fn new_empty(ir: String) -> Self {
+        Renderer {
+            ir,
+            buffer_bus_dict: HashMap::new(),
+            component: None,
+        }
+    }
+
     /// Renderiza uma expressão a partir do JSON IR
     pub fn render_expr(&mut self, j_expr: &Value) -> Result<Box<dyn Evaluator>, String> {
         let expr_type = j_expr.get("type")
@@ -58,11 +66,11 @@ impl Renderer {
                 Ok(Box::new(Const::new(bit_value)))
             },
 
-            "bus_ref" => {
+            "bus_ref" | "ref" => {
                 let bus_id = j_expr.get("args")
                     .and_then(|args| args.get("id"))
                     .and_then(|v| v.as_str())
-                    .ok_or("Missing 'id' in bus_ref expression")?;
+                    .ok_or("Missing 'id' in bus_ref/ref expression")?;
 
                 Ok(Box::new(BusRef::new(bus_id.to_string())))
             },

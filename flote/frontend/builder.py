@@ -28,8 +28,8 @@ class Builder:
     def __init__(
         self,
         ast,
-        hls_components_symbols: dict[str, ComponentTable],
-        hls_components: dict[str, HlsComponentDto]
+        hls_components_symbols: dict[str, ComponentTable] = {},
+        hls_components: dict[str, HlsComponentDto] = {}
     ) -> None:
         self.ast: ast_nodes.Mod = ast
         self.symbol_table: SymbolTable = SymbolTable()
