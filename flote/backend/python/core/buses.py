@@ -1,6 +1,9 @@
 import re
 from abc import ABC, abstractmethod
-from typing import Any, Callable, Optional
+from typing import Any, Callable, Generic, Optional, Self, TypeVar
+
+
+T = TypeVar('T')
 
 
 class Evaluator(ABC):
@@ -66,37 +69,41 @@ class HlsBus(BaseBus):
         return self.vcd_repr_func(self.value)
 
 
-class BusValue():
+class BusValue(Generic[T]):
     """This class represents a value in the circuit."""
-    def __init__(self, value=None) -> None:
-        self.raw_value: Any = self.get_default() if value is None else value
+    def __init__(self, value: T | None = None) -> None:
+        self.raw_value: T = self.get_default() if value is None else value
 
     @abstractmethod
-    def get_default(self) -> Any:
+    def get_default(self) -> T:
         pass
 
     @abstractmethod
-    def __getitem__(self, index) -> 'BusValue':
+    def __eq__(self, other: object) -> bool:
         pass
 
     @abstractmethod
-    def __add__(self, other: 'BusValue') -> 'BusValue':
+    def __getitem__(self, index) -> Self:
         pass
 
     @abstractmethod
-    def __invert__(self) -> 'BusValue':
+    def __add__(self, other: Self) -> Self:
         pass
 
     @abstractmethod
-    def __and__(self, other: 'BusValue') -> 'BusValue':
+    def __invert__(self) -> Self:
         pass
 
     @abstractmethod
-    def __or__(self, other: 'BusValue') -> 'BusValue':
+    def __and__(self, other: Self) -> Self:
         pass
 
     @abstractmethod
-    def __xor__(self, other: 'BusValue') -> 'BusValue':
+    def __or__(self, other: Self) -> Self:
+        pass
+
+    @abstractmethod
+    def __xor__(self, other: Self) -> Self:
         pass
 
 
@@ -135,12 +142,12 @@ class Bus(BaseBus):
             self.value = self.assignment.evaluate()
 
 
-class BitBusValue(BusValue):
+class BitBusValue(BusValue[list[bool]]):
     """This class represents a value of a BitBus."""
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f'{self.raw_value}'
 
-    def get_vcd_repr(self):
+    def get_vcd_repr(self) -> str:
         value = ''.join(['1' if bit else '0' for bit in self.raw_value])
 
         return value
@@ -149,22 +156,27 @@ class BitBusValue(BusValue):
         return [False]
 
     #* Operators overloading
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, BitBusValue):
+            return NotImplemented
+        return self.raw_value == other.raw_value
+
     def __getitem__(self, slice: slice) -> 'BitBusValue':
         return BitBusValue(self.raw_value[slice])
 
-    def __add__(self, other) -> 'BitBusValue':
+    def __add__(self, other: 'BusValue[list[bool]]') -> 'BitBusValue':
         return BitBusValue(self.raw_value + other.raw_value)
 
     def __invert__(self) -> 'BitBusValue':
         return BitBusValue([not bit for bit in self.raw_value])
 
-    def __and__(self, other) -> 'BitBusValue':
+    def __and__(self, other: 'BusValue[list[bool]]') -> 'BitBusValue':
         return BitBusValue([a and b for a, b in zip(self.raw_value, other.raw_value)])
 
-    def __or__(self, other) -> 'BitBusValue':
+    def __or__(self, other: 'BusValue[list[bool]]') -> 'BitBusValue':
         return BitBusValue([a or b for a, b in zip(self.raw_value, other.raw_value)])
 
-    def __xor__(self, other) -> 'BitBusValue':
+    def __xor__(self, other: 'BusValue[list[bool]]') -> 'BitBusValue':
         return BitBusValue([a ^ b for a, b in zip(self.raw_value, other.raw_value)])
     #* End of operators overloading
 
