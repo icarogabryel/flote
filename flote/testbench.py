@@ -112,20 +112,20 @@ class TestBench:
             f.close()
 
     def update(self, new_values: dict[str, str]) -> None:
-        self.component.update_signals(new_values)
-
-        sample = WaveSample(self.s_time, [])
-
         # Check which backend is being used
         is_rust = isinstance(self.component, RustComponent)
-
         if is_rust:
             # Rust backend: busses is Dict[str, str]
+            assert isinstance(self.component, RustComponent)
+            sample = WaveSample(self.s_time, [])
+            self.component.update_and_get(new_values)
             buses_dict = self.component.busses
             for id, value in buses_dict.items():
                 sample.signals.append(Signal(id, value))
         else:
             # Python backend: buses is Dict[str, BaseBus]
+            sample = WaveSample(self.s_time, [])
+            self.component.update_signals(new_values)
             for id, bus in self.component.buses.items():
                 sample.signals.append(Signal(id, bus.get_vcd_repr()))
 

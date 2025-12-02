@@ -4,174 +4,91 @@ Type stubs for flote.backend.rust.core module.
 This module provides the Rust-based backend for Flote circuit simulation.
 """
 
-from typing import Optional, Dict
+from typing import Dict
 
 __version__: str
-__author__: str
 
 
 class Component:
     """
-    Wrapper for Rust Component implementation.
-
-    Represents a digital circuit component with buses (signals) that can be
-    read, written, and stabilized through simulation.
+    Wrapper leve para Component Rust.
+    Mantém o Component Rust puro internamente e só passa dados básicos.
     """
 
-    def __init__(self, id: str) -> None:
+    def update_and_get(self, new_values: Dict[str, str]) -> Dict[str, str]:
         """
-        Create a new Component with the given identifier.
+        Atualiza sinais e retorna valores após estabilização em uma única chamada.
 
         Args:
-            id: Unique identifier for the component
-        """
-        ...
-
-    def create_bus(self, id: str, dimension: int) -> None:
-        """
-        Create a new bus (signal) in the component.
-
-        Args:
-            id: Unique identifier for the bus
-            dimension: Bit width of the bus (number of bits)
-        """
-        ...
-
-    def get_bus_value(self, bus_id: str) -> Optional[str]:
-        """
-        Get the current value of a bus.
-
-        Args:
-            bus_id: Identifier of the bus to read
+            new_values: Dicionário com valores a atualizar
 
         Returns:
-            Binary string representation of the bus value, or None if bus doesn't exist
-        """
-        ...
-
-    def set_bus_value(self, bus_id: str, value: str) -> None:
-        """
-        Set the value of a bus.
-
-        Args:
-            bus_id: Identifier of the bus to update
-            value: Binary string value to set
-
-        Raises:
-            ValueError: If the value is invalid or bus doesn't exist
-        """
-        ...
-
-    def get_values(self) -> Dict[str, str]:
-        """
-        Get all bus values as a dictionary.
-
-        Returns:
-            Dictionary mapping bus IDs to their binary string values
-        """
-        ...
-
-    def stabilize(self) -> None:
-        """
-        Stabilize the component by propagating signal changes through feedback loops
-        until all signals reach a stable state.
+            Dicionário com todos os valores após estabilização
         """
         ...
 
     def update_signals(self, new_values: Dict[str, str]) -> None:
         """
-        Update multiple signals with new values at once.
+        Atualiza sinais com novos valores e estabiliza.
 
         Args:
-            new_values: Dictionary mapping bus IDs to binary string values
+            new_values: Dicionário com valores a atualizar
+        """
+        ...
 
-        Raises:
-            RuntimeError: If update fails or causes instability
+    def get_values(self) -> Dict[str, str]:
+        """
+        Retorna todos os valores como dicionário.
+
+        Returns:
+            Dicionário com todos os valores dos buses
         """
         ...
 
     @property
     def busses(self) -> Dict[str, str]:
         """
-        Get a dictionary representation of all buses in the component.
-
-        Returns:
-            Dictionary mapping bus IDs to their string representations
+        Retorna todos os valores dos buses.
         """
         ...
 
     @property
     def id_(self) -> str:
         """
-        Get the component's identifier.
-
-        Returns:
-            The component ID string
+        Retorna o ID do componente.
         """
         ...
 
-    def __str__(self) -> str:
-        """String representation of the component."""
-        ...
-
-    def __repr__(self) -> str:
-        """Detailed string representation of the component."""
-        ...
+    def __str__(self) -> str: ...
+    def __repr__(self) -> str: ...
 
 
 class Renderer:
     """
-    Wrapper for Rust Renderer implementation.
-
-    Renders Flote IR (Intermediate Representation) JSON into executable
-    component structures for simulation.
+    Renderiza IR JSON em componentes executáveis.
     """
 
     def __init__(self, ir: str) -> None:
         """
-        Create a new Renderer with the given IR JSON string.
+        Cria um Renderer e renderiza o circuito.
 
         Args:
-            ir: JSON string containing the circuit's intermediate representation
+            ir: JSON string com a representação intermediária
 
         Raises:
-            ValueError: If IR JSON is invalid
-        """
-        ...
-
-    def render_expr(self, j_expr: str) -> str:
-        """
-        Render an expression from JSON representation.
-
-        Args:
-            j_expr: JSON string representing the expression to render
-
-        Returns:
-            Success message string
-
-        Raises:
-            ValueError: If JSON is invalid
-            RuntimeError: If rendering fails
+            RuntimeError: Se renderização falhar
         """
         ...
 
     @property
     def component(self) -> Component:
         """
-        Get the rendered component.
-
-        Returns:
-            The rendered Component object
+        Obtém o componente renderizado.
 
         Raises:
-            RuntimeError: If component is not available
+            RuntimeError: Se componente não disponível
         """
         ...
 
-    def __str__(self) -> str:
-        """String representation of the renderer."""
-        ...
-
-    def __repr__(self) -> str:
-        """Detailed string representation of the renderer."""
-        ...
+    def __str__(self) -> str: ...
+    def __repr__(self) -> str: ...
