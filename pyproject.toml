@@ -4,7 +4,7 @@ build-backend = "maturin"
 
 [project]
 name = "flote"
-version = "0.5.0"
+version = "0.6.0"
 requires-python = ">=3.10"
 description = "Flote is a HDL and Python framework for simulation. Designed to be friendly, simple, and productive. Easy to use and learn."
 readme = { file = "README.md", content-type = "text/markdown" }
