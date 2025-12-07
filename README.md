@@ -6,10 +6,11 @@
 </div>
 <br>
 <div align="center">
-  <img alt="GitHub Repo stars" src="https://img.shields.io/github/stars/icarogabryel/flote?style=flat&logo=github">
+  <img alt="GitHub Repo stars" src="https://img.shields.io/github/stars/icarogabryel/flote?style=flat&logo=github&color=yellow">
   <img alt="GitHub Workflow" src="https://img.shields.io/github/actions/workflow/status/icarogabryel/flote/CI.yml">
-  <img alt="PyPI - Version" src="https://img.shields.io/pypi/v/flote?color=green">
+  <img alt="PyPI - Version" src="https://img.shields.io/pypi/v/flote?color=blue">
   <img src="https://img.shields.io/github/license/icarogabryel/flote" alt="license"/>
+  <img src="https://img.shields.io/badge/Docs-Read%20the%20Docs-red" alt="docs">
 </div>
 
 <!-- stars, build workflow, pypi, readthedocs*, reddit*, license -->
@@ -40,9 +41,9 @@ comp halfAdder {
 
 Flote's elaborator uses a structure of a compiler's front-end to generate a intermediate representation (IR) of the circuit described in Flote HDL. It has a scanner, parser and a builder. This last one is responsible for build the IR. Then, the IR is passed to the backend (Python or Rust) that is responsible for render the IR into a simulation model, an object that can be manipulated with the Python API and simulates the behavior of the integrated circuit. The model object it's a set of signals busses and uses event driven simulation and dynamic programming to simulate the behavior of the circuit. Also with the use of this Python package you can save the simulation values in a waveform file.
 
-## ✒️ Grammar and Syntax
+## 📚 Documentation
 
-The language is defined by the [EBNF file findable here](docs/flote.ebnf).
+The documentation can be found at [https://flote.readthedocs.io](https://flote.readthedocs.io).
 
 ## 🚀 Release
 
@@ -77,36 +78,37 @@ To finish the beta version, the following tasks need to be completed:
   - [X] Error handling for indexing and slicing
   - [X] Concatenation
   - [ ] Big endian support
-  - [ ] N-Dimensional arrays support with concatenation
+  - [ ] N-Dimensional arrays
 - [ ] Add sub-components support
   - [X] Instantiation
   - [X] Connection
   - [X] Error handling for instantiation and connection
   - [ ] .vcd dump scope support for sub-components
+  - [ ] Make correct scanning for sub-component IDs
 - [ ] Implement Rust backend for faster simulation
   - [X] Connect Python with Rust using pyo3 and Maturin
   - [X] Create IR (Intermediate Representation) to communicate frontend with backend
   - [X] Implement the IR render to use the Python backend previously created
-  - [X] Implement the Rust backend
-- [X] Implement abstract Python components
+  - [ ] Implement the Rust backend
+- [ ] Implement abstract Python components
+- [ ] Make Python API complete
 - [ ] Make order not important in signal references
-- [ ] Improve README
 - [ ] Make automated tests
 - [X] Create GitHub Actions for CI/CD
-- [ ] Create documentation
-- [ ] Create site with GitHub Pages
+- [ ] Create complete documentation
+- [ ] Create VS Code extension for Flote
 
 For future releases, the following features are planned:
 
 - [ ] Create import feature
 - [ ] Create std libs
+- [ ] Oficial Site
+- [ ] Package manager
 - [ ] Add generate statement support
 - [ ] Add multi-assignment support
 - [ ] Add in-out signals support
 - [ ] Add xbit(0, 1, x, z) support
 - [ ] Implement custom types feature
-- [ ] Add Python calls support
-- [ ] Improve HLS support
 - [ ] Add manual time control
 
 ---
