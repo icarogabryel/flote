@@ -14,9 +14,8 @@ class Bus:
         self,
         id_: str,
         size: int,
-        assignment: Callable,
+        assignment=None,
         initial_value: Any = 0,
-        is_input: bool = False,
         influence_list: list[BaseBus] = [],
         vcd_repr_func: Callable = lambda x: str(x)
     ) -> None:
@@ -24,13 +23,18 @@ class Bus:
         self.size = size
         self.initial_value = initial_value
         self.assignment = assignment
-        self.connection_type = Connection.INPUT if is_input else Connection.OUTPUT
+        self.connection_type = Connection.INPUT if self.assignment is None else Connection.OUTPUT
+
+        if (self.connection_type == Connection.OUTPUT) and (len(influence_list) > 0):
+            raise ValueError('Input bus cannot have influence list.')
+
         self.influence_list = influence_list
         self.vcd_repr_func = vcd_repr_func
 
     def get_symbol(self) -> BusSymbol:
         symbol = BusSymbol(
             type=None,
+            #! Trate if is input and have assignment -> error
             is_assigned=self.assignment is not None,
             connection_type=self.connection_type,
             size=self.size

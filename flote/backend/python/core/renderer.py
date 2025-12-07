@@ -126,7 +126,11 @@ class Renderer:
             bit_bus = self.buffer_bus_dict[j_bus['id']]
 
             if bit_bus.__class__ != BitBus: #TODO better way
-                continue
+                for influenced_bus_id in j_bus['influence_list']:
+                    influenced_bus = self.buffer_bus_dict[influenced_bus_id]
+
+                    if influenced_bus not in bit_bus.influence_list:
+                        bit_bus.influence_list.append(influenced_bus)
 
             if j_bus['assignment'] is not None:
                 assignment = self.render_expr(j_bus['assignment'])

@@ -35,8 +35,7 @@ class ComponentDto(BaseComponentDto[BusDto | HlsBusDto]):
     def make_influence_graph(self) -> None:
         """Create influence lists for all buses in the component."""
         for bus in self.busses:
-            if isinstance(bus, BusDto):
-                bus.make_influence_list()
+            bus.make_influence_list()
 
     def to_json(self):
         return {

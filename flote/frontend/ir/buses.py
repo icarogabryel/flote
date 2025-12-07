@@ -69,7 +69,7 @@ class BusDto(BaseBusDto[ExprNode, BusValueDto]):
     #     pass
 
 
-class HlsBusDto(BaseBusDto[Any, Any]):
+class HlsBusDto(BusDto):
     def __init__(self, id_) -> None:
         super().__init__()
         self.id_ = id_
@@ -77,10 +77,20 @@ class HlsBusDto(BaseBusDto[Any, Any]):
     def get_default(self) -> None:
         return None
 
+    def make_influence_list(self) -> None:
+        #caso seja um bus abstrado de input, o assignment vai ser normal para gerar o grafo de influencia
+        if isinstance(self.assignment, ExprNode):
+            sensitivity_list = self.assignment.get_sensitivity_list() if self.assignment else []
+
+            for bus in sensitivity_list:
+                if self not in bus.influence_list:
+                    bus.influence_list.append(self)
+
     def to_json(self):
         return {
             'id': self.id_,
             'type': 'hls_bus',
+            'influence_list': [bus.id_ for bus in self.influence_list]
         }
 
 
