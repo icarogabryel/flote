@@ -108,3 +108,11 @@ For future releases, the following features are planned:
 - [ ] Add Python calls support
 - [ ] Improve HLS support
 - [ ] Add manual time control
+
+---
+
+*Flote is an open-source project developed as part of academic research at CESLa (of Federal University of Piauí) and my humble bedroom, Brazil.*
+
+<div align="center">
+  <img src="docs/imgs/brazil-mentioned.png" width="30%" alt="Brazil Mentioned"/>
+</div>
