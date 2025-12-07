@@ -315,14 +315,6 @@ Valid identifier rules:
 - Case-sensitive: `Signal` ≠ `signal`
 - Cannot be keywords: `bit`, `comp`, `in`, `out`, etc.
 
-### HLS Component Prefix
-
-Identifiers starting with `@` are reserved for HLS components:
-
-```flote
-sub @MyHLSComponent;  // External Python component
-```
-
 ## Keywords
 
 Reserved words you cannot use as identifiers:
@@ -375,15 +367,6 @@ comp Complex {
     out bit majority = (a and b) or (b and c) or (a and c);
 }
 ```
-
-## Next Steps
-
-Now that you understand the basics:
-
-- **[Syntax Reference](syntax-reference.md)** - Complete language grammar
-- **[Components](components.md)** - Deep dive into component design
-- **[Logic Operations](logic-operations.md)** - Master boolean algebra in Flote
-- **[Examples](../examples/half-adder.md)** - See real circuits
 
 ---
 

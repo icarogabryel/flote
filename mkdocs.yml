@@ -1,19 +1,23 @@
 site_name: Flote Documentation
 site_description: A friendly, simple, and productive Hardware Description Language
-site_author: Ícaro Gabryel de Araujo Silva
+site_author: Ícaro Gabryel de Araújo Silva
 repo_url: https://github.com/icarogabryel/flote
 repo_name: icarogabryel/flote
 
 theme:
   name: material
+  logo: brand/logo.svg
+  favicon: brand/favicon.ico
   palette:
-    - scheme: default
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
       primary: teal
       accent: cyan
       toggle:
         icon: material/brightness-7
         name: Switch to dark mode
-    - scheme: slate
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
       primary: teal
       accent: cyan
       toggle:
@@ -54,27 +58,3 @@ nav:
   - User Guide:
       - Basic Concepts: guide/basic-concepts.md
       - Syntax Reference: guide/syntax-reference.md
-      - Components: guide/components.md
-      - Buses and Signals: guide/buses-signals.md
-      - Logic Operations: guide/logic-operations.md
-      - Hierarchical Design: guide/hierarchical-design.md
-      - Vectors and Concatenation: guide/vectors-concatenation.md
-      - Feedback Circuits: guide/feedback-circuits.md
-  - Advanced Topics:
-      - HLS Components: advanced/hls-components.md
-      - Testbenches: advanced/testbenches.md
-      - Simulation: advanced/simulation.md
-      - VCD Output: advanced/vcd-output.md
-  - Examples:
-      - Half Adder: examples/half-adder.md
-      - Full Adder: examples/full-adder.md
-      - RS Latch: examples/rs-latch.md
-      - Multiplexer: examples/multiplexer.md
-  - API Reference:
-      - Python API: api/python-api.md
-      - HLS API: api/hls-api.md
-  - About:
-      - Why Flote?: about/why-flote.md
-      - Comparison with VHDL: about/comparison-vhdl.md
-      - Contributing: about/contributing.md
-      - License: about/license.md

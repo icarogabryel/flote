@@ -4,9 +4,8 @@
 
 Flote requires:
 
-- **Python 3.8 or higher**
+- **Python 3.10 or higher**
 - **pip** (Python package installer)
-- **Operating System**: Windows, Linux, or macOS
 
 That's it! No heavy IDEs, no license servers, no gigabytes of installation files.
 
@@ -35,65 +34,13 @@ python -c "import flote; print(flote.__version__)"
 
 You should see the version number (e.g., `0.5.0`).
 
-## Development Installation
-
-If you want to contribute to Flote or install from source:
-
-### Clone the Repository
-
-```bash
-git clone https://github.com/icarogabryel/flote.git
-cd flote
-```
-
-### Install in Development Mode
-
-```bash
-pip install -e .
-```
-
-This installs Flote in "editable" mode, so changes to the source code are immediately reflected.
-
-### Building from Source (with Rust Backend)
-
-If you want to build the Rust backend from source:
-
-**Prerequisites:**
-- Rust toolchain ([rustup.rs](https://rustup.rs/))
-- Maturin build tool
-
-```bash
-# Install Rust (if not already installed)
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-
-# Install Maturin
-pip install maturin
-
-# Build and install
-maturin develop --release
-```
-
-## IDE Setup
-
-Flote works with any text editor, but here are some recommended setups:
-
-### Visual Studio Code (Recommended)
+## IDE Setup: Visual Studio Code Recommended
 
 1. Install [VS Code](https://code.visualstudio.com/)
 
 2. Install recommended extensions:
    - **Python** - for testbench editing
    - **WaveTrace** - for VCD waveform visualization
-
-3. Optional: Create a syntax highlighter for `.ft` files
-   - Flote syntax is simple enough that generic syntax highlighting works well
-
-### Other Editors
-
-- **Sublime Text**: Works great out of the box
-- **Vim/Neovim**: Use Python syntax for testbenches
-- **Emacs**: Similar to Vim setup
-- **PyCharm**: Excellent Python support for testbenches
 
 ## Verification
 
@@ -137,6 +84,7 @@ python test.py
 ```
 
 Expected output:
+
 ```
 Input: 0, Output: 1
 Input: 1, Output: 0
@@ -150,13 +98,14 @@ If you see this output, congratulations! Flote is installed and working correctl
 
 **Problem**: `pip install flote` fails with Python version error
 
-**Solution**: Upgrade Python to 3.8 or higher:
+**Solution**: Upgrade Python to 3.10 or higher:
+
 ```bash
 # On Ubuntu/Debian
-sudo apt install python3.8
+sudo apt install python3.10
 
 # On macOS with Homebrew
-brew install python@3.8
+brew install python@3.10
 
 # On Windows
 # Download from python.org
@@ -167,6 +116,7 @@ brew install python@3.8
 **Problem**: Permission denied when installing
 
 **Solution**: Use user install:
+
 ```bash
 pip install --user flote
 ```
@@ -176,6 +126,7 @@ pip install --user flote
 **Problem**: `ModuleNotFoundError: No module named 'flote'`
 
 **Solution**: Ensure pip installed to the correct Python:
+
 ```bash
 python -m pip install flote
 ```
@@ -229,7 +180,3 @@ If you encounter issues:
    - Python version (`python --version`)
    - Complete error message
    - Steps to reproduce
-
----
-
-*Installation should take less than a minute. If it's taking longer, something is wrong!*

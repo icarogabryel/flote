@@ -128,15 +128,10 @@ The simulation generated a `HalfAdder.vcd` file containing the signal waveforms.
 
 1. Install [GTKWave](http://gtkwave.sourceforge.net/)
 2. Open the VCD file:
+
    ```bash
    gtkwave HalfAdder.vcd
    ```
-
-### Option 3: Online Viewers
-
-Upload `HalfAdder.vcd` to online VCD viewers like:
-- [WaveJSON Editor](https://wavedrom.com/editor.html)
-- Other online VCD viewers
 
 ## Understanding the Code
 
@@ -228,8 +223,8 @@ half_adder = ft.elaborate_file('HalfAdder.ft')
 half_adder.update({'a': '1', 'b': '1'})
 half_adder.wait(10)
 
-assert half_adder.component.busses['sum'].value == 0, "Sum should be 0"
-assert half_adder.component.busses['carry'].value == 1, "Carry should be 1"
+assert half_adder.component.busses['sum'].value == False, "Sum should be 0"
+assert half_adder.component.busses['carry'].value == True, "Carry should be 1"
 
 print("✓ All tests passed!")
 ```
@@ -242,8 +237,6 @@ Congratulations! You've created, simulated, and visualized your first Flote circ
 
 - **[Basic Concepts](../guide/basic-concepts.md)** - Understand Flote fundamentals
 - **[Syntax Reference](../guide/syntax-reference.md)** - Complete language reference
-- **[Hierarchical Design](../guide/hierarchical-design.md)** - Build complex circuits
-- **[More Examples](../examples/half-adder.md)** - See more circuit examples
 
 ### Try These Challenges
 

@@ -474,19 +474,6 @@ in       main     nor      not      or
 out      sub      xnor     xor
 ```
 
-## Special Prefixes
-
-### HLS Components
-
-Identifiers starting with `@` are reserved for HLS (High-Level Synthesis) components:
-
-```flote
-sub @Counter as cnt;
-sub @Memory as mem;
-```
-
-These components are defined in Python rather than Flote.
-
 ## Whitespace
 
 Whitespace (spaces, tabs, newlines) is generally ignored except:
@@ -560,9 +547,6 @@ digit = "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9";
 ## Next Steps
 
 - **[Basic Concepts](basic-concepts.md)** - Understand the fundamentals
-- **[Components](components.md)** - Learn component design patterns
-- **[Logic Operations](logic-operations.md)** - Master boolean expressions
-- **[Examples](../examples/half-adder.md)** - See syntax in action
 
 ---
 

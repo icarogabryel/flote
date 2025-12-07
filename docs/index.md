@@ -1,10 +1,23 @@
-# Welcome to Flote
+#
+
+<div align="center">
+  <img src="https://i.postimg.cc/nz5SPMR6/logo.png" width="60%" alt="Flote logo"/>
+</div>
+
+<br>
+
+<div align="center">
+  <img alt="GitHub Repo stars" src="https://img.shields.io/github/stars/icarogabryel/flote?style=flat&logo=github">
+  <img alt="GitHub Workflow" src="https://img.shields.io/github/actions/workflow/status/icarogabryel/flote/CI.yml">
+  <img alt="PyPI - Version" src="https://img.shields.io/pypi/v/flote?color=green">
+  <img src="https://img.shields.io/github/license/icarogabryel/flote" alt="license"/>
+</div>
+
+## A Modern Hardware Description Language
 
 <div align="center">
   <img src="https://i.postimg.cc/xC7p4qpr/print.png" width="90%" alt="Flote in VS Code"/>
 </div>
-
-## A Modern Hardware Description Language
 
 Flote is a **hardware description language (HDL)** and **Python framework** designed for digital circuit simulation. It's built to be **friendly, simple, lightweight, and productive** — much easier to learn and use than traditional HDLs like VHDL and Verilog.
 
@@ -73,62 +86,52 @@ Flote addresses these issues with:
 - **Researchers** experimenting with hardware algorithms
 - **Educators** teaching digital systems without VHDL complexity
 
-## Research Validation
-
-Flote has been validated through research with 18 Computer Science students at UFPI (Federal University of Piauí), showing:
-
-- **110% improvement** in learning ease perception vs VHDL
-- **97.9% improvement** in usage ease perception
-- **140% improvement** in tooling ease (highest improvement)
-- **72.2%** of students found debugging in VHDL the main problem
-
 ## Get Started
 
 Ready to simplify your hardware development?
 
 <div class="grid cards" markdown>
 
--   :material-rocket-launch:{ .lg .middle } __Quick Start__
+-   🚀 __Quick Start__
 
     ---
 
     Get up and running with Flote in minutes
 
-    [:octicons-arrow-right-24: Getting Started](getting-started/introduction.md)
+    [Getting Started](getting-started/introduction.md)
 
--   :material-book-open-variant:{ .lg .middle } __User Guide__
+-   📖 __User Guide__
 
     ---
 
     Learn Flote syntax and concepts
 
-    [:octicons-arrow-right-24: User Guide](guide/basic-concepts.md)
+    [User Guide](guide/basic-concepts.md)
 
--   :material-code-braces:{ .lg .middle } __Examples__
+<!-- -   📝 __Examples__
 
     ---
 
     Explore practical circuit examples
 
-    [:octicons-arrow-right-24: Examples](examples/half-adder.md)
-
--   :material-api:{ .lg .middle } __API Reference__
-
-    ---
-
-    Detailed Python API documentation
-
-    [:octicons-arrow-right-24: API Reference](api/python-api.md)
+    [Examples](examples/half-adder.md) -->
 
 </div>
 
 ## Community & Support
 
 - **GitHub**: [icarogabryel/flote](https://github.com/icarogabryel/flote)
-- **PyPI**: [flote](https://pypi.org/project/flote/)
 - **Issues**: Report bugs or request features on GitHub
-- **Email**: icarogabryel2001@ufpi.edu.br
+- **PyPI**: [flote](https://pypi.org/project/flote/)
 
 ## License
 
-Flote is open-source software distributed under the MIT License. See the [LICENSE](about/license.md) file for details.
+Flote is open-source software distributed under the MIT License.
+
+---
+
+*Flote is an open-source project developed as part of academic research at CESLa (of Federal University of Piauí) and my humble bedroom, Brazil.*
+
+<div align="center">
+  <img src="imgs/brazil-mentioned.png" width="50%" alt="Brazil Mentioned"/>
+</div>

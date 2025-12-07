@@ -11,6 +11,7 @@ Traditional HDLs present significant challenges:
 ### Problems with VHDL/Verilog
 
 **Complexity & Verbosity**
+
 ```vhdl
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
@@ -32,6 +33,7 @@ end behavioral;
 ```
 
 **vs Flote's Simplicity**
+
 ```flote
 comp HalfAdder {
     in bit a;
@@ -42,17 +44,13 @@ comp HalfAdder {
 }
 ```
 
-**58% less code** - same functionality!
+Less code - same functionality!
 
 ### Key Issues Flote Addresses
 
 1. **Steep Learning Curve**: VHDL/Verilog have complex syntax based on outdated programming paradigms (Pascal, Ada from the 1980s)
 
-2. **Heavy Toolchains**: Tools like Quartus Prime and ModelSim require:
-   - Complex installation processes
-   - Powerful hardware
-   - License management
-   - Gigabytes of disk space
+2. **Heavy Toolchains**: Tools like Quartus Prime and ModelSim are bulky, slow, and difficult to set up
 
 3. **Poor Documentation**: Scattered, incomplete, often outdated documentation makes learning difficult
 
@@ -80,24 +78,10 @@ Flote solves these problems through:
 ### 3. Focus on Logic Gates
 
 Abstractions are based directly on digital logic concepts:
+
 - AND, OR, XOR, NAND, NOR, XNOR, NOT gates
 - Clear signal flow
 - Hierarchical component composition
-
-### 4. High-Level Synthesis (HLS)
-
-For complex logic, use Python directly:
-```python
-from flote import Component, Bus
-
-alu = Component('@ALU', [
-    Bus('a', 8, lambda: calculate(), is_input=False)
-])
-```
-
-### 5. Comprehensive Documentation
-
-This documentation you're reading right now! Clear explanations, examples, and tutorials.
 
 ## Design Philosophy
 
@@ -108,9 +92,6 @@ Flote is built on these principles:
 
 **Clarity Over Brevity**
 : Code should be self-documenting and easy to understand
-
-**Productivity Over Purity**
-: Pragmatic choices that help developers work faster
 
 **Learning Over Legacy**
 : Designed for students and newcomers, not just experts
@@ -132,7 +113,6 @@ Flote is built on these principles:
 
 - **FPGA Synthesis**: Flote is simulation-focused (use VHDL/Verilog for synthesis)
 - **ASIC Production**: Professional chip design requires specialized tools
-- **Timing Analysis**: Flote uses functional simulation, not detailed timing
 
 !!! note "Simulation vs Synthesis"
     Flote is optimized for **simulation** and **validation**, not physical implementation. If you need to synthesize to an FPGA or ASIC, you'll need to use traditional tools. However, Flote is excellent for designing, testing, and validating your logic before committing to synthesis.
@@ -141,19 +121,11 @@ Flote is built on these principles:
 
 Flote has been empirically validated through research at the Federal University of Piauí (UFPI) with 18 Computer Science students who had experience with VHDL.
 
-### Key Findings
-
 | Metric | VHDL (Difficulty) | Flote (Ease) | Improvement |
 |--------|-------------------|--------------|-------------|
 | Learning | 2.22/5 | 4.67/5 | **+110%** |
 | Usage | 2.33/5 | 4.61/5 | **+97.9%** |
 | Tooling | 1.83/5 | 4.39/5 | **+140%** |
-
-**Main VHDL Problems Identified:**
-- Debugging/Finding bugs: 72.2%
-- Confusing syntax: 55.6%
-- Tools/IDE difficulties: 50%
-- Verbosity: 50%
 
 ## What's Next?
 
@@ -166,10 +138,5 @@ Ready to get started?
 ## Community & Support
 
 - **GitHub**: [github.com/icarogabryel/flote](https://github.com/icarogabryel/flote)
-- **PyPI**: [pypi.org/project/flote](https://pypi.org/project/flote/)
 - **Issues**: Report bugs or feature requests
-- **Email**: icarogabryel2001@ufpi.edu.br
-
----
-
-*Flote is an open-source project developed as part of academic research at UFPI, Brazil.*
+- **PyPI**: [pypi.org/project/flote](https://pypi.org/project/flote/)
