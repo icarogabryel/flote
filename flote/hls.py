@@ -4,9 +4,9 @@ Builder and Renderer friendly.
 """
 from typing import Any, Callable
 
-from .backend.python.core.buses import BaseBus, HlsBus
-from .frontend.ast_nodes import Connection
-from .frontend.symbol_table import BusSymbol
+from .simulation.python.core.buses import BaseBus, HlsBus
+from .elaboration.ast_nodes import Connection
+from .elaboration.symbol_table import BusSymbol
 
 
 class Bus:

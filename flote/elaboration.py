@@ -1,12 +1,12 @@
 from pathlib import Path
 from warnings import warn
 
-from .frontend.builder import Builder
-from .frontend.ir.buses import HlsBusDto
-from .frontend.ir.component import HlsComponentDto
-from .frontend.parser import Parser
-from .frontend.scanner import Scanner
-from .frontend.symbol_table import ComponentTable
+from .elaboration.builder import Builder
+from .elaboration.ir.buses import HlsBusDto
+from .elaboration.ir.component import HlsComponentDto
+from .elaboration.parser import Parser
+from .elaboration.scanner import Scanner
+from .elaboration.symbol_table import ComponentTable
 from .hls import Component as HlsComponent
 from .testbench import TestBench
 
@@ -26,7 +26,7 @@ def render(ast, rust_backend, hls_components: list[HlsComponent] = []):
             warn('HLS components require Python backend, switching from Rust.')
         else:
             try:
-                from .backend.rust.core import Renderer as RustRenderer
+                from .simulation.rust.core import Renderer as RustRenderer
 
                 builder = Builder(ast)
                 ir = builder.ir
@@ -67,7 +67,7 @@ def render(ast, rust_backend, hls_components: list[HlsComponent] = []):
     ir = builder.ir
 
     # Render with Python backend
-    from .backend.python.core import Renderer as PythonRenderer
+    from .simulation.python.core import Renderer as PythonRenderer
     render = PythonRenderer(ir, hls_components_buses)
     return render.component
 
