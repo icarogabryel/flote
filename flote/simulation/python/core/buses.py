@@ -1,6 +1,6 @@
 import re
 from abc import ABC, abstractmethod
-from typing import Any, Callable, Generic, Optional, Self, TypeVar
+from typing import Any, Callable, Generic, Optional, TypeVar
 
 
 T = TypeVar('T')
@@ -83,27 +83,27 @@ class BusValue(Generic[T]):
         pass
 
     @abstractmethod
-    def __getitem__(self, index) -> Self:
+    def __getitem__(self, index):
         pass
 
     @abstractmethod
-    def __add__(self, other: Self) -> Self:
+    def __add__(self, other):
         pass
 
     @abstractmethod
-    def __invert__(self) -> Self:
+    def __invert__(self):
         pass
 
     @abstractmethod
-    def __and__(self, other: Self) -> Self:
+    def __and__(self, other):
         pass
 
     @abstractmethod
-    def __or__(self, other: Self) -> Self:
+    def __or__(self, other):
         pass
 
     @abstractmethod
-    def __xor__(self, other: Self) -> Self:
+    def __xor__(self, other):
         pass
 
 
