@@ -1,11 +1,11 @@
 [package]
-name = "flote"
-version = "0.6.0"
+name = "simulation-core"
+version = "0.7.0"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [lib]
-name = "flote"
+name = "core"
 path = "src/lib.rs"
 crate-type = ["cdylib"]
 
