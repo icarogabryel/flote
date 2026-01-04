@@ -97,12 +97,16 @@ To finish the beta version, the following tasks need to be completed:
 - [X] Create GitHub Actions for CI/CD
 - [ ] Create complete documentation
 - [ ] Create VS Code extension for Flote
+- [ ] Make FPGA support
+  - [ ] Make FPGA compatible with `.edif` files
+  - [ ] Make separation between FPGA superset language
+  - [ ] Create higher level commands
+- [ ] Create import feature
+- [ ] Oficial Site
 
 For future releases, the following features are planned:
 
-- [ ] Create import feature
 - [ ] Create std libs
-- [ ] Oficial Site
 - [ ] Package manager
 - [ ] Add generate statement support
 - [ ] Add multi-assignment support
