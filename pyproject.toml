@@ -17,4 +17,8 @@ classifiers = [
 
 [tool.maturin]
 features = ["pyo3/extension-module"]
-module-name = "flote.backend.rust.core"
+module-name = "flote.simulation.rust.core"
+
+[tool.poetry.group.dev.dependencies]
+maturin = "^1.10.2"
+mkdocs-material = "^9.7.0"

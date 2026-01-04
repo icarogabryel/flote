@@ -1,2 +1,0 @@
-maturin>=1.10.2
-mkdocs-material>=9.7.0

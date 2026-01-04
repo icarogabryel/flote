@@ -4,7 +4,7 @@
 # Virtual environment
 .venv/
 
-# Python cache files
+# Python files
 __pycache__/
 .pytest_cache/
 *.py[cod]
@@ -12,9 +12,8 @@ __pycache__/
 # Compiled shared objects
 *.so
 
-# Rust/Cargo files
+# Cargo files
 target/
-Cargo.lock
 
 # Wave files
 *.vcd
