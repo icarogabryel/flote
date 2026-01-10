@@ -1,5 +1,5 @@
-from . import ast_nodes
-from .scanner import Token
+from flote.elaboration import ast_nodes
+from flote.elaboration.scanner import Token
 
 
 # Dict of First Sets used to enter syntactical rules
@@ -7,7 +7,6 @@ FIRST_SETS = {
     'comp': ['main', 'comp'],
     'stmt': ['in', 'out', 'bit', 'id', 'sub'],
     'decl': ['in', 'out', 'bit'],
-    'assign': ['id'],
     'expr_dash': ['or', 'nor'],
     'term_dash': ['xor', 'xnor'],
     'fact_dash': ['and', 'nand'],
@@ -24,17 +23,11 @@ class SyntacticalError(Exception):
 
 
 class Parser:
-    """
-    Syntactical Parser for Flote Language.
-    """
+    """Syntactical Parser for Flote Language."""
     def __init__(self, token_stream: list[Token]) -> None:
-        # Get the generator token stream from the scanner
         self.token_stream = token_stream
-        self.ast = None
-        # Get the first token from the stream
         self.current_token = self.token_stream.pop(0)
-
-        self.parse()
+        self.ast = self.parse()
 
     def advance(self):
         """Move to the next token in the token stream."""
@@ -48,32 +41,26 @@ class Parser:
 
         if token.label != expected_label:
             raise SyntacticalError(
-                token.line_number,
-                (
-                    f'Unexpected Token. Expected "{expected_label}". Got'
-                    f'"{token.label}".'
+                token.line_number, (
+                    f'Unexpected Token. Expected "{expected_label}". Got "{token.label}".'
                 )
             )
 
     def parse(self):
-        """
-        Start the parsing process  by entering the first rule of the grammar.
-        """
-        self.ast = self.mod()
+        """Start the parsing process by entering the first rule of the grammar."""
+        return self.mod()
 
     # Syntactical Rules
 
-    #* mod = {comp}
+    #* mod = comp, {comp};
     def mod(self):
         mod = ast_nodes.Mod()
-
         mod.add_comp(self.comp())
 
         while self.get_current_token().label in FIRST_SETS['comp']:
             mod.add_comp(self.comp())
 
         self.match_label('EOF')
-
         return mod
 
     #* comp = ['main'], 'comp', ID, '{', {stmt}, '}'
@@ -101,12 +88,12 @@ class Parser:
 
         return comp
 
-    #* stmt = decl | assign | inst
+    #* stmt = decl | asmt | inst
     def stmt(self):
         if (label := self.get_current_token().label) in FIRST_SETS['decl']:
             return self.decl()
-        elif label in FIRST_SETS['assign']:
-            return self.assign()
+        elif label == 'id':
+            return self.asmt()
         elif label == 'sub':
             return self.inst()
         else:
@@ -123,7 +110,7 @@ class Parser:
             decl.conn = ast_nodes.Connection.OUTPUT
             self.advance()
 
-        self.match_label('bit')  # todo adjust to accept other types
+        self.match_label('bit')  #todo adjust to accept other types
         decl.line_number = self.get_current_token().line_number
         decl.type = 'bit'
         self.advance()
@@ -143,34 +130,29 @@ class Parser:
 
         return decl
 
-    #* dimension = '[', ['-'], DEC, ']';
-    def dimension(self) -> ast_nodes.Dimension:
+    #* dim = "[", ["+" | "-"], DEC, "]";
+    def dim(self) -> ast_nodes.Dimension:
         self.match_label('l_bracket')
         self.advance()
 
-        # Check if the dimension is descending
-        is_descending = self.get_current_token().label == 'minus'
-
-        if is_descending:
+        if (current_token := self.get_current_token().label) in ['plus', 'minus']:
+            msb = (
+                ast_nodes.Msb.DESCENDING
+                if current_token == 'minus'
+                else ast_nodes.Msb.ASCENDING
+            )
             self.advance()
-
-        msb = (
-            ast_nodes.Msb.DESCENDING
-            if is_descending else
-            ast_nodes.Msb.ASCENDING
-        )
+        else:
+            msb = ast_nodes.Msb.ASCENDING
 
         self.match_label('dec')
         token = self.get_current_token()
-
         assert token.lexeme.isdigit(), (
             f"Token lexeme '{token.lexeme}' is not a valid integer"
         )
 
         size = int(token.lexeme)
-
-        # Logically, the lexeme of a decimal token should never be a negative
-        # integer.
+        # Logically, the lexeme of a decimal token should never be a negative integer.
         assert size >= 0, 'Dimension size must be non-negative'
 
         if size == 0:
@@ -187,8 +169,8 @@ class Parser:
 
         return dimension
 
-    #* assign = ID, '=', expr, ';'
-    def assign(self):
+    #* asmt = memb, "=", expr, ";";
+    def asmt(self):
         self.match_label('id')
 
         token = self.get_current_token()
@@ -264,7 +246,7 @@ class Parser:
             # top routine
             return current_node
 
-    #* term = factor, termDash
+    #* term = fact, termDash
     def term(self):
         factor = self.fact()
 
@@ -273,22 +255,19 @@ class Parser:
             current_node.l_expr = factor
 
             return current_node
-
         else:
             return factor
 
-    #* termDash = ('xor' | 'xnor'), factor, termDash | ε
+    #* termDash = ("xor" | "xnor"), fact, termDash | ε;
     def term_dash(self):
         token = self.get_current_token()
 
         if token.label == 'xor':
             current_node = ast_nodes.XorOp(self.get_current_token().line_number)
             self.advance()
-
         elif token.label == 'xnor':
             current_node = ast_nodes.XnorOp(self.get_current_token().line_number)
             self.advance()
-
         else:
             raise SyntacticalError(
                 token.line_number,
@@ -304,44 +283,40 @@ class Parser:
             current_node.r_expr = son_node
 
             return current_node
-
         else:
             current_node.r_expr = factor
 
             return current_node
 
-    #* fact = primary, factDash
+    #* fact = prim, factDash;
     def fact(self):
-        primary = self.primary()
+        primary = self.prim()
 
         if self.get_current_token().label in FIRST_SETS['fact_dash']:
             current_node = self.fact_dash()
             current_node.l_expr = primary
 
             return current_node
-
         else:
             return primary
 
-    #* factDash = ('and' | 'nand'), primary, factDash | ε
+    #* factDash = ("and" | "nand"), prim, factDash | ε;
     def fact_dash(self):
         token = self.get_current_token()
 
         if token.label == 'and':
             current_node = ast_nodes.AndOp(self.get_current_token().line_number)
             self.advance()
-
         elif token.label == 'nand':
             current_node = ast_nodes.NandOp(self.get_current_token().line_number)
             self.advance()
-
         else:
             raise SyntacticalError(
                 token.line_number,
                 'Expected "and" or "nand".'
             )  #todo maybe change to assert
 
-        primary = self.primary()
+        primary = self.prim()
 
         if self.get_current_token().label in FIRST_SETS['fact_dash']:
             son_node = self.fact_dash()
@@ -350,14 +325,13 @@ class Parser:
             current_node.r_expr = son_node
 
             return current_node
-
         else:
             current_node.r_expr = primary
 
             return current_node
 
     #* prim = "not", prim | "(", expr, ")" | ref | BIT_FD | conc;
-    def primary(self) -> ast_nodes.ExprElem:
+    def prim(self) -> ast_nodes.ExprElem:
         token = self.get_current_token()
 
         #* ref = ID, ["[", DEC, [":", DEC ], "]" ];
@@ -396,7 +370,7 @@ class Parser:
             self.advance()
 
             node = ast_nodes.NotOp()
-            node.expr = self.primary()
+            node.expr = self.prim()
 
             return node
         #* prim = "(", expr, ")"
@@ -423,10 +397,7 @@ class Parser:
 
             return conc
         else:
-            raise SyntacticalError(
-                token.line_number,
-                'Expected primary.'
-            )
+            raise SyntacticalError(token.line_number, 'Expected primary.')
 
     #* inst = 'sub', ID, ['as' ID],';';
     def inst(self):
