@@ -54,39 +54,39 @@ class Parser:
 
     #* mod = comp, {comp};
     def mod(self):
-        mod = ast_nodes.Mod()
-        mod.add_comp(self.comp())
+        module = ast_nodes.Module()
+        module.add_comp(self.comp())
 
         while self.get_current_token().label in FIRST_SETS['comp']:
-            mod.add_comp(self.comp())
+            module.add_comp(self.comp())
 
         self.match_label('EOF')
-        return mod
+        return module
 
     #* comp = ['main'], 'comp', ID, '{', {stmt}, '}'
     def comp(self):
-        comp = ast_nodes.Comp()
+        component = ast_nodes.Component()
 
         if self.get_current_token().label == 'main':
-            comp.is_main = True
+            component.is_main = True
             self.advance()
 
         self.match_label('comp')
-        comp.line_number = self.get_current_token().line_number
+        component.line_number = self.get_current_token().line_number
         self.advance()
         self.match_label('id')
-        comp.id = self.get_current_token().lexeme
+        component.id = self.get_current_token().lexeme
         self.advance()
         self.match_label('l_brace')
         self.advance()
 
         while self.get_current_token().label in FIRST_SETS['stmt']:
-            comp.add_stmt(self.stmt())
+            component.add_stmt(self.stmt())
 
         self.match_label('r_brace')
         self.advance()
 
-        return comp
+        return component
 
     #* stmt = decl | asmt | inst
     def stmt(self):
@@ -101,34 +101,34 @@ class Parser:
 
     #* decl = ['in' | 'out'], 'bit', ID, [dimension], ['=', expr], ';';
     def decl(self):
-        decl = ast_nodes.Decl()
+        declaration = ast_nodes.Declaration()
 
         if self.get_current_token().label == 'in':
-            decl.conn = ast_nodes.Connection.INPUT
+            declaration.conn = ast_nodes.Connection.INPUT
             self.advance()
         elif self.get_current_token().label == 'out':
-            decl.conn = ast_nodes.Connection.OUTPUT
+            declaration.conn = ast_nodes.Connection.OUTPUT
             self.advance()
 
         self.match_label('bit')  #todo adjust to accept other types
-        decl.line_number = self.get_current_token().line_number
-        decl.type = 'bit'
+        declaration.line_number = self.get_current_token().line_number
+        declaration.type = 'bit'
         self.advance()
         self.match_label('id')
-        decl.id = self.get_current_token().lexeme
+        declaration.id = self.get_current_token().lexeme
         self.advance()
 
         if self.get_current_token().label == 'l_bracket':
-            decl.dimension = self.dimension()
+            declaration.dimension = self.dimension()
 
         if self.get_current_token().label == 'assign':
             self.advance()
-            decl.assign = self.expr()
+            declaration.assign = self.expr()
 
         self.match_label('semicolon')
         self.advance()
 
-        return decl
+        return declaration
 
     #* dim = "[", ["+" | "-"], DEC, "]";
     def dim(self) -> ast_nodes.Dimension:
@@ -186,9 +186,9 @@ class Parser:
         self.match_label('semicolon')
         self.advance()
 
-        assign = ast_nodes.Assign(destiny, expr)
+        assignment = ast_nodes.Assignment(destiny, expr)
 
-        return assign
+        return assignment
 
     #* expr = term, exprDash
     def expr(self):
@@ -233,7 +233,6 @@ class Parser:
 
             # Then, the son node will be the right son of the current node.
             current_node.r_expr = son_node
-
             # The current note returns with empty left expr to be filled by the
             # top routine.
             return current_node
@@ -241,7 +240,6 @@ class Parser:
         # node.
         else:
             current_node.r_expr = term
-
             # The current note returns with empty left expr to be filled by the
             # top routine
             return current_node
@@ -281,11 +279,9 @@ class Parser:
             son_node.l_expr = factor
 
             current_node.r_expr = son_node
-
             return current_node
         else:
             current_node.r_expr = factor
-
             return current_node
 
     #* fact = prim, factDash;
@@ -323,22 +319,20 @@ class Parser:
             son_node.l_expr = primary
 
             current_node.r_expr = son_node
-
             return current_node
         else:
             current_node.r_expr = primary
-
             return current_node
 
     #* prim = "not", prim | "(", expr, ")" | ref | BIT_FD | conc;
     def prim(self) -> ast_nodes.ExprElem:
         token = self.get_current_token()
 
-        #* ref = ID, ["[", DEC, [":", DEC ], "]" ];
+        #* prim = ref;
         if (token_label := token.label) == 'id':
             identifier = ast_nodes.Identifier(token.lexeme)
             identifier.line_number = token.line_number
-            ref = ast_nodes.Ref(identifier)
+            ref = ast_nodes.Reference(identifier)
             self.advance()
 
             if self.get_current_token().label == 'l_bracket':
@@ -358,14 +352,14 @@ class Parser:
                 self.advance()
 
             return ref
-        #* prim = BIT_FD
+        #* prim = BIT_FD;
         elif token_label == 'bit_field':
             value = self.get_current_token().lexeme.strip('"')
 
             self.advance()
 
             return ast_nodes.BitField(value)
-        #* prim = "not", prim
+        #* prim = "not", prim;
         elif token_label == 'not':
             self.advance()
 
@@ -373,7 +367,7 @@ class Parser:
             node.expr = self.prim()
 
             return node
-        #* prim = "(", expr, ")"
+        #* prim = "(", expr, ")";
         elif token_label == 'l_paren':
             self.advance()
             expr = self.expr()
@@ -381,44 +375,44 @@ class Parser:
             self.advance()
 
             return expr
-        #* conc = "<", expr, {",", expr }, ">";
+        #* prim = conc;
         elif token_label == 'l_angle':
             self.advance()
-            conc = ast_nodes.Conc()
+            concatenation = ast_nodes.Concatenation()
 
-            conc.add_expr(self.expr())
+            concatenation.add_expr(self.expr())
 
             while self.get_current_token().label == 'comma':
                 self.advance()
-                conc.add_expr(self.expr())
+                concatenation.add_expr(self.expr())
 
             self.match_label('r_angle')
             self.advance()
 
-            return conc
+            return concatenation
         else:
             raise SyntacticalError(token.line_number, 'Expected primary.')
 
     #* inst = 'sub', ID, ['as' ID],';';
     def inst(self):
         self.match_label('sub')
-        inst = ast_nodes.Inst()
-        inst.line_number = self.get_current_token().line_number
+        instance = ast_nodes.Instance()
+        instance.line_number = self.get_current_token().line_number
         self.advance()
 
         self.match_label('id')
-        inst.comp_id = self.get_current_token().lexeme
+        instance.comp_id = self.get_current_token().lexeme
         self.advance()
 
         if self.get_current_token().label == 'as':
             self.advance()
             self.match_label('id')
-            inst.sub_alias = self.get_current_token().lexeme
+            instance.sub_alias = self.get_current_token().lexeme
             self.advance()
         else:
-            inst.sub_alias = inst.comp_id
+            instance.sub_alias = instance.comp_id
 
         self.match_label('semicolon')
         self.advance()
 
-        return inst
+        return instance

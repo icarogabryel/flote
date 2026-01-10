@@ -31,10 +31,10 @@ class Builder:
         hls_components_symbols: dict[str, ComponentTable] = {},
         hls_components: dict[str, HlsComponentDto] = {}
     ) -> None:
-        self.ast: ast_nodes.Mod = ast
+        self.ast: ast_nodes.Module = ast
         self.symbol_table: SymbolTable = SymbolTable()
         self.components: dict[str, ComponentDto | HlsComponentDto] = {}
-        self.comp_nodes: dict[str, ast_nodes.Comp] = {}
+        self.comp_nodes: dict[str, ast_nodes.Component] = {}
 
         self.symbol_table.components |= hls_components_symbols
         self.components |= hls_components
@@ -47,12 +47,12 @@ class Builder:
 
         return dumps(component.to_json())
 
-    def init_component_table(self, comp: ast_nodes.Comp) -> ComponentTable:
+    def init_component_table(self, comp: ast_nodes.Component) -> ComponentTable:
         """Get the component's bus symbol table."""
         comp_table: ComponentTable = ComponentTable()
 
         for stmt in comp.stmts:
-            if isinstance(stmt, ast_nodes.Decl):
+            if isinstance(stmt, ast_nodes.Declaration):
                 decl = stmt  # Name change for better readability
                 is_assigned = False
                 size = 1
@@ -99,7 +99,7 @@ class Builder:
                     warn(f'Bus "{bus_id}" is never read', UserWarning)
 
     #TODO change to return a module of components
-    def vst_mod(self, mod: ast_nodes.Mod) -> ComponentDto:
+    def vst_mod(self, mod: ast_nodes.Module) -> ComponentDto:
         if not mod.comps:
             raise SemanticalError('Module is empty.')
 
@@ -149,7 +149,7 @@ class Builder:
 
         return main_component
 
-    def vst_comp(self, comp: ast_nodes.Comp) -> ComponentDto:
+    def vst_comp(self, comp: ast_nodes.Component) -> ComponentDto:
         if comp.id in self.symbol_table.components.keys():
             raise SemanticalError(
                 f'Component "{comp.id}" has already been declared.',
@@ -164,18 +164,18 @@ class Builder:
         self.symbol_table.components[component_id].object = component
 
         for stmt in comp.stmts:
-            if isinstance(stmt, ast_nodes.Decl):
+            if isinstance(stmt, ast_nodes.Declaration):
                 self.vst_decl(stmt, component_id, component)
-            elif isinstance(stmt, ast_nodes.Assign):
+            elif isinstance(stmt, ast_nodes.Assignment):
                 self.vst_assign(stmt, component_id, component)
-            elif isinstance(stmt, ast_nodes.Inst):
+            elif isinstance(stmt, ast_nodes.Instance):
                 self.vst_inst(stmt, component_id, component)
             else:
                 assert False, f'Invalid statement: {stmt}'
 
         return component
 
-    def vst_decl(self, decl: ast_nodes.Decl, component_id: str, component: ComponentDto) -> None:
+    def vst_decl(self, decl: ast_nodes.Declaration, component_id: str, component: ComponentDto) -> None:
         assert decl.id in self.symbol_table.components[component_id].bus_symbols.keys(), (
             f'Bus "{decl.id}" has not been declared in the symbol table.'
         )
@@ -211,7 +211,7 @@ class Builder:
         component.busses.append(bit_bus)
 
     def vst_assign(
-        self, assign: ast_nodes.Assign, component_id: str, component: ComponentDto
+        self, assign: ast_nodes.Assignment, component_id: str, component: ComponentDto
     ) -> None:
         if assign.destiny.id not in self.symbol_table.components[component_id].bus_symbols.keys():
             #TODO change to accept after declaration
@@ -286,7 +286,7 @@ class Builder:
                 'Expression element cannot be None.'
             )
 
-        if isinstance(expr_elem, ast_nodes.Ref):
+        if isinstance(expr_elem, ast_nodes.Reference):
             ref = expr_elem
 
             if (ref_id := ref.id_.id) not in \
@@ -368,7 +368,7 @@ class Builder:
             expr, size = self.vst_expr_elem(expr_elem.expr, component_id, component)
 
             return expr_nodes.Not(expr), size
-        elif isinstance(expr_elem, ast_nodes.Conc):
+        elif isinstance(expr_elem, ast_nodes.Concatenation):
             conc = expr_elem
             exprs: list[expr_nodes.ExprNode] = []
             total_size = 0
@@ -494,7 +494,7 @@ class Builder:
         else:
             assert False, f'Invalid expression element: {expr_elem}'
 
-    def vst_inst(self, inst: ast_nodes.Inst, component_id: str, component: ComponentDto) -> None:
+    def vst_inst(self, inst: ast_nodes.Instance, component_id: str, component: ComponentDto) -> None:
         assert inst.comp_id is not None, 'Instance component cannot be None.'
 
         # Check if the subcomponent was already processed

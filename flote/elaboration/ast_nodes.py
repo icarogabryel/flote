@@ -18,9 +18,9 @@ class Msb(Enum):
 
 
 # * AST Nodes
-class Mod:
+class Module:
     def __init__(self) -> None:
-        self.comps: list[Comp] = []
+        self.comps: list[Component] = []
 
     def add_comp(self, comp):
         self.comps.append(comp)
@@ -31,10 +31,10 @@ class Mod:
         for comp in self.comps:
             repr += f'{comp} '
 
-        return f'Mod({self.comps})'
+        return f'Module({self.comps})'
 
     def __str__(self) -> str:
-        desc = '|- Mod:'
+        desc = '|- Module:'
 
         for comp in self.comps:
             comp_desc = str(comp).replace('\n', '\n|  ')
@@ -43,11 +43,11 @@ class Mod:
         return desc
 
 
-class Comp:
+class Component:
     def __init__(self) -> None:
         self.id = ''
         self.is_main = False
-        self.stmts: list[Union[Decl, Assign, Inst]] = []
+        self.stmts: list[Union[Declaration, Assignment, Instance]] = []
         self.line_number = 0
 
     def add_stmt(self, stmt):
@@ -59,10 +59,10 @@ class Comp:
         for stmt in self.stmts:
             repr += f'{stmt} '
 
-        return f'Comp({self.id}, {self.is_main}, {self.stmts})'
+        return f'Component({self.id}, {self.is_main}, {self.stmts})'
 
     def __str__(self) -> str:
-        desc = f'Comp: {self.id}'
+        desc = f'Component: {self.id}'
 
         if self.is_main:
             desc += ' (main)'
@@ -75,22 +75,22 @@ class Comp:
         return desc
 
 
-class Decl:
+class Declaration:
     def __init__(self) -> None:
-        #TODO make id be an identifier object, not string
+        #todo make id be an identifier object, not string
         self.id = ''
         self.conn = Connection.INTERNAL
         self.type = 'bit'
         self.dimension: Optional[Dimension] = None
-        #TODO change atribute name to 'assignment_expr'
+        #todo change atribute name to 'assignment_expr'
         self.assign: Optional[ExprElem] = None
         self.line_number = 0
 
     def __repr__(self) -> str:
-        return f'Decl({self.id}, {self.type})'
+        return f'Declaration({self.id}, {self.type})'
 
     def __str__(self) -> str:
-        desc = f'Decl: "{self.id}" ({self.type}'
+        desc = f'Declaration: "{self.id}" ({self.type}'
 
         if self.conn == -1:
             desc += ', input)'
@@ -115,7 +115,7 @@ class Identifier:
         self.line_number: Optional[int] = None
 
     def __repr__(self) -> str:
-        return f'Id: "{self.id}"'
+        return f'Identifier: "{self.id}"'
 
     def __str__(self) -> str:
         return self.__repr__()
@@ -136,22 +136,21 @@ class Dimension:
         return f'Dimension: {self.size}, MSB={msb_name}'
 
 
-ExprElem = Union['Ref', 'BitField', 'UnaryOp', 'BinaryOp', 'Conc']
+ExprElem = Union['Reference', 'BitField', 'UnaryOp', 'BinaryOp', 'Concatenation']
 
 
-#TODO change name to 'Assignment'
-class Assign:
+class Assignment:
     def __init__(self, destiny: 'Identifier', expr: ExprElem) -> None:
         self.destiny = destiny
         self.expr = expr
 
     def __repr__(self) -> str:
-        return f'Assign({self.destiny}, {self.expr})'
+        return f'Assignment({self.destiny}, {self.expr})'
 
     def __str__(self) -> str:
         desc_expr = str(self.expr).replace('\n', '\n|  ')
         return (
-            f'Assign:\n|  |- destiny: {self.destiny}\n|  |- expr: {desc_expr}'
+            f'Assignment:\n|  |- destiny: {self.destiny}\n|  |- expr: {desc_expr}'
         )
 
 
@@ -225,14 +224,14 @@ class XnorOp(BinaryOp):
         return f'Xnor {self.l_expr} {self.r_expr}'
 
 
-class Ref():
+class Reference():
     def __init__(self, id_, range_begin: None | int = None, range_end: None | int = None) -> None:
         self.id_: Identifier = id_
         self.range_begin: None | int = range_begin
         self.range_end: None | int = range_end
 
     def __repr__(self) -> str:
-        return f'Ref: {self.id_}[{self.range_begin}:{self.range_end}]'
+        return f'Reference: {self.id_}[{self.range_begin}:{self.range_end}]'
 
     def __str__(self) -> str:
         return self.__repr__()
@@ -250,7 +249,7 @@ class BitField:
         return self.__repr__()
 
 
-class Conc:
+class Concatenation:
     def __init__(self) -> None:
         self.exprs: list[ExprElem] = []
 
@@ -258,10 +257,10 @@ class Conc:
         self.exprs.append(elem)
 
     def __repr__(self) -> str:
-        return f'Conc({self.exprs})'
+        return f'Concatenation({self.exprs})'
 
     def __str__(self) -> str:
-        desc = 'Conc:'
+        desc = 'Concatenation:'
 
         for expr in self.exprs:
             expr_desc = str(expr).replace('\n', '\n|  ')
@@ -270,14 +269,14 @@ class Conc:
         return desc
 
 
-class Inst:
+class Instance:
     def __init__(self) -> None:
         self.comp_id: Optional[str] = None
         self.sub_alias: Optional[str] = None
         self.line_number: Optional[int] = None
 
     def __repr__(self) -> str:
-        return f'Inst({self.comp_id}, {self.sub_alias})'
+        return f'Instance({self.comp_id}, {self.sub_alias})'
 
     def __str__(self) -> str:
-        return f'Inst: {self.sub_alias} of {self.comp_id}'
+        return f'Instance: {self.sub_alias} of {self.comp_id}'
