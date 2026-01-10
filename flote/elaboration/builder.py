@@ -63,7 +63,7 @@ class Builder:
                         decl.line_number
                     )
 
-                if decl.assign is not None:
+                if decl.assignment_expression is not None:
                     if (decl.conn == ast_nodes.Connection.INPUT):
                         raise SemanticalError(
                             f'Input Buses like {decl.id} cannot be assigned.',
@@ -193,9 +193,9 @@ class Builder:
 
             bit_bus.set_dimension(decl.dimension.size)
 
-        if decl.assign is not None:
+        if decl.assignment_expression is not None:
             # Create the bus assignment
-            assignment, size = self.vst_expr(decl.assign, component_id, component)
+            assignment, size = self.vst_expr(decl.assignment_expression, component_id, component)
             bit_bus.assignment = assignment
 
             #TODO improve using symbol table

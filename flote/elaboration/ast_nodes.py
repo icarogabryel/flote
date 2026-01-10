@@ -5,19 +5,19 @@ from typing import Optional, Union
 
 class Connection(Enum):
     """Enum to represent the connection type of a declaration."""
-    INTERNAL = 0
     INPUT = -1
+    INTERNAL = 0
     OUTPUT = 1
 
 
-#TODO this is not used in builder yet
+#todo this is not used in builder yet
 class Msb(Enum):
     """Enum to represent the most significant bit (MSB) direction."""
-    ASCENDING = 0
-    DESCENDING = 1
+    ASCENDING = True
+    DESCENDING = False
 
 
-# * AST Nodes
+#* AST Nodes
 class Module:
     def __init__(self) -> None:
         self.comps: list[Component] = []
@@ -82,8 +82,7 @@ class Declaration:
         self.conn = Connection.INTERNAL
         self.type = 'bit'
         self.dimension: Optional[Dimension] = None
-        #todo change atribute name to 'assignment_expr'
-        self.assign: Optional[ExprElem] = None
+        self.assignment_expression: Optional[ExprElem] = None
         self.line_number = 0
 
     def __repr__(self) -> str:
@@ -92,9 +91,9 @@ class Declaration:
     def __str__(self) -> str:
         desc = f'Declaration: "{self.id}" ({self.type}'
 
-        if self.conn == -1:
+        if self.conn == Connection.INPUT:
             desc += ', input)'
-        elif self.conn == 1:
+        elif self.conn == Connection.OUTPUT:
             desc += ', output)'
         else:
             desc += ', internal)'
@@ -102,8 +101,8 @@ class Declaration:
         if self.dimension:
             desc += f'\n|  |- dimension: {self.dimension}'
 
-        if self.assign:
-            desc_assign = str(self.assign).replace('\n', '\n|  ')
+        if self.assignment_expression:
+            desc_assign = str(self.assignment_expression).replace('\n', '\n|  ')
             desc += f'\n|  |- assign: {desc_assign}'
 
         return desc

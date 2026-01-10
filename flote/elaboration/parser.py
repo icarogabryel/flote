@@ -123,7 +123,7 @@ class Parser:
 
         if self.get_current_token().label == 'assign':
             self.advance()
-            declaration.assign = self.expr()
+            declaration.assignment_expression = self.expr()
 
         self.match_label('semicolon')
         self.advance()
