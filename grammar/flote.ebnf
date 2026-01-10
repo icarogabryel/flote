@@ -2,9 +2,10 @@ mod = comp, {comp};
 comp = ["main"], "comp", ID, "{", {stmt}, "}";
 stmt = decl | asmt | inst;
 decl = ["in" | "out"], "bit", ID, [dim], ["=", expr], ";";
-dim = "[", ["-"], DEC, "]";
-asmt = ID, "=", expr, ";";
-inst = "sub", ID, ["as", ID],";";
+dim = "[", ["+" | "-"], DEC, "]";
+asmt = memb, "=", expr, ";";
+memb = ID, ["." , memb];
+inst = "sub", memb, ["as", ID],";";
 
 (* Expression rules *)
 expr = term, exprDash;
@@ -14,11 +15,11 @@ termDash = ("xor" | "xnor"), fact, termDash | ε;
 fact = prim, factDash;
 factDash = ("and" | "nand"), prim, factDash | ε;
 prim = "not", prim | "(", expr, ")" | ref | BIT_FD | conc;
-ref = ID, ["[", DEC, [":", DEC ], "]" ];
+ref = memb, ["[", DEC, [":", DEC ], "]" ];
 conc = "<", expr, {",", expr }, ">";
 
 (* Lexical rules *)
 (* ¿ used to don't interfere with EBNF parsing *)
-ID = ? @¿[A-Za-z_]\w*(\.[A-Za-z_]\w*)¿ ?;
+ID = ? @¿[A-Za-z_]\w* ?;
 DEC = ? 0 | [1-9][0-9]* ?;
 BIT_FD = ? "([01]+)" ?;

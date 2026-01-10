@@ -117,8 +117,8 @@ For future releases, the following features are planned:
 
 ---
 
-*Flote is an open-source project developed as part of academic research at CESLa (of Federal University of Piauí) and my humble bedroom, Brazil.*
-
 <div align="center">
-  <img src="docs/imgs/brazil-mentioned.png" width="30%" alt="Brazil Mentioned"/>
+  <i>Flote is an open-source project developed as part of academic research at Federal University of Piauí and my humble bedroom, Brazil 🇧🇷</i>
+  <br />
+  <img src="docs/imgs/brazil-mentioned.png" width="25%" alt="Brazil Mentioned"/>
 </div>

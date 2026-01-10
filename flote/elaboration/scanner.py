@@ -1,7 +1,6 @@
 import re
 
 
-# Constants
 IGNORED_CHARS = [' ', '\t', '\n']
 END_OF_FILE = '\0'
 END_OF_COMMENT = ['\n', END_OF_FILE]
@@ -24,15 +23,17 @@ KEY_WORDS = [
 SYMBOLS_LABELS = {
     ';': 'semicolon',
     ':': 'colon',
+    '.': 'dot',
     ',': 'comma',
+    '=': 'equals',
+    '+': 'plus',
+    '-': 'minus',
     '<': 'l_angle',
     '>': 'r_angle',
     '(': 'l_paren',
     ')': 'r_paren',
     '{': 'l_brace',
     '}': 'r_brace',
-    '=': 'assign',
-    '-': 'minus',
     '[': 'l_bracket',
     ']': 'r_bracket',
 }
@@ -63,24 +64,18 @@ class Token():
 
 class Scanner():
     """
-    Lexical Scanner for Flote Language.
+    Lexical Scanner for Flote language.
 
-    The Scanner class receives a string of code, make lexical analysis and
-    returns a token stream.
+    The Scanner class receives a string of code, make lexical analysis and returns a token stream.
     """
     def __init__(self, code: str):
         self.code = code + END_OF_FILE
         self.line_number = 1
         self.index = 0  # Current index in the code string
-        self.token_stream: list[Token] = []
-
-        self.get_token_stream()
+        self.token_stream: list[Token] = self.gen_token_stream()
 
     def advance(self):
-        """
-        Advance the index to the next character and update line number if
-        necessary.
-        """
+        """Advance the index to the next character and update line number if necessary."""
         if self.get_char() == '\n':
             self.line_number += 1
 
@@ -95,16 +90,14 @@ class Scanner():
 
     def skip_ignored(self):
         """
-        Skip ignored characters and comments until a non-ignored character
-        or END_OF_FILEis found.
+        Skip ignored characters and comments until a non-ignored character or END_OF_FILE is found.
         """
         while not self.is_eof():  # While don't reach the end of the string
             while self.get_char() in IGNORED_CHARS:  # Skip ignored characters
                 self.advance()
 
             if self.get_char() == '/':  # Skip line comments
-                # Checking the slashes separately to avoid checking out of
-                # range and IndexError.
+                # Checking the slashes separately to avoid checking out of range and IndexError.
                 if self.code[self.index + 1] == '/':
                     # Ignoring the comment until the end of the line
                     while self.get_char() not in END_OF_COMMENT:
@@ -113,21 +106,16 @@ class Scanner():
                 break
 
     def scan_lexeme(self) -> str:
-        """
-        Form a lexeme by reading characters until a symbol or an ignored
-        character is found.
-        """
+        """Form a lexeme by reading characters until a symbol or an ignored character is found."""
         lexeme = ''
 
         while not self.is_eof():  # While don't reach the end of the code
             # If it's a symbol, stop reading and return the lexeme.
             if (char := self.get_char()) in SYMBOLS_LABELS:
                 return lexeme
-
             # If it's an ignored character, stop reading and return the lexeme.
             elif char in IGNORED_CHARS:
                 return lexeme
-
             # If it's not an ignored character or a symbol, keep reading.
             else:
                 lexeme += char
@@ -138,7 +126,6 @@ class Scanner():
     def get_token(self) -> Token:
         """Get the next token from the code."""
         self.skip_ignored()
-
         token = None
 
         if self.is_eof():  # First, check if we reached the end of the code.
@@ -155,7 +142,7 @@ class Scanner():
                 # The label is the lexeme itself in case of keywords
                 token = Token(self.line_number, lexeme, lexeme)
             # Check if the lexeme is a valid identifier (may optionally start with @ for HTS comps)
-            elif re.match(r'^@?[A-Za-z_]\w*(?:\.[A-Za-z_]\w*)?$', lexeme):
+            elif re.match(r'^@?[A-Za-z_]\w*$', lexeme):
                 token = Token(self.line_number, 'id', lexeme)
             # Check if the lexeme is a valid binary number
             elif re.match(r'^\"[0-1]+\"$', lexeme):
@@ -181,14 +168,12 @@ class Scanner():
 
         #. Here I am another day. Under the bloodthirsty eye of the debugger.
         assert token is not None, 'token returned None'
-
         return token
 
-    def get_token_stream(self):
-        """Generator that yields tokens until EOF is reached."""
+    def gen_token_stream(self) -> list[Token]:
+        """Generate the token stream by repeatedly calling get_token until EOF is reached."""
         while True:
             token = self.get_token()
-
             self.token_stream.append(token)
 
             if token.label == 'EOF':
