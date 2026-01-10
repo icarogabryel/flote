@@ -156,10 +156,7 @@ class Parser:
         assert size >= 0, 'Dimension size must be non-negative'
 
         if size == 0:
-            raise SyntacticalError(
-                token.line_number,
-                'Dimension size must be positive.'
-            )
+            raise SyntacticalError(token.line_number, 'Dimension size must be positive.')
 
         dimension = ast_nodes.Dimension(size, msb)
 
@@ -217,10 +214,7 @@ class Parser:
             current_node = ast_nodes.NorOp(self.get_current_token().line_number)
             self.advance()
         else:
-            raise SyntacticalError(
-                token.line_number,
-                'Expected "or" or "nor".'
-            )
+            raise SyntacticalError(token.line_number, 'Expected "or" or "nor".')
 
         term = self.term()
 
@@ -267,10 +261,7 @@ class Parser:
             current_node = ast_nodes.XnorOp(self.get_current_token().line_number)
             self.advance()
         else:
-            raise SyntacticalError(
-                token.line_number,
-                'Expected "xor" or "xnor".'
-            )
+            raise SyntacticalError(token.line_number, 'Expected "xor" or "xnor".')
 
         factor = self.fact()
 
@@ -307,10 +298,8 @@ class Parser:
             current_node = ast_nodes.NandOp(self.get_current_token().line_number)
             self.advance()
         else:
-            raise SyntacticalError(
-                token.line_number,
-                'Expected "and" or "nand".'
-            )  #todo maybe change to assert
+            #todo maybe change to assert
+            raise SyntacticalError(token.line_number, 'Expected "and" or "nand".')
 
         primary = self.prim()
 
