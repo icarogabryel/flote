@@ -1,5 +1,5 @@
-from .ir.buses import BusDto, HlsBusDto
-from .ir.component import ComponentDto, HlsComponentDto
+from flote.elaboration.ir.buses import BusDto, HlsBusDto
+from flote.elaboration.ir.component import ComponentDto, HlsComponentDto
 
 
 class BusSymbol:
