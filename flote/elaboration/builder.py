@@ -3,11 +3,11 @@ from json import dumps
 from typing import Optional, Tuple
 from warnings import warn
 
-from . import ast_nodes
-from .ir import expr_nodes
-from .ir.buses import BitBusDto, BitBusValueDto
-from .ir.component import ComponentDto, HlsComponentDto
-from .symbol_table import BusSymbol, ComponentTable, SymbolTable
+from flote.elaboration import ast_nodes
+from flote.elaboration.ir import expr_nodes
+from flote.elaboration.ir.buses import BitBusDto, BitBusValueDto
+from flote.elaboration.ir.component import ComponentDto, HlsComponentDto
+from flote.elaboration.symbol_table import BusSymbol, ComponentTable, SymbolTable
 
 
 class SemanticalError(Exception):
@@ -98,7 +98,7 @@ class Builder:
                 if (bus.connection_type != ast_nodes.Connection.OUTPUT) and (not bus.is_read):
                     warn(f'Bus "{bus_id}" is never read', UserWarning)
 
-    #TODO change to return a module of components
+    #todo change to return a module of components
     def vst_mod(self, mod: ast_nodes.Module) -> ComponentDto:
         if not mod.comps:
             raise SemanticalError('Module is empty.')
@@ -198,7 +198,7 @@ class Builder:
             assignment, size = self.vst_expr(decl.assignment_expression, component_id, component)
             bit_bus.assignment = assignment
 
-            #TODO improve using symbol table
+            #todo improve using symbol table
             if size != bus_symbol.size:
                 raise SemanticalError(
                     (
@@ -214,7 +214,7 @@ class Builder:
         self, assign: ast_nodes.Assignment, component_id: str, component: ComponentDto
     ) -> None:
         if assign.destiny.id not in self.symbol_table.components[component_id].bus_symbols.keys():
-            #TODO change to accept after declaration
+            #todo change to accept after declaration
             # All destiny signals must be declared previously
             raise SemanticalError(
                 f'Identifier "{assign.destiny.id}" has not been declared.',
@@ -345,7 +345,7 @@ class Builder:
             slice_size = (range_end - range_begin) + 1
             bus_symbol.is_read = True
 
-            #TODO fix type checking
+            #todo fix type checking
             bus = self.symbol_table.components[component_id].bus_symbols[expr_elem.id_.id].object
             assert bus is not None, f'Bus object for "{ref_id}" cannot be None.'
 
@@ -380,7 +380,7 @@ class Builder:
 
             return expr_nodes.Conc(exprs), total_size
         elif isinstance(expr_elem, ast_nodes.AndOp):
-            #TODO put a function for those asserts
+            #todo put a function for those asserts
             assert expr_elem.l_expr is not None, (
                 'Left expression of And operation cannot be None.'
             )
@@ -498,7 +498,7 @@ class Builder:
         assert inst.comp_id is not None, 'Instance component cannot be None.'
 
         # Check if the subcomponent was already processed
-        #TODO check hls components
+        #todo check hls components
         if inst.comp_id not in self.components.keys():
             try:
                 self.components[inst.comp_id] = self.vst_comp(self.comp_nodes[inst.comp_id])
