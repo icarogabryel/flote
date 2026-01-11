@@ -214,7 +214,7 @@ class Parser:
             current_node = ast_nodes.NorOp(self.get_current_token().line_number)
             self.advance()
         else:
-            raise SyntacticalError(token.line_number, 'Expected "or" or "nor".')
+            assert False, f'Unexpected Token: {token.label}'
 
         term = self.term()
 
@@ -261,7 +261,7 @@ class Parser:
             current_node = ast_nodes.XnorOp(self.get_current_token().line_number)
             self.advance()
         else:
-            raise SyntacticalError(token.line_number, 'Expected "xor" or "xnor".')
+            assert False, f'Unexpected Token: {token.label}'
 
         factor = self.fact()
 
@@ -298,8 +298,7 @@ class Parser:
             current_node = ast_nodes.NandOp(self.get_current_token().line_number)
             self.advance()
         else:
-            #todo maybe change to assert
-            raise SyntacticalError(token.line_number, 'Expected "and" or "nand".')
+            assert False, f'Unexpected Token: {token.label}'
 
         primary = self.prim()
 
@@ -344,7 +343,6 @@ class Parser:
         #* prim = BIT_FD;
         elif token_label == 'bit_field':
             value = self.get_current_token().lexeme.strip('"')
-
             self.advance()
 
             return ast_nodes.BitField(value)
