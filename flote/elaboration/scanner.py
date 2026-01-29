@@ -72,7 +72,7 @@ class Scanner():
         self.code = code + END_OF_FILE
         self.line_number = 1
         self.index = 0  # Current index in the code string
-        self.token_stream: list[Token] = self.gen_token_stream()
+        self.token_stream: list[Token] = self.get_token_stream()
 
     def advance(self):
         """Advance the index to the next character and update line number if necessary."""
@@ -170,11 +170,15 @@ class Scanner():
         assert token is not None, 'token returned None'
         return token
 
-    def gen_token_stream(self) -> list[Token]:
+    def get_token_stream(self) -> list[Token]:
         """Generate the token stream by repeatedly calling get_token until EOF is reached."""
+        token_stream = []
+
         while True:
             token = self.get_token()
-            self.token_stream.append(token)
+            token_stream.append(token)
 
             if token.label == 'EOF':
                 break
+
+        return self.token_stream
