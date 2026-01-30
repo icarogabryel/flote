@@ -120,5 +120,6 @@ For future releases, the following features are planned:
 <div align="center">
   <i>Flote is an open-source project developed as part of academic research at Federal University of Piauí and my humble bedroom, Brazil 🇧🇷</i>
   <br />
+  <br />
   <img src="docs/imgs/brazil-mentioned.png" width="25%" alt="Brazil Mentioned"/>
 </div>
