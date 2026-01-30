@@ -3,9 +3,9 @@ comp = ["main"], "comp", ID, "{", {stmt}, "}";
 stmt = decl | asmt | inst;
 decl = ["in" | "out"], "bit", ID, [dim], ["=", expr], ";";
 dim = "[", ["+" | "-"], DEC, "]";
-asmt = memb, "=", expr, ";";
-memb = ID, ["." , memb];
-inst = "sub", memb, ["as", ID],";";
+asmt = (ID | memb), "=", expr, ";";
+memb = ID, ["." , ID];
+inst = "sub", ID, ["as", ID],";";
 
 (* Expression rules *)
 expr = term, exprDash;
@@ -15,7 +15,7 @@ termDash = ("xor" | "xnor"), fact, termDash | ε;
 fact = prim, factDash;
 factDash = ("and" | "nand"), prim, factDash | ε;
 prim = "not", prim | "(", expr, ")" | ref | BIT_FD | conc;
-ref = memb, ["[", DEC, [":", DEC ], "]" ];
+ref = (ID | memb), ["[", DEC, [":", DEC ], "]" ];
 conc = "<", expr, {",", expr }, ">";
 
 (* Lexical rules *)
