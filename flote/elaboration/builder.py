@@ -57,16 +57,16 @@ class Builder:
                 is_assigned = False
                 size = 1
 
-                if decl.id in comp_table.bus_symbols.keys():
+                if decl.id_ in comp_table.bus_symbols.keys():
                     raise SemanticalError(
-                        f'Bus "{decl.id}" has already been declared.',
+                        f'Bus "{decl.id_}" has already been declared.',
                         decl.line_number
                     )
 
                 if decl.assignment_expression is not None:
                     if (decl.conn == ast_nodes.Connection.INPUT):
                         raise SemanticalError(
-                            f'Input Buses like {decl.id} cannot be assigned.',
+                            f'Input Buses like {decl.id_} cannot be assigned.',
                             decl.line_number
                         )
 
@@ -76,7 +76,7 @@ class Builder:
                 if decl.dimension is not None:
                     size = decl.dimension.size
 
-                comp_table.bus_symbols[decl.id] = BusSymbol(
+                comp_table.bus_symbols[decl.id_] = BusSymbol(
                     decl.type,
                     is_assigned,
                     decl.conn,
@@ -105,11 +105,11 @@ class Builder:
 
         # Fill the comp_nodes dictionary
         for comp in mod.comps:
-            self.comp_nodes[comp.id] = comp
+            self.comp_nodes[comp.id_] = comp
 
         if len(mod.comps) == 1:
             component = self.vst_comp(mod.comps[0])
-            self.components[mod.comps[0].id] = component
+            self.components[mod.comps[0].id_] = component
 
             return component
         else:  # If there are multiple components, we assume one of them is the main
@@ -117,17 +117,17 @@ class Builder:
             main_component: Optional[ComponentDto] = None
 
             for comp in mod.comps:  # Search for the main component
-                if comp.id in self.components:
+                if comp.id_ in self.components:
                     continue  # Skip if component already processed in a previous instantiation
                 # Add component to the components dict
                 component = self.vst_comp(comp)
-                self.components[comp.id] = component
+                self.components[comp.id_] = component
 
                 if comp.is_main:
                     if is_main_comp_found:
                         raise SemanticalError(
                             (
-                                f'{comp.id} can\'t be main. Only one main '
+                                f'{comp.id_} can\'t be main. Only one main '
                                 'component is allowed.'
                             ),
                             comp.line_number
@@ -150,13 +150,13 @@ class Builder:
         return main_component
 
     def vst_comp(self, comp: ast_nodes.Component) -> ComponentDto:
-        if comp.id in self.symbol_table.components.keys():
+        if comp.id_ in self.symbol_table.components.keys():
             raise SemanticalError(
-                f'Component "{comp.id}" has already been declared.',
+                f'Component "{comp.id_}" has already been declared.',
                 comp.line_number
             )
 
-        component_id = comp.id
+        component_id = comp.id_
         component = ComponentDto(component_id)
         self.symbol_table.components[component_id] = self.init_component_table(
             comp,
@@ -176,13 +176,13 @@ class Builder:
         return component
 
     def vst_decl(self, decl: ast_nodes.Declaration, component_id: str, component: ComponentDto) -> None:
-        assert decl.id in self.symbol_table.components[component_id].bus_symbols.keys(), (
-            f'Bus "{decl.id}" has not been declared in the symbol table.'
+        assert decl.id_ in self.symbol_table.components[component_id].bus_symbols.keys(), (
+            f'Bus "{decl.id_}" has not been declared in the symbol table.'
         )
 
-        bus_symbol = self.symbol_table.components[component_id].bus_symbols[decl.id]
+        bus_symbol = self.symbol_table.components[component_id].bus_symbols[decl.id_]
         bit_bus = BitBusDto()
-        bit_bus.id_ = decl.id
+        bit_bus.id_ = decl.id_
         bus_symbol.object = bit_bus
 
         # if decl.conn == ast_nodes.Connection.INPUT:
@@ -203,7 +203,7 @@ class Builder:
                 raise SemanticalError(
                     (
                         f'Assignment size ({size}) does not match bus size '
-                        f'({bus_symbol.size}) for "{decl.id}".'
+                        f'({bus_symbol.size}) for "{decl.id_}".'
                     ),
                     decl.line_number
                 )

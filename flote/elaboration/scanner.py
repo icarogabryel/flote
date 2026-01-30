@@ -159,10 +159,7 @@ class Scanner():
                         f'Decimal number can not begin with 0: {lexeme}'
                     )
             else:  # If the lexeme was not recognized, raise an error.
-                raise LexicalError(
-                    self.line_number,
-                    f'Invalid lexeme: {lexeme}'
-                )
+                raise LexicalError(self.line_number, f'Invalid lexeme: {lexeme}')
         else:
             raise LexicalError(self.line_number, f"Invalid character: {char}")
 
@@ -181,4 +178,4 @@ class Scanner():
             if token.label == 'EOF':
                 break
 
-        return self.token_stream
+        return token_stream

@@ -97,3 +97,20 @@ def elaborate_file(
         code = file.read()
 
     return elaborate(code, rust_backend=rust_backend, hls_components=hls_components)
+
+
+def get_token_stream(code: str):
+    scanner = Scanner(code)
+    return scanner.token_stream
+
+
+def get_ast(code: str):
+    token_stream = get_token_stream(code)
+    parser = Parser(token_stream)
+    return parser.ast
+
+
+def get_ir(code: str):
+    ast = get_ast(code)
+    builder = Builder(ast)
+    return builder.ir

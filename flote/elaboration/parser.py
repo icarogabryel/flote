@@ -41,9 +41,8 @@ class Parser:
 
         if token.label != expected_label:
             raise SyntacticalError(
-                token.line_number, (
-                    f'Unexpected Token. Expected "{expected_label}". Got "{token.label}".'
-                )
+                token.line_number,
+                f'Unexpected Token. Expected "{expected_label}". Got "{token.label}".'
             )
 
     def parse(self):
@@ -75,7 +74,7 @@ class Parser:
         component.line_number = self.get_current_token().line_number
         self.advance()
         self.match_label('id')
-        component.id = self.get_current_token().lexeme
+        component.id_ = ast_nodes.Identifier(self.get_current_token().lexeme)
         self.advance()
         self.match_label('l_brace')
         self.advance()
@@ -115,13 +114,13 @@ class Parser:
         declaration.type = 'bit'
         self.advance()
         self.match_label('id')
-        declaration.id = self.get_current_token().lexeme
+        declaration.id_ = ast_nodes.Identifier(self.get_current_token().lexeme)
         self.advance()
 
         if self.get_current_token().label == 'l_bracket':
-            declaration.dimension = self.dimension()
+            declaration.dimension = self.dim()
 
-        if self.get_current_token().label == 'assign':
+        if self.get_current_token().label == 'equals':
             self.advance()
             declaration.assignment_expression = self.expr()
 
@@ -136,20 +135,14 @@ class Parser:
         self.advance()
 
         if (current_token := self.get_current_token().label) in ['plus', 'minus']:
-            msb = (
-                ast_nodes.Msb.DESCENDING
-                if current_token == 'minus'
-                else ast_nodes.Msb.ASCENDING
-            )
+            msb = ast_nodes.Msb.DESCENDING if current_token == 'minus' else ast_nodes.Msb.ASCENDING
             self.advance()
         else:
             msb = ast_nodes.Msb.ASCENDING
 
         self.match_label('dec')
         token = self.get_current_token()
-        assert token.lexeme.isdigit(), (
-            f"Token lexeme '{token.lexeme}' is not a valid integer"
-        )
+        assert token.lexeme.isdigit(), f"Token lexeme '{token.lexeme}' is not a valid integer"
 
         size = int(token.lexeme)
         # Logically, the lexeme of a decimal token should never be a negative integer.
@@ -166,17 +159,37 @@ class Parser:
 
         return dimension
 
-    #* asmt = memb, "=", expr, ";";
+    #* asmt = (ID | memb), "=", expr, ";";
     def asmt(self):
-        self.match_label('id')
+        destiny: None | ast_nodes.Identifier | ast_nodes.Member = None
 
+        self.match_label('id')
         token = self.get_current_token()
         identifier = ast_nodes.Identifier(token.lexeme)
         identifier.line_number = token.line_number
-        destiny = identifier
         self.advance()
 
-        self.match_label('assign')
+        if self.get_current_token().label == 'dot':
+            self.advance()
+
+            member_access = ast_nodes.Member()
+            member_access.object = identifier
+
+            self.match_label('id')
+            token = self.get_current_token()
+            member = ast_nodes.Identifier(token.lexeme)
+            member.line_number = token.line_number
+            self.advance()
+
+            member_access.member = member
+
+            destiny = member_access
+        else:
+            destiny = identifier
+
+        assert destiny is not None
+
+        self.match_label('equals')
         self.advance()
 
         expr = self.expr()
@@ -318,10 +331,31 @@ class Parser:
 
         #* prim = ref;
         if (token_label := token.label) == 'id':
+            reference: None | ast_nodes.Identifier | ast_nodes.Member = None
+
             identifier = ast_nodes.Identifier(token.lexeme)
             identifier.line_number = token.line_number
-            ref = ast_nodes.Reference(identifier)
             self.advance()
+
+            if self.get_current_token().label == 'dot':
+                self.advance()
+
+                member_access = ast_nodes.Member()
+                member_access.object = identifier
+
+                self.match_label('id')
+                token = self.get_current_token()
+                member = ast_nodes.Identifier(token.lexeme)
+                member.line_number = token.line_number
+                self.advance()
+
+                member_access.member = member
+
+                reference = member_access
+            else:
+                reference = identifier
+
+            ref = ast_nodes.Reference(reference)
 
             if self.get_current_token().label == 'l_bracket':
                 self.advance()
