@@ -28,7 +28,6 @@ class Connection(Enum):
     OUTPUT = 1
 
 
-#todo this is not used in builder yet
 class Msb(Enum):
     """Enum to represent the most significant bit (MSB) direction."""
     ASCENDING = True

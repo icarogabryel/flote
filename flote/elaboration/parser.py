@@ -109,7 +109,7 @@ class Parser:
             declaration.conn = ast_nodes.Connection.OUTPUT
             self.advance()
 
-        self.match_label('bit')  #todo adjust to accept other types
+        self.match_label('bit')
         declaration.line_number = self.get_current_token().line_number
         declaration.type = 'bit'
         self.advance()
