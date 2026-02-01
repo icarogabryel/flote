@@ -6,7 +6,7 @@ from warnings import warn
 from flote.elaboration import ast_nodes
 from flote.elaboration.ir import expr_nodes
 from flote.elaboration.ir.buses import BitBusDto, BitBusValueDto
-from flote.elaboration.ir.component import ComponentDto, HlsComponentDto
+from flote.elaboration.ir.component import ComponentDto
 from flote.elaboration.symbol_table import BusSymbol, ComponentTable, SymbolTable
 
 
@@ -28,22 +28,17 @@ class Builder:
     def __init__(
         self,
         ast,
-        hls_components_symbols: dict[str, ComponentTable] = {},
-        hls_components: dict[str, HlsComponentDto] = {}
     ) -> None:
         self.ast: ast_nodes.Module = ast
         self.symbol_table: SymbolTable = SymbolTable()
-        self.components: dict[str, ComponentDto | HlsComponentDto] = {}
+        self.components: dict[str, ComponentDto] = {}
         self.comp_nodes: dict[str, ast_nodes.Component] = {}
 
-        self.symbol_table.components |= hls_components_symbols
-        self.components |= hls_components
+        self.netlist: str = self.get_netlist()
 
-        self.ir: str = self.get_ir()
-
-    def get_ir(self) -> str:
+    def get_netlist(self) -> str:
         component = self.vst_mod(self.ast)
-        component.make_influence_graph()
+        component.make_netlist()
 
         return dumps(component.to_json())
 
@@ -57,7 +52,8 @@ class Builder:
                 is_assigned = False
                 size = 1
 
-                if decl.id_ in comp_table.bus_symbols.keys():
+                assert decl.id_ is not None, 'Declaration id cannot be None.'
+                if decl.id_.full_id in comp_table.bus_symbols.keys():
                     raise SemanticalError(
                         f'Bus "{decl.id_}" has already been declared.',
                         decl.line_number
@@ -76,7 +72,9 @@ class Builder:
                 if decl.dimension is not None:
                     size = decl.dimension.size
 
-                comp_table.bus_symbols[decl.id_] = BusSymbol(
+                assert decl.id_ is not None, 'Declaration id cannot be None.'
+
+                comp_table.bus_symbols[decl.id_.full_id] = BusSymbol(
                     decl.type,
                     is_assigned,
                     decl.conn,
@@ -98,21 +96,23 @@ class Builder:
                 if (bus.connection_type != ast_nodes.Connection.OUTPUT) and (not bus.is_read):
                     warn(f'Bus "{bus_id}" is never read', UserWarning)
 
-    #todo change to return a module of components
     def vst_mod(self, mod: ast_nodes.Module) -> ComponentDto:
         if not mod.comps:
             raise SemanticalError('Module is empty.')
 
         # Fill the comp_nodes dictionary
         for comp in mod.comps:
-            self.comp_nodes[comp.id_] = comp
+            assert comp.id_ is not None, 'Component id cannot be None.'
+            self.comp_nodes[comp.id_.value] = comp
 
         if len(mod.comps) == 1:
             component = self.vst_comp(mod.comps[0])
-            self.components[mod.comps[0].id_] = component
+
+            assert mod.comps[0].id_ is not None, 'Component id cannot be None.'
+            self.components[mod.comps[0].id_.value] = component
 
             return component
-        else:  # If there are multiple components, we assume one of them is the main
+        else:  # If there are multiple components, its assumed one of them is the main
             is_main_comp_found = False
             main_component: Optional[ComponentDto] = None
 
@@ -121,13 +121,14 @@ class Builder:
                     continue  # Skip if component already processed in a previous instantiation
                 # Add component to the components dict
                 component = self.vst_comp(comp)
-                self.components[comp.id_] = component
+                assert comp.id_ is not None, 'Component id cannot be None.'
+                self.components[comp.id_.value] = component
 
                 if comp.is_main:
                     if is_main_comp_found:
                         raise SemanticalError(
                             (
-                                f'{comp.id_} can\'t be main. Only one main '
+                                f'{comp.id_.full_id} can\'t be main. Only one main '
                                 'component is allowed.'
                             ),
                             comp.line_number
@@ -157,36 +158,38 @@ class Builder:
             )
 
         component_id = comp.id_
-        component = ComponentDto(component_id)
-        self.symbol_table.components[component_id] = self.init_component_table(
+        assert component_id is not None, 'Component id cannot be None.'
+
+        component = ComponentDto(component_id.value)
+        self.symbol_table.components[component_id.value] = self.init_component_table(
             comp,
         )
-        self.symbol_table.components[component_id].object = component
-
+        self.symbol_table.components[component_id.value].object = component
         for stmt in comp.stmts:
             if isinstance(stmt, ast_nodes.Declaration):
-                self.vst_decl(stmt, component_id, component)
+                self.vst_decl(stmt, component_id.value, component)
             elif isinstance(stmt, ast_nodes.Assignment):
-                self.vst_assign(stmt, component_id, component)
+                self.vst_assign(stmt, component_id.value, component)
             elif isinstance(stmt, ast_nodes.Instance):
-                self.vst_inst(stmt, component_id, component)
+                self.vst_inst(stmt, component_id.value, component)
             else:
                 assert False, f'Invalid statement: {stmt}'
 
         return component
 
-    def vst_decl(self, decl: ast_nodes.Declaration, component_id: str, component: ComponentDto) -> None:
-        assert decl.id_ in self.symbol_table.components[component_id].bus_symbols.keys(), (
-            f'Bus "{decl.id_}" has not been declared in the symbol table.'
+    def vst_decl(
+        self, decl: ast_nodes.Declaration, component_id: str, component: ComponentDto
+    ) -> None:
+        assert decl.id_ is not None, 'Declaration id cannot be None.'
+        assert decl.id_.full_id in self.symbol_table.components[component_id].bus_symbols.keys(), (
+            f'Bus "{decl.id_}" has not been declared.'
         )
 
-        bus_symbol = self.symbol_table.components[component_id].bus_symbols[decl.id_]
+        assert decl.id_ is not None, 'Declaration id cannot be None.'
+        bus_symbol = self.symbol_table.components[component_id].bus_symbols[decl.id_.full_id]
         bit_bus = BitBusDto()
-        bit_bus.id_ = decl.id_
+        bit_bus.id_ = decl.id_.full_id
         bus_symbol.object = bit_bus
-
-        # if decl.conn == ast_nodes.Connection.INPUT:
-        #     component.interface.append(decl.id)
 
         if decl.dimension is not None:
             assert decl.dimension.size is not None
@@ -203,7 +206,7 @@ class Builder:
                 raise SemanticalError(
                     (
                         f'Assignment size ({size}) does not match bus size '
-                        f'({bus_symbol.size}) for "{decl.id_}".'
+                        f'({bus_symbol.size}) for "{decl.id_.full_id}".'
                     ),
                     decl.line_number
                 )
@@ -213,20 +216,22 @@ class Builder:
     def vst_assign(
         self, assign: ast_nodes.Assignment, component_id: str, component: ComponentDto
     ) -> None:
-        if assign.destiny.id not in self.symbol_table.components[component_id].bus_symbols.keys():
+        if (
+            assign.destiny.full_id not in
+            self.symbol_table.components[component_id].bus_symbols.keys()
+        ):
             #todo change to accept after declaration
             # All destiny signals must be declared previously
             raise SemanticalError(
-                f'Identifier "{assign.destiny.id}" has not been declared.',
+                f'Identifier "{assign.destiny.full_id}" has not been declared.',
                 assign.destiny.line_number
             )
 
-        bus_symbol = self.symbol_table.components[component_id].bus_symbols[assign.destiny.id]
-
+        bus_symbol = self.symbol_table.components[component_id].bus_symbols[assign.destiny.full_id]
         if (bus_symbol.connection_type == ast_nodes.Connection.INPUT) and \
                 (not bus_symbol.is_lower_lvl):
             raise SemanticalError(
-                f'Input Buses of top level like "{assign.destiny.id}" cannot be assigned.',
+                f'Input Buses of top level like "{assign.destiny.full_id}" cannot be assigned.',
                 assign.destiny.line_number
             )
 
@@ -234,8 +239,8 @@ class Builder:
                 (bus_symbol.is_lower_lvl is True):
             raise SemanticalError(
                 (
-                    f'Internal/out Buses of subcomponents like "{assign.destiny.id}" cannot be '
-                    f'assigned.'
+                    f'Internal/out Buses of subcomponents like "{assign.destiny.full_id}" cannot be'
+                    f' assigned.'
                 ),
                 assign.destiny.line_number
             )
@@ -243,7 +248,7 @@ class Builder:
         if bus_symbol.is_assigned is True:
             # Destiny signal cannot be assigned more than once
             raise SemanticalError(
-                f'Identifier "{assign.destiny.id}" already assigned.',
+                f'Identifier "{assign.destiny.full_id}" already assigned.',
                 assign.destiny.line_number
             )
 
@@ -260,13 +265,13 @@ class Builder:
             raise SemanticalError(
                 (
                     f'Assignment size ({size}) does not match target bus range ({bus_symbol.size}'
-                    f') for "{assign.destiny.id}".'
+                    f') for "{assign.destiny.full_id}".'
                 ),
                 assign.destiny.line_number
             )
 
-        bus = self.symbol_table.components[component_id].bus_symbols[assign.destiny.id].object
-        assert bus is not None, f'Bus object for "{assign.destiny.id}" cannot be None.'
+        bus = self.symbol_table.components[component_id].bus_symbols[assign.destiny.full_id].object
+        assert bus is not None, f'Bus object for "{assign.destiny.full_id}" cannot be None.'
         bus.assignment = assignment
 
     def vst_expr(self, expr, component_id: str, component: ComponentDto) -> Tuple[
@@ -289,14 +294,16 @@ class Builder:
         if isinstance(expr_elem, ast_nodes.Reference):
             ref = expr_elem
 
-            if (ref_id := ref.id_.id) not in \
+            if (ref_id := ref.id_.full_id) not in \
                     self.symbol_table.components[component_id].bus_symbols.keys():
                 raise SemanticalError(
                     f'Bus reference "{ref_id}" has not been declared.',
                     ref.id_.line_number
                 )
 
-            bus_symbol = self.symbol_table.components[component_id].bus_symbols[expr_elem.id_.id]
+            bus_symbol = (
+                self.symbol_table.components[component_id].bus_symbols[expr_elem.id_.full_id]
+            )
 
             # Validate subcomponents busses references
             if (bus_symbol.is_lower_lvl is True) and \
@@ -345,8 +352,9 @@ class Builder:
             slice_size = (range_end - range_begin) + 1
             bus_symbol.is_read = True
 
-            #todo fix type checking
-            bus = self.symbol_table.components[component_id].bus_symbols[expr_elem.id_.id].object
+            bus = (
+                self.symbol_table.components[component_id].bus_symbols[expr_elem.id_.full_id].object
+            )
             assert bus is not None, f'Bus object for "{ref_id}" cannot be None.'
 
             bus_ref = expr_nodes.Ref(
@@ -379,126 +387,47 @@ class Builder:
                 total_size += size
 
             return expr_nodes.Conc(exprs), total_size
-        elif isinstance(expr_elem, ast_nodes.AndOp):
-            #todo put a function for those asserts
-            assert expr_elem.l_expr is not None, (
-                'Left expression of And operation cannot be None.'
-            )
-            assert expr_elem.r_expr is not None, (
-                'Right expression of And operation cannot be None.'
-            )
+        elif isinstance(expr_elem, ast_nodes.BinaryOp):
+            match expr_elem:
+                case ast_nodes.AndOp():
+                    op_node = expr_nodes.And
+                case ast_nodes.OrOp():
+                    op_node = expr_nodes.Or
+                case ast_nodes.XorOp():
+                    op_node = expr_nodes.Xor
+                case ast_nodes.NandOp():
+                    op_node = expr_nodes.Nand
+                case ast_nodes.NorOp():
+                    op_node = expr_nodes.Nor
+                case ast_nodes.XnorOp():
+                    op_node = expr_nodes.Xnor
+                case _:
+                    assert False, f'Unhandled binary operation: {expr_elem}'
 
+            assert expr_elem.l_expr is not None, 'Left expression of operation cannot be None.'
+            assert expr_elem.r_expr is not None, 'Right expression of operation cannot be None.'
             l_expr, l_size = self.vst_expr_elem(expr_elem.l_expr, component_id, component)
             r_expr, r_size = self.vst_expr_elem(expr_elem.r_expr, component_id, component)
 
             if l_size != r_size:
                 raise SemanticalError(
                     (
-                        f'Left ({l_expr}) and right ({r_expr}) expressions of And operation must be'
-                        f' the same size.'
+                        f'Left ({l_expr}) and right ({r_expr}) expressions of operation must be the'
+                        ' same size.'
                     ),
                     expr_elem.line_number
                 )
 
-            return expr_nodes.And(l_expr, r_expr), l_size
-        elif isinstance(expr_elem, ast_nodes.OrOp):
-            assert expr_elem.l_expr is not None, (
-                'Left expression of Or operation cannot be None.'
-            )
-            assert expr_elem.r_expr is not None, (
-                'Right expression of Or operation cannot be None.'
-            )
-
-            l_expr, l_size = self.vst_expr_elem(expr_elem.l_expr, component_id, component)
-            r_expr, r_size = self.vst_expr_elem(expr_elem.r_expr, component_id, component)
-
-            if l_size != r_size:
-                raise SemanticalError(
-                    'Left and right expressions of And operation must be the same size.',
-                    expr_elem.line_number
-                )
-
-            return expr_nodes.Or(l_expr, r_expr), l_size
-        elif isinstance(expr_elem, ast_nodes.XorOp):
-            assert expr_elem.l_expr is not None, (
-                'Left expression of Xor operation cannot be None.'
-            )
-            assert expr_elem.r_expr is not None, (
-                'Right expression of Xor operation cannot be None.'
-            )
-
-            l_expr, l_size = self.vst_expr_elem(expr_elem.l_expr, component_id, component)
-            r_expr, r_size = self.vst_expr_elem(expr_elem.r_expr, component_id, component)
-
-            if l_size != r_size:
-                raise SemanticalError(
-                    'Left and right expressions of And operation must be the same size.',
-                    expr_elem.line_number
-                )
-
-            return expr_nodes.Xor(l_expr, r_expr), l_size
-        elif isinstance(expr_elem, ast_nodes.NandOp):
-            assert expr_elem.l_expr is not None, (
-                'Left expression of Nand operation cannot be None.'
-            )
-            assert expr_elem.r_expr is not None, (
-                'Right expression of Nand operation cannot be None.'
-            )
-
-            l_expr, l_size = self.vst_expr_elem(expr_elem.l_expr, component_id, component)
-            r_expr, r_size = self.vst_expr_elem(expr_elem.r_expr, component_id, component)
-
-            if l_size != r_size:
-                raise SemanticalError(
-                    'Left and right expressions of And operation must be the same size.',
-                    expr_elem.line_number
-                )
-
-            return expr_nodes.Nand(l_expr, r_expr), l_size
-        elif isinstance(expr_elem, ast_nodes.NorOp):
-            assert expr_elem.l_expr is not None, (
-                'Left expression of Nor operation cannot be None.'
-            )
-            assert expr_elem.r_expr is not None, (
-                'Right expression of Nor operation cannot be None.'
-            )
-
-            l_expr, l_size = self.vst_expr_elem(expr_elem.l_expr, component_id, component)
-            r_expr, r_size = self.vst_expr_elem(expr_elem.r_expr, component_id, component)
-
-            if l_size != r_size:
-                raise SemanticalError(
-                    'Left and right expressions of And operation must be the same size.',
-                    expr_elem.line_number
-                )
-
-            return expr_nodes.Nor(l_expr, r_expr), l_size
-        elif isinstance(expr_elem, ast_nodes.XnorOp):
-            assert expr_elem.l_expr is not None, (
-                'Left expression of Xnor operation cannot be None.'
-            )
-            assert expr_elem.r_expr is not None, (
-                'Right expression of Xnor operation cannot be None.'
-            )
-
-            l_expr, l_size = self.vst_expr_elem(expr_elem.l_expr, component_id, component)
-            r_expr, r_size = self.vst_expr_elem(expr_elem.r_expr, component_id, component)
-
-            if l_size != r_size:
-                raise SemanticalError(
-                    'Left and right expressions of And operation must be the same size.',
-                    expr_elem.line_number
-                )
-
-            return expr_nodes.Xnor(l_expr, r_expr), l_size
+            return op_node(l_expr, r_expr), l_size
         else:
             assert False, f'Invalid expression element: {expr_elem}'
 
-    def vst_inst(self, inst: ast_nodes.Instance, component_id: str, component: ComponentDto) -> None:
+    def vst_inst(
+        self, inst: ast_nodes.Instance, component_id: str, component: ComponentDto
+    ) -> None:
         assert inst.comp_id is not None, 'Instance component cannot be None.'
 
         # Check if the subcomponent was already processed
-        #todo check hls components
         if inst.comp_id not in self.components.keys():
             try:
                 self.components[inst.comp_id] = self.vst_comp(self.comp_nodes[inst.comp_id])

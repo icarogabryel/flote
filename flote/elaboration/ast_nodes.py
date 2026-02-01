@@ -118,19 +118,41 @@ class Declaration:
         return desc
 
 
-class Identifier:
-    def __init__(self, id: str) -> None:
-        self.id = id
-        self.line_number: Optional[int] = None
+class BaseId(ABC):
+    def __init__(self) -> None:
+        self._line_number: Optional[int] = None
+
+    @property
+    def line_number(self) -> Optional[int]:
+        return self._line_number
+
+    @line_number.setter
+    def line_number(self, value: Optional[int]) -> None:
+        self._line_number = value
+
+    @property
+    @abstractmethod
+    def full_id(self) -> str:
+        pass
+
+
+class Identifier(BaseId):
+    def __init__(self, value: str) -> None:
+        super().__init__()
+        self.value = value
 
     def __repr__(self) -> str:
-        return f'Identifier: "{self.id}"'
+        return f'Identifier: "{self.value}"'
 
     def __str__(self) -> str:
         return self.__repr__()
 
+    @property
+    def full_id(self) -> str:
+        return self.value
 
-class Member:
+
+class Member(BaseId):
     def __init__(self) -> None:
         self.object: Optional[Identifier] = None
         self.member: Optional[Identifier] = None
@@ -147,6 +169,24 @@ class Member:
             desc += _format_child('member', self.member)
 
         return desc
+
+    @property
+    def full_id(self) -> str:
+        obj_id = self.object.full_id if self.object else ''
+        mem_id = self.member.full_id if self.member else ''
+
+        return f'{obj_id}.{mem_id}'
+
+    @property
+    def line_number(self) -> Optional[int]:
+        if self.object and self.object.line_number:
+            return self.object.line_number
+
+        return None
+
+    @line_number.setter
+    def line_number(self, value: Optional[int]) -> None:
+        return None
 
 
 class Dimension:
@@ -167,7 +207,7 @@ ExprElem = Union['Reference', 'BitField', 'UnaryOp', 'BinaryOp', 'Concatenation'
 
 
 class Assignment:
-    def __init__(self, destiny: Identifier | Member, expr: ExprElem) -> None:
+    def __init__(self, destiny: BaseId, expr: ExprElem) -> None:
         self.destiny = destiny
         self.expr = expr
 
@@ -254,7 +294,7 @@ class XnorOp(BinaryOp):
 
 class Reference():
     def __init__(self, id_, range_begin: None | int = None, range_end: None | int = None) -> None:
-        self.id_: Identifier | Member = id_
+        self.id_: BaseId = id_
         self.range_begin: None | int = range_begin
         self.range_end: None | int = range_end
 

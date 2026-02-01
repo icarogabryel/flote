@@ -32,7 +32,7 @@ class ComponentDto(BaseComponentDto[BusDto | HlsBusDto]):
             bus.id_ = f'{alias}.{bus.id_}'
             self.busses.append(bus)
 
-    def make_influence_graph(self) -> None:
+    def make_netlist(self) -> None:
         """Create influence lists for all buses in the component."""
         for bus in self.busses:
             bus.make_influence_list()

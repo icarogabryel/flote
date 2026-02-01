@@ -19,59 +19,29 @@ class ElaborationError(Exception):
         return self.message
 
 
-def render(ast, rust_backend, hls_components = []):
+def render(ast, rust_backend, ):
     if rust_backend:
-        if len(hls_components) > 0:
-            warn('HLS components require Python backend, switching from Rust.')
-        else:
-            try:
-                from .simulation.rust.core import Renderer as RustRenderer
+        try:
+            from .simulation.rust.core import Renderer as RustRenderer
 
-                builder = Builder(ast)
-                ir = builder.ir
-                render = RustRenderer(ir)
-                return render.component
-            except ImportError:
-                warn('Rust backend not available, falling back to Python backend.')
-
-    # Process HLS components
-    hls_symbol_table: dict[str, ComponentTable] = {}
-    hls_components_dtos: dict[str, HlsComponentDto] = {}
-    hls_components_buses = {}
-
-    for hls_component in hls_components:
-        hls_symbols, sim_buses = hls_component.render()
-        hls_buses_dtos: list[HlsBusDto] = []
-
-        # Create symbol table for HLS components
-        hls_component_table = ComponentTable()
-        hls_component_table.bus_symbols = hls_symbols
-
-        # Create DTO for HLS component
-        hls_component_dto = HlsComponentDto(hls_component.id_)
-        for bus in sim_buses:
-            hls_bus_dto = HlsBusDto(bus.id_)
-            hls_buses_dtos.append(hls_bus_dto)
-            bus.id_ = f'{hls_component.id_}.{bus.id_}'
-            hls_components_buses[bus.id_] = bus
-
-        hls_component_dto.busses = hls_buses_dtos
-        hls_components_dtos[hls_component.id_] = hls_component_dto
-
-        hls_component_table.object = hls_component_dto
-        hls_symbol_table[hls_component.id_] = hls_component_table
+            builder = Builder(ast)
+            ir = builder.netlist
+            render = RustRenderer(ir)
+            return render.component
+        except ImportError:
+            warn('Rust backend not available, falling back to Python backend.')
 
     # Build IR with HLS components
-    builder = Builder(ast, hls_symbol_table, hls_components=hls_components_dtos)
-    ir = builder.ir
+    builder = Builder(ast)
+    netlist = builder.netlist
 
     # Render with Python backend
     from .simulation.python.core import Renderer as PythonRenderer
-    render = PythonRenderer(ir, hls_components_buses)
+    render = PythonRenderer(netlist)
     return render.component
 
 
-def elaborate(code: str, rust_backend=True, hls_components = []) -> TestBench:
+def elaborate(code: str, rust_backend=True) -> TestBench:
     # 1. Lexical analysis and token stream generation
     scanner = Scanner(code)
     tokens_stream = scanner.token_stream
@@ -81,7 +51,7 @@ def elaborate(code: str, rust_backend=True, hls_components = []) -> TestBench:
     ast = parser.ast
 
     # 3. Semantical analysis and IR generation
-    component = render(ast, rust_backend=rust_backend, hls_components=hls_components)
+    component = render(ast, rust_backend=rust_backend)
 
     # 4. Creating the testbench and encapsulating the component
     assert component is not None, "Elaboration failed: component is None"
@@ -90,13 +60,13 @@ def elaborate(code: str, rust_backend=True, hls_components = []) -> TestBench:
 
 
 def elaborate_file(
-    file_path, rust_backend=True, hls_components = []
+    file_path, rust_backend=True
 ) -> TestBench:
     p = Path(file_path)
     with p.open('r', encoding='utf-8') as file:
         code = file.read()
 
-    return elaborate(code, rust_backend=rust_backend, hls_components=hls_components)
+    return elaborate(code, rust_backend=rust_backend)
 
 
 def get_token_stream(code: str):
@@ -110,7 +80,7 @@ def get_ast(code: str):
     return parser.ast
 
 
-def get_ir(code: str):
+def get_netlist(code: str):
     ast = get_ast(code)
     builder = Builder(ast)
-    return builder.ir
+    return builder.netlist
