@@ -118,7 +118,7 @@ class Declaration:
         return desc
 
 
-class BaseId(ABC):
+class BaseIdentifier(ABC):
     def __init__(self) -> None:
         self._line_number: Optional[int] = None
 
@@ -136,7 +136,7 @@ class BaseId(ABC):
         pass
 
 
-class Identifier(BaseId):
+class Identifier(BaseIdentifier):
     def __init__(self, value: str) -> None:
         super().__init__()
         self.value = value
@@ -152,7 +152,7 @@ class Identifier(BaseId):
         return self.value
 
 
-class Member(BaseId):
+class Member(BaseIdentifier):
     def __init__(self) -> None:
         self.object: Optional[Identifier] = None
         self.member: Optional[Identifier] = None
@@ -186,7 +186,7 @@ class Member(BaseId):
 
     @line_number.setter
     def line_number(self, value: Optional[int]) -> None:
-        return None
+        assert False, "Cannot set line_number on Member directly."
 
 
 class Dimension:
@@ -207,7 +207,7 @@ ExprElem = Union['Reference', 'BitField', 'UnaryOp', 'BinaryOp', 'Concatenation'
 
 
 class Assignment:
-    def __init__(self, destiny: BaseId, expr: ExprElem) -> None:
+    def __init__(self, destiny: BaseIdentifier, expr: ExprElem) -> None:
         self.destiny = destiny
         self.expr = expr
 
@@ -294,7 +294,7 @@ class XnorOp(BinaryOp):
 
 class Reference():
     def __init__(self, id_, range_begin: None | int = None, range_end: None | int = None) -> None:
-        self.id_: BaseId = id_
+        self.id_: BaseIdentifier = id_
         self.range_begin: None | int = range_begin
         self.range_end: None | int = range_end
 
