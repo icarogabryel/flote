@@ -1,20 +1,20 @@
 # Flote
 
 <br>
+
 <div align="center">
   <img src="https://i.postimg.cc/nz5SPMR6/logo.png" width="40%" alt="Flote logo"/>
 </div>
-<br>
-<div align="center">
-  <img alt="GitHub Repo stars" src="https://img.shields.io/github/stars/icarogabryel/flote?style=flat&logo=github&color=yellow">
-  <img alt="GitHub Workflow" src="https://img.shields.io/github/actions/workflow/status/icarogabryel/flote/CI.yml">
-  <img alt="PyPI - Version" src="https://img.shields.io/pypi/v/flote?color=blue">
-  <img src="https://img.shields.io/github/license/icarogabryel/flote" alt="license"/>
-  <img src="https://img.shields.io/badge/Docs-Read%20the%20Docs-red" alt="docs">
-</div>
 
-<!-- stars, build workflow, pypi, readthedocs*, reddit*, license -->
-<!-- * not created yet -->
+<br>
+
+<div align="center">
+  <img alt="GitHub Repo stars" src="https://img.shields.io/github/stars/icarogabryel/flote?style=flat&logo=github&color=yellow" />
+  <img alt="GitHub Workflow" src="https://img.shields.io/github/actions/workflow/status/icarogabryel/flote/CI.yml" />
+  <img alt="PyPI - Version" src="https://img.shields.io/pypi/v/flote?color=blue" />
+  <img alt="License" src="https://img.shields.io/github/license/icarogabryel/flote" />
+  <img alt="Documentation" src="https://img.shields.io/badge/Docs-Read%20the%20Docs-orange" />
+</div>
 
 ## 🛸 Introduction
 
@@ -26,10 +26,9 @@ Flote is a hardware description language and Python framework for hardware simul
 
 Here is an example of a half adder in Flote:
 
-```flote
-comp halfAdder {
-  in bit a;
-  in bit b;
+```
+comp HalfAdder {
+  in bit a, b;
 
   out bit sum = a xor b;
   out bit carry = a and b;
@@ -39,11 +38,11 @@ comp halfAdder {
 
 ## ⚙️ How it works
 
-Flote's elaborator uses a structure of a compiler's front-end to generate a intermediate representation (IR) of the circuit described in Flote HDL. It has a scanner, parser and a builder. This last one is responsible for build the IR. Then, the IR is passed to the backend (Python or Rust) that is responsible for render the IR into a simulation model, an object that can be manipulated with the Python API and simulates the behavior of the integrated circuit. The model object it's a set of signals busses and uses event driven simulation and dynamic programming to simulate the behavior of the circuit. Also with the use of this Python package you can save the simulation values in a waveform file.
+Flote's frontend (the elaborator) parses designs written in the Flote HDL and produces a netlist representing the circuit. The frontend includes a scanner, a parser and a builder, with the builder responsible for assembling the netlist. The backend (available in Python or Rust) converts that netlist into a simulation model - an object exposed by the Python API that replicates the integrated circuit's behavior. The simulation model is composed of signals and buses and relies on event-driven simulation combined with dynamic programming techniques to compute the circuit's temporal behavior. The Python package also supports exporting simulation data to waveform files (for example, VCD).
 
 ## 📚 Documentation
 
-The documentation can be found at [https://flote.readthedocs.io](https://flote.readthedocs.io).
+The documentation can be found at [flote.readthedocs.io](https://flote.readthedocs.io).
 
 ## 🚀 Release
 
@@ -53,19 +52,17 @@ Flote is in beta development. You can see the latest releases in [the GitHub rep
 
 To finish the beta version, the following tasks need to be completed:
 
-- [X] Make the simulation class (Component)
+- [X] Make the component class
 - [X] Make EBNF for the language
 - [X] Make Scanner
 - [X] Make Parser
 - [X] Make Builder
-- [X] Make Testbench class to encapsulate the simulation component
-- [X] Make accept expressions
+- [X] Make testbench class
+- [X] Add expressions
 - [X] Improve the algorithm of simulation (n² -> n+e)
 - [X] Improve declaration to accept assignment
+- [ ] Make declaration order not necessary
 - [X] Create signal class for waveform dump
-- [X] Create waveform dump feature
-- [X] Improve semantic errors by adding error line
-- [X] Improve methods of Testbench
 - [X] Publish initial beta package in PyPI
 - [ ] Add multi-dimensional bit signals support
   - [X] Declaration
@@ -86,23 +83,17 @@ To finish the beta version, the following tasks need to be completed:
   - [ ] .vcd dump scope support for sub-components
   - [ ] Make correct scanning for sub-component IDs
 - [ ] Implement Rust backend for faster simulation
-  - [X] Connect Python with Rust using pyo3 and Maturin
   - [X] Create IR (Intermediate Representation) to communicate frontend with backend
-  - [X] Implement the IR render to use the Python backend previously created
   - [ ] Implement the Rust backend
 - [ ] Implement abstract Python components
-- [ ] Make Python API complete
-- [ ] Make order not important in signal references
+- [ ] complete Python API
 - [ ] Make automated tests
 - [X] Create GitHub Actions for CI/CD
 - [ ] Create complete documentation
-- [ ] Create VS Code extension for Flote
+- [ ] Create VS Code extension for language server support
 - [ ] Make FPGA support
-  - [ ] Make FPGA compatible with `.edif` files
-  - [ ] Make separation between FPGA superset language
-  - [ ] Create higher level commands
 - [ ] Create import feature
-- [ ] Oficial Site
+- [ ] Make oficial Site with GitHub pages
 
 For future releases, the following features are planned:
 
@@ -111,15 +102,13 @@ For future releases, the following features are planned:
 - [ ] Add generate statement support
 - [ ] Add multi-assignment support
 - [ ] Add in-out signals support
-- [ ] Add xbit(0, 1, x, z) support
-- [ ] Implement custom types feature
-- [ ] Add manual time control
+- [ ] Add xbit (0, 1, x, z) support
+- [ ] FPGA superset language
 
 ---
 
 <div align="center">
   <i>Flote is an open-source project developed as part of academic research at Federal University of Piauí and my humble bedroom, Brazil 🇧🇷</i>
-  <br />
   <br />
   <img src="docs/imgs/brazil-mentioned.png" width="25%" alt="Brazil Mentioned"/>
 </div>
