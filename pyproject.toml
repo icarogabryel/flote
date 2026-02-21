@@ -19,6 +19,9 @@ classifiers = [
 features = ["pyo3/extension-module"]
 module-name = "flote.simulation.rust.core"
 
+[tool.poetry]
+package-mode = false
+
 [tool.poetry.group.dev.dependencies]
 maturin = "^1.10.2"
 mkdocs-material = "^9.7.0"
