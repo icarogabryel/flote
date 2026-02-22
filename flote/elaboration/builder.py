@@ -69,16 +69,19 @@ class Builder:
                     # Mark the bus as assigned in the symbol table
                     is_assigned = True
 
-                if decl.dimension is not None:
-                    size = decl.dimension.size
+                bit_bus = BitBusDto()
+                bit_bus.id_ = decl.id_.full_id
 
-                assert decl.id_ is not None, 'Declaration id cannot be None.'
+                if decl.dimension:
+                    size = decl.dimension.size
+                    bit_bus.set_dimension(decl.dimension.size)
 
                 comp_table.bus_symbols[decl.id_.full_id] = BusSymbol(
                     decl.type,
                     is_assigned,
                     decl.conn,
-                    size
+                    size,
+                    bit_bus
                 )
 
         return comp_table
@@ -185,23 +188,13 @@ class Builder:
             f'Bus "{decl.id_}" has not been declared.'
         )
 
-        assert decl.id_ is not None, 'Declaration id cannot be None.'
         bus_symbol = self.symbol_table.components[component_id].bus_symbols[decl.id_.full_id]
-        bit_bus = BitBusDto()
-        bit_bus.id_ = decl.id_.full_id
-        bus_symbol.object = bit_bus
 
-        if decl.dimension is not None:
-            assert decl.dimension.size is not None
-
-            bit_bus.set_dimension(decl.dimension.size)
-
-        if decl.assignment_expression is not None:
+        if decl.assignment_expression:
             # Create the bus assignment
             assignment, size = self.vst_expr(decl.assignment_expression, component_id, component)
-            bit_bus.assignment = assignment
+            bus_symbol.object.assignment = assignment
 
-            #todo improve using symbol table
             if size != bus_symbol.size:
                 raise SemanticalError(
                     (
@@ -211,7 +204,7 @@ class Builder:
                     decl.line_number
                 )
 
-        component.busses.append(bit_bus)
+        component.busses.append(bus_symbol.object)
 
     def vst_assign(
         self, assign: ast_nodes.Assignment, component_id: str, component: ComponentDto
