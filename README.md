@@ -26,7 +26,7 @@ Flote is a hardware description language and Python framework for hardware simul
 
 Here is an example of a half adder in Flote:
 
-```
+```flote
 comp HalfAdder {
   in bit a, b;
 
@@ -81,7 +81,7 @@ To finish the beta version, the following tasks need to be completed:
   - [X] Connection
   - [X] Error handling for instantiation and connection
   - [ ] .vcd dump scope support for sub-components
-  - [ ] Make correct scanning for sub-component IDs
+  - [X] Make correct scanning for sub-component IDs
 - [ ] Implement Rust backend for faster simulation
   - [X] Create IR (Intermediate Representation) to communicate frontend with backend
   - [ ] Implement the Rust backend
