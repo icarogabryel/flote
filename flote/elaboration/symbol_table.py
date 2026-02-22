@@ -1,17 +1,17 @@
-from flote.elaboration.ir.buses import BusDto, HlsBusDto
+from flote.elaboration.ir.buses import BusDto
 from flote.elaboration.ir.component import ComponentDto, HlsComponentDto
 
 
 class BusSymbol:
     """Class that represents a bus symbol in the symbol table."""
-    def __init__(self, type, is_assigned, connection_type, size: int):
+    def __init__(self, type, is_assigned, connection_type, size, object_):
         self.type = type
         self.is_assigned = is_assigned
         self.connection_type = connection_type
         self.size = size
         self.is_read = False
         self.is_lower_lvl: bool = False
-        self.object: None | BusDto | HlsBusDto = None
+        self.object: BusDto = object_
 
     def __repr__(self):
         return (
