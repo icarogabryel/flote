@@ -11,18 +11,54 @@ pub trait Evaluator: Send + Sync + Debug {
 #[derive(Debug, Clone)]
 pub struct BusRef {
     pub bus_id: String,
+    pub slice_begin: Option<usize>,
+    pub slice_end: Option<usize>,
 }
 
 impl BusRef {
-    pub fn new(bus_id: String) -> Self {
-        BusRef { bus_id }
+    pub fn new(bus_id: String, slice_begin: Option<usize>, slice_end: Option<usize>) -> Self {
+        BusRef {
+            bus_id,
+            slice_begin,
+            slice_end,
+        }
     }
 }
 
 impl Evaluator for BusRef {
     fn evaluate(&self, busses: &std::collections::HashMap<String, BitBus>) -> BitBusValue {
         match busses.get(&self.bus_id) {
-            Some(bus) => bus.value.clone(),
+            Some(bus) => {
+                if let (Some(slice_begin), Some(slice_end)) = (self.slice_begin, self.slice_end) {
+                    let size = bus.value.raw_value.len();
+                    let mut bits: Vec<bool> = Vec::new();
+
+                    let step: isize = if slice_begin >= slice_end { -1 } else { 1 };
+                    let mut logical_index: isize = slice_begin as isize;
+                    let end_index: isize = slice_end as isize;
+
+                    loop {
+                        let logical_usize = logical_index as usize;
+                        let internal_index = if bus.msb_descending {
+                            (size - 1) - logical_usize
+                        } else {
+                            logical_usize
+                        };
+                        if let Some(bit) = bus.value.raw_value.get(internal_index) {
+                            bits.push(*bit);
+                        }
+
+                        if logical_index == end_index {
+                            break;
+                        }
+                        logical_index += step;
+                    }
+
+                    BitBusValue { raw_value: bits }
+                } else {
+                    bus.value.clone()
+                }
+            }
             None => BitBusValue::get_default(),
         }
     }

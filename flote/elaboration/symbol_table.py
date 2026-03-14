@@ -4,7 +4,7 @@ from flote.elaboration.ir.component import ComponentDto
 
 class BusSymbol:
     """Class that represents a bus symbol in the symbol table."""
-    def __init__(self, type, is_assigned, connection_type, size, object_):
+    def __init__(self, type, is_assigned, connection_type, size, object_, msb_descending: bool):
         self.type = type
         self.is_assigned = is_assigned
         self.connection_type = connection_type
@@ -12,11 +12,12 @@ class BusSymbol:
         self.is_read = False
         self.is_lower_lvl: bool = False
         self.object: BusDto = object_
+        self.msb_descending = msb_descending
 
     def __repr__(self):
         return (
             f'| {self.type} | {self.is_assigned} | {self.connection_type} | {self.size} | '
-            f'{self.is_read} | {self.is_lower_lvl} |'
+            f'{self.is_read} | {self.is_lower_lvl} | {self.msb_descending} |'
         )
 
 

@@ -72,7 +72,17 @@ impl Renderer {
                     .and_then(|v| v.as_str())
                     .ok_or("Missing 'id' in bus_ref/ref expression")?;
 
-                Ok(Box::new(BusRef::new(bus_id.to_string())))
+                let slice_begin = j_expr.get("args")
+                    .and_then(|args| args.get("slice_begin"))
+                    .and_then(|v| v.as_u64())
+                    .map(|v| v as usize);
+
+                let slice_end = j_expr.get("args")
+                    .and_then(|args| args.get("slice_end"))
+                    .and_then(|v| v.as_u64())
+                    .map(|v| v as usize);
+
+                Ok(Box::new(BusRef::new(bus_id.to_string(), slice_begin, slice_end)))
             },
 
             "not" => {
@@ -157,6 +167,10 @@ impl Renderer {
 
             let mut bit_bus = BitBus::new();
             bit_bus.set_id(bus_id.to_string());
+
+            if let Some(msb_desc) = j_bus.get("msb_descending").and_then(|v| v.as_bool()) {
+                bit_bus.msb_descending = msb_desc;
+            }
 
             // Define o valor inicial
             if let Some(value) = j_bus.get("value") {

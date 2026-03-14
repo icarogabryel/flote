@@ -85,6 +85,7 @@ class BitBusDto(BusDto):
     def __init__(self) -> None:
         super().__init__()
         self.type = 'bit_bus'
+        self.msb_descending = False
 
     def get_default(self) -> BitBusValueDto:
         return BitBusValueDto()
@@ -102,6 +103,7 @@ class BitBusDto(BusDto):
             'id': self.id_,
             'type': self.type,
             'value': self.value.to_json(),
+            'msb_descending': self.msb_descending,
             'assignment': assignment_json,
             'influence_list': [bus.id_ for bus in self.influence_list]
         }

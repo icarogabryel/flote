@@ -31,8 +31,8 @@ class Renderer:
             bus_id = j_expr['args']['id']
             bus = self.buffer_bus_dict[bus_id]
 
-            ref_slice_begin = j_expr['args']['slice_begin']
-            ref_slice_end = j_expr['args']['slice_end']
+            ref_slice_begin = j_expr['args'].get('slice_begin')
+            ref_slice_end = j_expr['args'].get('slice_end')
 
             return eval_nodes.Ref(bus, ref_slice_begin, ref_slice_end)
         elif expr_type == 'not':
@@ -115,8 +115,7 @@ class Renderer:
                     bus = BitBus()
                     bus.id = j_bus['id']
                     bus.value = BitBusValue(j_bus['value'])
-                case 'hls_bus':
-                    bus = self.hls_buses[j_bus['id']]
+                    bus.msb_descending = j_bus.get('msb_descending', False)
                 case _:
                     assert False, 'Invalid IR.'
 

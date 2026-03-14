@@ -31,6 +31,7 @@ class BaseBus(ABC):
         self.value: Any = None
         # The list of buses that the current bus depends on.
         self.influence_list: list['BaseBus'] = []
+        self.msb_descending = False
 
     @abstractmethod
     def assign(self) -> None:

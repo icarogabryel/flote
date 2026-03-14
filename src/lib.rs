@@ -103,6 +103,18 @@ impl Component {
         self.get_values()
     }
 
+    /// Propriedade busses_info - retorna Dict[str, Tuple[str, bool]] com (valor, msb_descending)
+    #[getter]
+    fn get_busses_info(&self) -> PyResult<HashMap<String, (String, bool)>> {
+        with_component(self.handle, |comp| {
+            comp.busses
+                .iter()
+                .map(|(name, bus)| (name.clone(), (bus.value.to_string(), bus.msb_descending)))
+                .collect()
+        })
+        .ok_or_else(|| PyRuntimeError::new_err("Component not found"))
+    }
+
     /// Propriedade id_
     #[getter]
     fn get_id_(&self) -> String {

@@ -12,7 +12,23 @@ class Ref(Evaluator):
         return f'{self.bus.id}'
 
     def evaluate(self) -> BusValue:
-        return self.bus.value[self.range_begin:self.range_end + 1]
+        if self.range_begin is None or self.range_end is None:
+            return self.bus.value
+
+        msb_descending = self.bus.msb_descending
+        value = self.bus.value
+
+        if not msb_descending:
+            return value[self.range_begin:self.range_end + 1]
+
+        size = len(value.raw_value)
+        bits = []
+        step = -1 if self.range_begin >= self.range_end else 1
+        for logical_index in range(self.range_begin, self.range_end + step, step):
+            internal_index = (size - 1) - logical_index
+            bits.append(value.raw_value[internal_index])
+
+        return BitBusValue(bits)
 
 
 class Conc(Evaluator):

@@ -62,6 +62,7 @@ To finish the beta version, the following tasks need to be completed:
 - [X] Improve the algorithm of simulation (n² -> n+e)
 - [X] Improve declaration to accept assignment
 - [X] Make declaration order not necessary
+- [ ] Make multi-declaration support
 - [X] Create signal class for waveform dump
 - [X] Publish initial beta package in PyPI
 - [ ] Add multi-dimensional bit signals support
@@ -74,7 +75,7 @@ To finish the beta version, the following tasks need to be completed:
   - [X] Slicing
   - [X] Error handling for indexing and slicing
   - [X] Concatenation
-  - [ ] Big endian support
+  - [X] Reverse arrays support
   - [ ] N-Dimensional arrays
 - [ ] Add sub-components support
   - [X] Instantiation

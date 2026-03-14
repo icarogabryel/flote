@@ -124,6 +124,7 @@ pub struct BitBus {
     pub id: Option<String>,
     pub value: BitBusValue,
     pub influence_list: Vec<usize>, // Indices para evitar problemas de ownership
+    pub msb_descending: bool,
 }
 
 impl BitBus {
@@ -132,6 +133,7 @@ impl BitBus {
             id: None,
             value: BitBusValue::get_default(),
             influence_list: Vec::new(),
+            msb_descending: false,
         }
     }
 

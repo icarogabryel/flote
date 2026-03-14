@@ -25,3 +25,4 @@ package-mode = false
 [tool.poetry.group.dev.dependencies]
 maturin = "^1.10.2"
 mkdocs-material = "^9.7.0"
+pytest = "^9.0.2"

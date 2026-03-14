@@ -5,7 +5,7 @@ from .expr_node import ExprNode
 
 class Ref(ExprNode):
     """This class represents a reference to a bus in the circuit."""
-    def __init__(self, bus: BusDto, slice_begin: int, slice_end: int) -> None:
+    def __init__(self, bus: BusDto, slice_begin: int | None, slice_end: int | None) -> None:
         self.bus = bus
         self.slice_begin = slice_begin
         self.slice_end = slice_end

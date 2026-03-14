@@ -72,16 +72,21 @@ class Builder:
                 bit_bus = BitBusDto()
                 bit_bus.id_ = decl.id_.full_id
 
+                msb_descending = False
                 if decl.dimension:
                     size = decl.dimension.size
+                    msb_descending = decl.dimension.msb == ast_nodes.Msb.DESCENDING
                     bit_bus.set_dimension(decl.dimension.size)
+
+                bit_bus.msb_descending = msb_descending
 
                 comp_table.bus_symbols[decl.id_.full_id] = BusSymbol(
                     decl.type,
                     is_assigned,
                     decl.conn,
                     size,
-                    bit_bus
+                    bit_bus,
+                    msb_descending,
                 )
 
         return comp_table
@@ -324,25 +329,39 @@ class Builder:
                             ref.id_.line_number
                         )
 
-                    if ref.range_begin > ref.range_end:
-                        raise SemanticalError(
-                            (
-                                f'Invalid range [:{ref.range_end}] for "{ref_id}". '
-                                'The end index must be equal or greater than to the begin index.'
-                            ),
-                            ref.id_.line_number
-                        )
+                    if bus_symbol.msb_descending:
+                        if ref.range_begin < ref.range_end:
+                            raise SemanticalError(
+                                (
+                                    f'Invalid range [:{ref.range_end}] for "{ref_id}". '
+                                    'For descending buses, begin index must be equal or greater '
+                                    'than the end index.'
+                                ),
+                                ref.id_.line_number
+                            )
+                    else:
+                        if ref.range_begin > ref.range_end:
+                            raise SemanticalError(
+                                (
+                                    f'Invalid range [:{ref.range_end}] for "{ref_id}". '
+                                    'The end index must be equal or greater than to the begin index.'
+                                ),
+                                ref.id_.line_number
+                            )
 
                     range_begin = ref.range_begin
                     range_end = ref.range_end
                 else:
                     range_begin = ref.range_begin
                     range_end = range_begin
-            else:
-                range_begin = 0
-                range_end = bus_symbol.size - 1
 
-            slice_size = (range_end - range_begin) + 1
+                slice_begin = range_begin
+                slice_end = range_end
+                slice_size = (abs(range_end - range_begin)) + 1
+            else:
+                slice_begin = None
+                slice_end = None
+                slice_size = bus_symbol.size
             bus_symbol.is_read = True
 
             bus = (
@@ -352,8 +371,8 @@ class Builder:
 
             bus_ref = expr_nodes.Ref(
                 bus,
-                range_begin,
-                range_end,
+                slice_begin,
+                slice_end,
             )
 
             return bus_ref, slice_size

@@ -53,6 +53,13 @@ class Component:
         ...
 
     @property
+    def busses_info(self) -> Dict[str, tuple[str, bool]]:
+        """
+        Retorna valores e metadata dos buses (valor, msb_descending).
+        """
+        ...
+
+    @property
     def id_(self) -> str:
         """
         Retorna o ID do componente.

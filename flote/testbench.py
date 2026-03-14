@@ -72,18 +72,37 @@ class TestBench:
         # Check which backend is being used
         is_rust = isinstance(self.component, RustComponent)
 
+        bus_meta: dict[str, tuple[str, int, bool]] = {}
         if is_rust:
-            # Rust backend: busses is Dict[str, str]
-            buses_dict = self.component.busses
-            for bit_name, bit_value in buses_dict.items():
+            # Rust backend: busses_info is Dict[str, Tuple[str, bool]]
+            buses_info = self.component.busses_info
+            for bit_name, (bit_value, msb_descending) in buses_info.items():
+                width = len(bit_value)
+                bus_meta[bit_name] = (bit_value, width, msb_descending)
+                bit_ref = bit_name
+                if width > 1:
+                    if msb_descending:
+                        bit_ref = f'{bit_name}[{width - 1}:0]'
+                    else:
+                        bit_ref = f'{bit_name}[0:{width - 1}]'
                 header_declaration += (
-                    f'\t$var wire {len(bit_value)} {bit_name} {bit_name} $end\n'
+                    f'\t$var wire {width} {bit_name} {bit_ref} $end\n'
                 )
         else:
             # Python backend: buses is Dict[str, BaseBus]
             for bit_name, bit_bus in self.component.buses.items():
+                width = len(bit_bus.value.raw_value)
+                bit_value = bit_bus.get_vcd_repr()
+                msb_descending = bit_bus.msb_descending
+                bus_meta[bit_name] = (bit_value, width, msb_descending)
+                bit_ref = bit_name
+                if width > 1:
+                    if bit_bus.msb_descending:
+                        bit_ref = f'{bit_name}[{width - 1}:0]'
+                    else:
+                        bit_ref = f'{bit_name}[0:{width - 1}]'
                 header_declaration += (
-                    f'\t$var wire {len(bit_bus.value.raw_value)} {bit_name} {bit_name} $end\n'
+                    f'\t$var wire {width} {bit_name} {bit_ref} $end\n'
                 )
 
         header_declaration += '$upscope $end\n\n'
@@ -96,12 +115,32 @@ class TestBench:
 
         datasec = ''
 
+        def format_value(value: str, width: int, identifier: str) -> str:
+            if width == 1:
+                return f"{value} {identifier}\n"
+            return f"b{value} {identifier}\n"
+
+        # Initial dumpvars
+        initial_signals = None
+        if self.samples:
+            initial_signals = {sig.id: sig.value for sig in self.samples[0].signals}
+        else:
+            initial_signals = {name: meta[0] for name, meta in bus_meta.items()}
+
+        datasec += "\n$dumpvars\n"
+        for bit_name in sorted(bus_meta.keys()):
+            value, width, _ = bus_meta[bit_name]
+            if initial_signals is not None and bit_name in initial_signals:
+                value = initial_signals[bit_name]
+            datasec += format_value(value, width, bit_name)
+        datasec += "$end\n"
+
         for sample in self.samples:
             datasec += f"\n#{sample.time}\n\n"
 
             for signal in sample.signals:
-                bits = f'b{signal.value}'
-                datasec += f"{bits} {signal.id}\n"
+                width = bus_meta.get(signal.id, ("", 1, False))[1]
+                datasec += format_value(signal.value, width, signal.id)
 
         return header + datasec + f'\n#{self.s_time}\n'
 
