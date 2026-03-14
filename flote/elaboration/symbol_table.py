@@ -1,5 +1,5 @@
 from flote.elaboration.ir.buses import BusDto
-from flote.elaboration.ir.component import ComponentDto, HlsComponentDto
+from flote.elaboration.ir.component import ComponentDto
 
 
 class BusSymbol:
@@ -24,7 +24,7 @@ class ComponentTable:
     """Class that represents a component's symbol table."""
     def __init__(self):
         self.bus_symbols: dict[str, BusSymbol] = {}
-        self.object: ComponentDto | HlsComponentDto | None = None
+        self.object: ComponentDto | None = None
 
     def __str__(self):
         return '\n'.join(

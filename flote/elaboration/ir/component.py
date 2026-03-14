@@ -1,9 +1,9 @@
 """Data transfer object for a component."""
 from __future__ import annotations
 
-from typing import Any, Generic, TypeVar
+from typing import Generic, TypeVar
 
-from .buses import BaseBusDto, BusDto, HlsBusDto
+from .buses import BusDto
 from .representation import JsonRepresentation
 
 BusType = TypeVar('BusType')
@@ -16,7 +16,7 @@ class BaseComponentDto(Generic[BusType], JsonRepresentation):
         self.busses: list[BusType] = []
 
 
-class ComponentDto(BaseComponentDto[BusDto | HlsBusDto]):
+class ComponentDto(BaseComponentDto[BusDto]):
     def __init__(self, id_: str) -> None:
         super().__init__(id_)
 
@@ -26,7 +26,7 @@ class ComponentDto(BaseComponentDto[BusDto | HlsBusDto]):
     def __str__(self) -> str:
         return f'Component {self.id_}:\n{self.__repr__()}'
 
-    def add_subcomponent(self, subcomponent: ComponentDto | HlsComponentDto, alias: str) -> None:
+    def add_subcomponent(self, subcomponent: ComponentDto, alias: str) -> None:
         """Add a subcomponent to this component."""
         for bus in subcomponent.busses:
             bus.id_ = f'{alias}.{bus.id_}'
@@ -40,19 +40,6 @@ class ComponentDto(BaseComponentDto[BusDto | HlsBusDto]):
     def to_json(self):
         return {
             'component': {
-                'id': self.id_,
-                'busses': [bus.to_json() for bus in self.busses],
-            }
-        }
-
-
-class HlsComponentDto(BaseComponentDto[HlsBusDto]):
-    def __init__(self, id_: str):
-        super().__init__(id_)
-
-    def to_json(self) -> None | dict[str, Any]:
-        return {
-            'hls_component': {
                 'id': self.id_,
                 'busses': [bus.to_json() for bus in self.busses],
             }

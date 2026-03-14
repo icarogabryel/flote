@@ -2,11 +2,8 @@ from pathlib import Path
 from warnings import warn
 
 from .elaboration.builder import Builder
-from .elaboration.ir.buses import HlsBusDto
-from .elaboration.ir.component import HlsComponentDto
 from .elaboration.parser import Parser
 from .elaboration.scanner import Scanner
-from .elaboration.symbol_table import ComponentTable
 from .testbench import TestBench
 
 
