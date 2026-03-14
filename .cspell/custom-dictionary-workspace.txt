@@ -1,4 +1,5 @@
 # Custom Dictionary Words
+duts
 netlist
 subcomponent
 subcomponents
