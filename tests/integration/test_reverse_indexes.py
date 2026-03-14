@@ -24,7 +24,7 @@ def _get_bus_bits(tb, bus_id: str) -> str:
 def test_netlist_marks_descending_msb():
     code = """
     comp Test {
-        in bit a[-8];
+        in bit[-8] a;
         out bit y = a[1];
     }
     """
@@ -39,7 +39,7 @@ def test_netlist_marks_descending_msb():
 def test_out_of_bounds_index_on_descending_bus():
     code = """
     comp Test {
-        in bit a[-8];
+        in bit[-8] a;
         out bit y = a[8];
     }
     """
@@ -50,8 +50,8 @@ def test_out_of_bounds_index_on_descending_bus():
 def test_invalid_slice_order_on_descending_bus():
     code = """
     comp Test {
-        in bit a[-8];
-        out bit y[2] = a[0:1];
+        in bit[-8] a;
+        out bit[2] y = a[0:1];
     }
     """
     with pytest.raises(SemanticalError, match="descending buses"):
@@ -65,7 +65,7 @@ def test_reverse_index_value(rust_backend: bool):
 
     code = """
     comp Test {
-        in bit a[-8];
+        in bit[-8] a;
         out bit y = a[1];
     }
     """
@@ -82,8 +82,8 @@ def test_reverse_slice_value(rust_backend: bool):
 
     code = """
     comp Test {
-        in bit a[-8];
-        out bit y[2] = a[1:0];
+        in bit[-8] a;
+        out bit[2] y = a[1:0];
     }
     """
     tb = flote.elaborate(code, rust_backend=rust_backend)

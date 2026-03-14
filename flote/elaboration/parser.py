@@ -98,7 +98,7 @@ class Parser:
         else:
             assert False, f'Unexpected Token: {label}'
 
-    #* decl = ['in' | 'out'], 'bit', ID, [dimension], ['=', expr], ';';
+    #* decl = ['in' | 'out'], 'bit', [dimension], ID, ['=', expr], ';';
     def decl(self):
         declaration = ast_nodes.Declaration()
 
@@ -113,12 +113,12 @@ class Parser:
         declaration.line_number = self.get_current_token().line_number
         declaration.type = 'bit'
         self.advance()
+        if self.get_current_token().label == 'l_bracket':
+            declaration.dimension = self.dim()
+
         self.match_label('id')
         declaration.id_ = ast_nodes.Identifier(self.get_current_token().lexeme)
         self.advance()
-
-        if self.get_current_token().label == 'l_bracket':
-            declaration.dimension = self.dim()
 
         if self.get_current_token().label == 'equals':
             self.advance()
