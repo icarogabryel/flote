@@ -42,7 +42,7 @@ class Builder:
 
         return dumps(component.to_json())
 
-    def init_component_table(self, comp: ast_nodes.Component) -> ComponentTable:
+    def init_component_table(self, comp: ast_nodes.Component, component: ComponentDto) -> ComponentTable:
         """Get the component's bus symbol table."""
         comp_table: ComponentTable = ComponentTable()
 
@@ -88,6 +88,9 @@ class Builder:
                     bit_bus,
                     msb_descending,
                 )
+            elif isinstance(stmt, ast_nodes.Instance):
+                assert comp.id_ is not None, 'Instance component cannot be None.'
+                self.vst_inst(stmt, comp.id_.value, component)
 
         return comp_table
 
@@ -170,7 +173,7 @@ class Builder:
 
         component = ComponentDto(component_id.value)
         self.symbol_table.components[component_id.value] = self.init_component_table(
-            comp,
+            comp, component
         )
         self.symbol_table.components[component_id.value].object = component
         for stmt in comp.stmts:
@@ -178,8 +181,6 @@ class Builder:
                 self.vst_decl(stmt, component_id.value, component)
             elif isinstance(stmt, ast_nodes.Assignment):
                 self.vst_assign(stmt, component_id.value, component)
-            elif isinstance(stmt, ast_nodes.Instance):
-                self.vst_inst(stmt, component_id.value, component)
             else:
                 assert False, f'Invalid statement: {stmt}'
 
@@ -218,8 +219,6 @@ class Builder:
             assign.destiny.full_id not in
             self.symbol_table.components[component_id].bus_symbols.keys()
         ):
-            #todo change to accept after declaration
-            # All destiny signals must be declared previously
             raise SemanticalError(
                 f'Identifier "{assign.destiny.full_id}" has not been declared.',
                 assign.destiny.line_number
@@ -282,8 +281,7 @@ class Builder:
     def vst_expr_elem(
         self, expr_elem: ast_nodes.ExprElem, component_id: str, component: ComponentDto
     ) -> Tuple[expr_nodes.ExprNode, int]:
-        """
-        Visit an expression element, validate it, and return a callable for evaluation."""
+        """Visit an expression element, validate it, and return a callable for evaluation."""
         if expr_elem is None:
             raise SemanticalError(
                 'Expression element cannot be None.'

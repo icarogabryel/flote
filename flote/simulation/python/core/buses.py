@@ -45,31 +45,6 @@ class BaseBus(ABC):
         self.value = value
 
 
-class HlsBus(BaseBus):
-    """This class represents a bus coming from an HLS component."""
-    def __init__(
-            self,
-            id_: str,
-            value: Any,
-            vcd_repr_func: Callable,
-            assignment: None | Callable = None,
-            influence_list: list[BaseBus] = [],
-    ) -> None:
-        super().__init__()
-        self.id_ = id_
-        self.value = value
-        self.assignment = assignment
-        self.influence_list: list[BaseBus] = influence_list
-        self.vcd_repr_func = vcd_repr_func
-
-    def assign(self) -> None:
-        if self.assignment:
-            self.value = self.assignment()
-
-    def get_vcd_repr(self) -> str:
-        return self.vcd_repr_func(self.value)
-
-
 class BusValue(Generic[T]):
     """This class represents a value in the circuit."""
     def __init__(self, value: T | None = None) -> None:

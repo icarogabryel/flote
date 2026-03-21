@@ -1,12 +1,12 @@
 from json import loads
 
 from . import eval_nodes
-from .buses import BaseBus, BitBus, BitBusValue, HlsBus
+from .buses import BaseBus, BitBus, BitBusValue
 from .component import Component
 
 
 class Renderer:
-    def __init__(self, ir: str, hls_buses: dict[str, HlsBus] = {}) -> None:
+    def __init__(self, ir: str, hls_buses: dict[str, BaseBus] = {}) -> None:
         self.ir = ir
         self.buffer_bus_dict: dict[str, BaseBus] = {}
         self.hls_buses = hls_buses
@@ -49,41 +49,24 @@ class Renderer:
                 rendered_exprs.append(rendered_expr)
 
             return eval_nodes.Conc(rendered_exprs)
-        #TODO also put in a func/dict
         elif expr_type in ('and', 'or', 'xor', 'nand', 'nor', 'xnor'):
             l_expr = self.render_expr(j_expr['args']['l_expr'])
             r_expr = self.render_expr(j_expr['args']['r_expr'])
 
-            if expr_type == 'and':
-                assert l_expr is not None, "Failed to render AND left expression"
-                assert r_expr is not None, "Failed to render AND right expression"
+            binary_expr_types = {
+                'and': eval_nodes.And,
+                'or': eval_nodes.Or,
+                'xor': eval_nodes.Xor,
+                'nand': eval_nodes.Nand,
+                'nor': eval_nodes.Nor,
+                'xnor': eval_nodes.Xnor,
+            }
 
-                return eval_nodes.And(l_expr, r_expr)
-            elif expr_type == 'or':
-                assert l_expr is not None, "Failed to render OR left expression"
-                assert r_expr is not None, "Failed to render OR right expression"
+            op_name = expr_type.upper()
+            assert l_expr is not None, f"Failed to render {op_name} left expression"
+            assert r_expr is not None, f"Failed to render {op_name} right expression"
 
-                return eval_nodes.Or(l_expr, r_expr)
-            elif expr_type == 'xor':
-                assert l_expr is not None, "Failed to render XOR left expression"
-                assert r_expr is not None, "Failed to render XOR right expression"
-
-                return eval_nodes.Xor(l_expr, r_expr)
-            elif expr_type == 'nand':
-                assert l_expr is not None, "Failed to render NAND left expression"
-                assert r_expr is not None, "Failed to render NAND right expression"
-
-                return eval_nodes.Nand(l_expr, r_expr)
-            elif expr_type == 'nor':
-                assert l_expr is not None, "Failed to render NOR left expression"
-                assert r_expr is not None, "Failed to render NOR right expression"
-
-                return eval_nodes.Nor(l_expr, r_expr)
-            elif expr_type == 'xnor':
-                assert l_expr is not None, "Failed to render XNOR left expression"
-                assert r_expr is not None, "Failed to render XNOR right expression"
-
-                return eval_nodes.Xnor(l_expr, r_expr)
+            return binary_expr_types[expr_type](l_expr, r_expr)
 
         else:
             assert False, f'Unknown expression type: {expr_type}'
@@ -123,13 +106,6 @@ class Renderer:
 
         for j_bus in j_busses:
             bit_bus = self.buffer_bus_dict[j_bus['id']]
-
-            if bit_bus.__class__ != BitBus: #TODO better way
-                for influenced_bus_id in j_bus['influence_list']:
-                    influenced_bus = self.buffer_bus_dict[influenced_bus_id]
-
-                    if influenced_bus not in bit_bus.influence_list:
-                        bit_bus.influence_list.append(influenced_bus)
 
             if j_bus['assignment'] is not None:
                 assignment = self.render_expr(j_bus['assignment'])

@@ -40,7 +40,6 @@ class Component():
             bus.assign()
             a_value = bus.value
 
-            #TODO Verifica se esse condicional escapa todas as vezes ou não.
             # Dynamic programming: Only add the bits that changed
             if p_value != a_value:
                 for bus_influenced in bus.influence_list:

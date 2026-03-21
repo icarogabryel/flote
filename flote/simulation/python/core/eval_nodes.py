@@ -40,7 +40,6 @@ class Conc(Evaluator):
         return f'Conc({self.exprs})'
 
     def evaluate(self) -> BusValue:
-        #TODO Trate types
         result = BitBusValue([])
 
         for expr in self.exprs:
