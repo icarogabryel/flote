@@ -90,7 +90,7 @@ class Builder:
                 )
             elif isinstance(stmt, ast_nodes.Instance):
                 assert comp.id_ is not None, 'Instance component cannot be None.'
-                self.vst_inst(stmt, comp.id_.value, component)
+                self.vst_inst(stmt, comp.id_.value, component, comp_table)
 
         return comp_table
 
@@ -181,6 +181,8 @@ class Builder:
                 self.vst_decl(stmt, component_id.value, component)
             elif isinstance(stmt, ast_nodes.Assignment):
                 self.vst_assign(stmt, component_id.value, component)
+            elif isinstance(stmt, ast_nodes.Instance):
+                pass
             else:
                 assert False, f'Invalid statement: {stmt}'
 
@@ -433,7 +435,7 @@ class Builder:
             assert False, f'Invalid expression element: {expr_elem}'
 
     def vst_inst(
-        self, inst: ast_nodes.Instance, component_id: str, component: ComponentDto
+        self, inst: ast_nodes.Instance, component_id: str, component: ComponentDto, comp_table: ComponentTable
     ) -> None:
         assert inst.comp_id is not None, 'Instance component cannot be None.'
 
@@ -450,20 +452,19 @@ class Builder:
         alias = inst.comp_id if inst.sub_alias is None else inst.sub_alias
         subcomponent = deepcopy(self.components[inst.comp_id])
 
-        top_busses = self.symbol_table.components[component_id].bus_symbols
         bottom_busses = deepcopy(self.symbol_table.components[inst.comp_id].bus_symbols)
 
         for bus in bottom_busses.values():
             bus.is_lower_lvl = True
 
         # Add the subcomponent's buses to the top component's symbol table
-        top_busses |= {
+        comp_table.bus_symbols |= {
             f'{alias}.{bus_id}': bus for bus_id, bus in bottom_busses.items()
         }
 
         # Link the new subcomponent's bus objects to the top component's symbol table because
         # deepcopy still makes references to the old objects.
         for bus in subcomponent.busses:
-            top_busses[f'{alias}.{bus.id_}'].object = bus
+            comp_table.bus_symbols[f'{alias}.{bus.id_}'].object = bus
 
         component.add_subcomponent(subcomponent, alias)
