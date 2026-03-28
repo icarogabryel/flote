@@ -26,3 +26,15 @@ package-mode = false
 maturin = "^1.10.2"
 mkdocs-material = "^9.7.0"
 pytest = "^9.0.2"
+black = "^26.3.1"
+isort = "^8.0.1"
+flake8 = "^7.3.0"
+pre-commit = "^4.5.1"
+
+[tool.black]
+line-length = 88
+target-version = ["py310"]
+
+[tool.isort]
+profile = "black"
+line_length = 88
