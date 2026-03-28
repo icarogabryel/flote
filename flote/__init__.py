@@ -9,6 +9,7 @@ from .testbench import TestBench
 
 class ElaborationError(Exception):
     """This class represents an error in the elaboration process."""
+
     def __init__(self, message: str) -> None:
         self.message = message
 
@@ -16,7 +17,10 @@ class ElaborationError(Exception):
         return self.message
 
 
-def render(ast, rust_backend, ):
+def render(
+    ast,
+    rust_backend,
+):
     if rust_backend:
         try:
             from .simulation.rust.core import Renderer as RustRenderer
@@ -26,7 +30,7 @@ def render(ast, rust_backend, ):
             render = RustRenderer(ir)
             return render.component
         except ImportError:
-            warn('Rust backend not available, falling back to Python backend.')
+            warn("Rust backend not available, falling back to Python backend.")
 
     # Build IR with HLS components
     builder = Builder(ast)
@@ -34,6 +38,7 @@ def render(ast, rust_backend, ):
 
     # Render with Python backend
     from .simulation.python.core import Renderer as PythonRenderer
+
     render = PythonRenderer(netlist)
     return render.component
 
@@ -56,11 +61,9 @@ def elaborate(code: str, rust_backend=True) -> TestBench:
     return test_bench
 
 
-def elaborate_file(
-    file_path, rust_backend=True
-) -> TestBench:
+def elaborate_file(file_path, rust_backend=True) -> TestBench:
     p = Path(file_path)
-    with p.open('r', encoding='utf-8') as file:
+    with p.open("r", encoding="utf-8") as file:
         code = file.read()
 
     return elaborate(code, rust_backend=rust_backend)

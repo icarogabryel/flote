@@ -1,15 +1,16 @@
-from .buses import BitBusValue, BusValue, BaseBus, Evaluator
+from .buses import BaseBus, BitBusValue, BusValue, Evaluator
 
 
 class Ref(Evaluator):
     """This class represents a reference to a bus in the circuit."""
+
     def __init__(self, bus: BaseBus, range_begin: int, range_end: int):
         self.bus = bus
         self.range_begin = range_begin
         self.range_end = range_end
 
     def __repr__(self) -> str:
-        return f'{self.bus.id}'
+        return f"{self.bus.id}"
 
     def evaluate(self) -> BusValue:
         if self.range_begin is None or self.range_end is None:
@@ -19,7 +20,7 @@ class Ref(Evaluator):
         value = self.bus.value
 
         if not msb_descending:
-            return value[self.range_begin:self.range_end + 1]
+            return value[self.range_begin : self.range_end + 1]
 
         size = len(value.raw_value)
         bits = []
@@ -33,11 +34,12 @@ class Ref(Evaluator):
 
 class Conc(Evaluator):
     """This class represents a concatenation of expressions."""
+
     def __init__(self, exprs: list[Evaluator]) -> None:
         self.exprs = exprs
 
     def __repr__(self) -> str:
-        return f'Conc({self.exprs})'
+        return f"Conc({self.exprs})"
 
     def evaluate(self) -> BusValue:
         result = BitBusValue([])
@@ -53,7 +55,7 @@ class Const(Evaluator):
         self.value = value
 
     def __repr__(self) -> str:
-        return f'Const({self.value})'
+        return f"Const({self.value})"
 
     def evaluate(self) -> BusValue:
         return self.value
@@ -67,7 +69,7 @@ class UnaryOperation(Evaluator):
         return self.__str__()
 
     def __str__(self) -> str:
-        return f'{self.__class__.__name__} ({self.expr})'
+        return f"{self.__class__.__name__} ({self.expr})"
 
 
 class BinaryOperation(Evaluator):
@@ -79,20 +81,20 @@ class BinaryOperation(Evaluator):
         return self.__str__()
 
     def __str__(self) -> str:
-        return f'({self.l_expr}) {self.__class__.__name__} ({self.r_expr})'
+        return f"({self.l_expr}) {self.__class__.__name__} ({self.r_expr})"
 
 
 class Not(UnaryOperation):
     def __repr__(self) -> str:
-        return f'Not {self.expr}'
+        return f"Not {self.expr}"
 
     def evaluate(self):
-        return ~ self.expr.evaluate()
+        return ~self.expr.evaluate()
 
 
 class And(BinaryOperation):
     def __repr__(self) -> str:
-        return f'And {self.l_expr} {self.r_expr}'
+        return f"And {self.l_expr} {self.r_expr}"
 
     def evaluate(self):
         return self.l_expr.evaluate() & self.r_expr.evaluate()
@@ -100,7 +102,7 @@ class And(BinaryOperation):
 
 class Or(BinaryOperation):
     def __repr__(self) -> str:
-        return f'Or {self.l_expr} {self.r_expr}'
+        return f"Or {self.l_expr} {self.r_expr}"
 
     def evaluate(self):
         return self.l_expr.evaluate() | self.r_expr.evaluate()
@@ -108,7 +110,7 @@ class Or(BinaryOperation):
 
 class Xor(BinaryOperation):
     def __repr__(self) -> str:
-        return f'Xor {self.l_expr} {self.r_expr}'
+        return f"Xor {self.l_expr} {self.r_expr}"
 
     def evaluate(self):
         return self.l_expr.evaluate() ^ self.r_expr.evaluate()
@@ -116,26 +118,26 @@ class Xor(BinaryOperation):
 
 class Nand(BinaryOperation):
     def __repr__(self) -> str:
-        return f'Nand {self.l_expr} {self.r_expr}'
+        return f"Nand {self.l_expr} {self.r_expr}"
 
     def evaluate(self):
-        return ~ (self.l_expr.evaluate() & self.r_expr.evaluate())
+        return ~(self.l_expr.evaluate() & self.r_expr.evaluate())
 
 
 class Nor(BinaryOperation):
     def __repr__(self) -> str:
-        return f'Nor {self.l_expr} {self.r_expr}'
+        return f"Nor {self.l_expr} {self.r_expr}"
 
     def evaluate(self):
-        return ~ (self.l_expr.evaluate() | self.r_expr.evaluate())
+        return ~(self.l_expr.evaluate() | self.r_expr.evaluate())
 
 
 class Xnor(BinaryOperation):
     def __repr__(self) -> str:
-        return f'Xnor {self.l_expr} {self.r_expr}'
+        return f"Xnor {self.l_expr} {self.r_expr}"
 
     def evaluate(self):
-        return ~ (self.l_expr.evaluate() ^ self.r_expr.evaluate())
+        return ~(self.l_expr.evaluate() ^ self.r_expr.evaluate())
 
 
 Operations = And | Or | Xor | Nand | Nor | Xnor | Not

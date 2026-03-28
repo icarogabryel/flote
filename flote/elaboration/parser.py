@@ -1,15 +1,14 @@
 from flote.elaboration import ast_nodes
 from flote.elaboration.scanner import Token
 
-
 # Dict of First Sets used to enter syntactical rules
 FIRST_SETS = {
-    'comp': ['main', 'comp'],
-    'stmt': ['in', 'out', 'bit', 'id', 'sub'],
-    'decl': ['in', 'out', 'bit'],
-    'expr_dash': ['or', 'nor'],
-    'term_dash': ['xor', 'xnor'],
-    'fact_dash': ['and', 'nand'],
+    "comp": ["main", "comp"],
+    "stmt": ["in", "out", "bit", "id", "sub"],
+    "decl": ["in", "out", "bit"],
+    "expr_dash": ["or", "nor"],
+    "term_dash": ["xor", "xnor"],
+    "fact_dash": ["and", "nand"],
 }
 
 
@@ -19,11 +18,12 @@ class SyntacticalError(Exception):
         self.message = message
 
     def __str__(self):
-        return f'Syntactical Error at line {self.line_number}: {self.message}'
+        return f"Syntactical Error at line {self.line_number}: {self.message}"
 
 
 class Parser:
     """Syntactical Parser for Flote Language."""
+
     def __init__(self, token_stream: list[Token]) -> None:
         self.token_stream = token_stream
         self.current_token = self.token_stream.pop(0)
@@ -42,7 +42,7 @@ class Parser:
         if token.label != expected_label:
             raise SyntacticalError(
                 token.line_number,
-                f'Unexpected Token. Expected "{expected_label}". Got "{token.label}".'
+                f'Unexpected Token. Expected "{expected_label}". Got "{token.label}".',
             )
 
     def parse(self):
@@ -51,131 +51,139 @@ class Parser:
 
     # Syntactical Rules
 
-    #* mod = comp, {comp};
+    # * mod = comp, {comp};
     def mod(self):
         module = ast_nodes.Module()
         module.add_comp(self.comp())
 
-        while self.get_current_token().label in FIRST_SETS['comp']:
+        while self.get_current_token().label in FIRST_SETS["comp"]:
             module.add_comp(self.comp())
 
-        self.match_label('EOF')
+        self.match_label("EOF")
         return module
 
-    #* comp = ['main'], 'comp', ID, '{', {stmt}, '}'
+    # * comp = ['main'], 'comp', ID, '{', {stmt}, '}'
     def comp(self):
         component = ast_nodes.Component()
 
-        if self.get_current_token().label == 'main':
+        if self.get_current_token().label == "main":
             component.is_main = True
             self.advance()
 
-        self.match_label('comp')
+        self.match_label("comp")
         component.line_number = self.get_current_token().line_number
         self.advance()
-        self.match_label('id')
+        self.match_label("id")
         component.id_ = ast_nodes.Identifier(self.get_current_token().lexeme)
         self.advance()
-        self.match_label('l_brace')
+        self.match_label("l_brace")
         self.advance()
 
-        while self.get_current_token().label in FIRST_SETS['stmt']:
+        while self.get_current_token().label in FIRST_SETS["stmt"]:
             component.add_stmt(self.stmt())
 
-        self.match_label('r_brace')
+        self.match_label("r_brace")
         self.advance()
 
         return component
 
-    #* stmt = decl | asmt | inst
+    # * stmt = decl | asmt | inst
     def stmt(self):
-        if (label := self.get_current_token().label) in FIRST_SETS['decl']:
+        if (label := self.get_current_token().label) in FIRST_SETS["decl"]:
             return self.decl()
-        elif label == 'id':
+        elif label == "id":
             return self.asmt()
-        elif label == 'sub':
+        elif label == "sub":
             return self.inst()
         else:
-            assert False, f'Unexpected Token: {label}'
+            assert False, f"Unexpected Token: {label}"
 
-    #* decl = ['in' | 'out'], 'bit', [dimension], ID, ['=', expr], ';';
+    # * decl = ['in' | 'out'], 'bit', [dimension], ID, ['=', expr], ';';
     def decl(self):
         declaration = ast_nodes.Declaration()
 
-        if self.get_current_token().label == 'in':
+        if self.get_current_token().label == "in":
             declaration.conn = ast_nodes.Connection.INPUT
             self.advance()
-        elif self.get_current_token().label == 'out':
+        elif self.get_current_token().label == "out":
             declaration.conn = ast_nodes.Connection.OUTPUT
             self.advance()
 
-        self.match_label('bit')
+        self.match_label("bit")
         declaration.line_number = self.get_current_token().line_number
-        declaration.type = 'bit'
+        declaration.type = "bit"
         self.advance()
-        if self.get_current_token().label == 'l_bracket':
+        if self.get_current_token().label == "l_bracket":
             declaration.dimension = self.dim()
 
-        self.match_label('id')
+        self.match_label("id")
         declaration.id_ = ast_nodes.Identifier(self.get_current_token().lexeme)
         self.advance()
 
-        if self.get_current_token().label == 'equals':
+        if self.get_current_token().label == "equals":
             self.advance()
             declaration.assignment_expression = self.expr()
 
-        self.match_label('semicolon')
+        self.match_label("semicolon")
         self.advance()
 
         return declaration
 
-    #* dim = "[", ["+" | "-"], DEC, "]";
+    # * dim = "[", ["+" | "-"], DEC, "]";
     def dim(self) -> ast_nodes.Dimension:
-        self.match_label('l_bracket')
+        self.match_label("l_bracket")
         self.advance()
 
-        if (current_token := self.get_current_token().label) in ['plus', 'minus']:
-            msb = ast_nodes.Msb.DESCENDING if current_token == 'minus' else ast_nodes.Msb.ASCENDING
+        if (current_token := self.get_current_token().label) in ["plus", "minus"]:
+            msb = (
+                ast_nodes.Msb.DESCENDING
+                if current_token == "minus"
+                else ast_nodes.Msb.ASCENDING
+            )
             self.advance()
         else:
             msb = ast_nodes.Msb.ASCENDING
 
-        self.match_label('dec')
+        self.match_label("dec")
         token = self.get_current_token()
-        assert token.lexeme.isdigit(), f"Token lexeme '{token.lexeme}' is not a valid integer"
+        assert (
+            token.lexeme.isdigit()
+        ), f"Token lexeme '{token.lexeme}' is not a valid integer"
 
         size = int(token.lexeme)
         # Logically, the lexeme of a decimal token should never be a negative integer.
-        assert size >= 0, 'Dimension size must be non-negative'
+        assert size >= 0, "Dimension size must be non-negative"
 
         if size == 0:
-            raise SyntacticalError(token.line_number, 'Dimension size must be positive.')
+            raise SyntacticalError(
+                token.line_number, "Dimension size must be positive."
+            )
 
         dimension = ast_nodes.Dimension(size, msb)
 
         self.advance()
-        self.match_label('r_bracket')
+        self.match_label("r_bracket")
         self.advance()
 
         return dimension
 
-    #* asmt = (ID | memb), "=", expr, ";";
+    # * asmt = (ID | memb), "=", expr, ";";
     def asmt(self):
         destiny: None | ast_nodes.Identifier | ast_nodes.Member = None
 
-        self.match_label('id')
+        self.match_label("id")
         token = self.get_current_token()
         identifier = ast_nodes.Identifier(token.lexeme)
         identifier.line_number = token.line_number
         self.advance()
 
-        if self.get_current_token().label == 'dot':
+        if self.get_current_token().label == "dot":
             self.advance()
 
             member_access = ast_nodes.Member()
             member_access.object = identifier
 
-            self.match_label('id')
+            self.match_label("id")
             token = self.get_current_token()
             member = ast_nodes.Identifier(token.lexeme)
             member.line_number = token.line_number
@@ -189,23 +197,23 @@ class Parser:
 
         assert destiny is not None
 
-        self.match_label('equals')
+        self.match_label("equals")
         self.advance()
 
         expr = self.expr()
-        self.match_label('semicolon')
+        self.match_label("semicolon")
         self.advance()
 
         assignment = ast_nodes.Assignment(destiny, expr)
 
         return assignment
 
-    #* expr = term, exprDash
+    # * expr = term, exprDash
     def expr(self):
         term = self.term()
 
         # If expr' is not an empty production (there are more operators),
-        if self.get_current_token().label in FIRST_SETS['expr_dash']:
+        if self.get_current_token().label in FIRST_SETS["expr_dash"]:
             # the coming node is the father of term
             current_node = self.expr_dash()
             # and term will be his left son.
@@ -216,23 +224,23 @@ class Parser:
         else:
             return term
 
-    #* exprDash = ('or' | 'nor'), term, exprDash | ε
+    # * exprDash = ('or' | 'nor'), term, exprDash | ε
     def expr_dash(self):
         token = self.get_current_token()
 
-        if token.label == 'or':
+        if token.label == "or":
             current_node = ast_nodes.OrOp(self.get_current_token().line_number)
             self.advance()
-        elif token.label == 'nor':
+        elif token.label == "nor":
             current_node = ast_nodes.NorOp(self.get_current_token().line_number)
             self.advance()
         else:
-            assert False, f'Unexpected Token: {token.label}'
+            assert False, f"Unexpected Token: {token.label}"
 
         term = self.term()
 
         # If there are more operators,
-        if self.get_current_token().label in FIRST_SETS['expr_dash']:
+        if self.get_current_token().label in FIRST_SETS["expr_dash"]:
             # the coming son node is the father of term
             son_node = self.expr_dash()
             # and term will be his left son. the son node is complete now.
@@ -251,11 +259,11 @@ class Parser:
             # top routine
             return current_node
 
-    #* term = fact, termDash
+    # * term = fact, termDash
     def term(self):
         factor = self.fact()
 
-        if self.get_current_token().label in FIRST_SETS['term_dash']:
+        if self.get_current_token().label in FIRST_SETS["term_dash"]:
             current_node = self.term_dash()
             current_node.l_expr = factor
 
@@ -263,22 +271,22 @@ class Parser:
         else:
             return factor
 
-    #* termDash = ("xor" | "xnor"), fact, termDash | ε;
+    # * termDash = ("xor" | "xnor"), fact, termDash | ε;
     def term_dash(self):
         token = self.get_current_token()
 
-        if token.label == 'xor':
+        if token.label == "xor":
             current_node = ast_nodes.XorOp(self.get_current_token().line_number)
             self.advance()
-        elif token.label == 'xnor':
+        elif token.label == "xnor":
             current_node = ast_nodes.XnorOp(self.get_current_token().line_number)
             self.advance()
         else:
-            assert False, f'Unexpected Token: {token.label}'
+            assert False, f"Unexpected Token: {token.label}"
 
         factor = self.fact()
 
-        if self.get_current_token().label in FIRST_SETS['term_dash']:
+        if self.get_current_token().label in FIRST_SETS["term_dash"]:
             son_node = self.term_dash()
             son_node.l_expr = factor
 
@@ -288,11 +296,11 @@ class Parser:
             current_node.r_expr = factor
             return current_node
 
-    #* fact = prim, factDash;
+    # * fact = prim, factDash;
     def fact(self):
         primary = self.prim()
 
-        if self.get_current_token().label in FIRST_SETS['fact_dash']:
+        if self.get_current_token().label in FIRST_SETS["fact_dash"]:
             current_node = self.fact_dash()
             current_node.l_expr = primary
 
@@ -300,22 +308,22 @@ class Parser:
         else:
             return primary
 
-    #* factDash = ("and" | "nand"), prim, factDash | ε;
+    # * factDash = ("and" | "nand"), prim, factDash | ε;
     def fact_dash(self):
         token = self.get_current_token()
 
-        if token.label == 'and':
+        if token.label == "and":
             current_node = ast_nodes.AndOp(self.get_current_token().line_number)
             self.advance()
-        elif token.label == 'nand':
+        elif token.label == "nand":
             current_node = ast_nodes.NandOp(self.get_current_token().line_number)
             self.advance()
         else:
-            assert False, f'Unexpected Token: {token.label}'
+            assert False, f"Unexpected Token: {token.label}"
 
         primary = self.prim()
 
-        if self.get_current_token().label in FIRST_SETS['fact_dash']:
+        if self.get_current_token().label in FIRST_SETS["fact_dash"]:
             son_node = self.fact_dash()
             son_node.l_expr = primary
 
@@ -325,25 +333,25 @@ class Parser:
             current_node.r_expr = primary
             return current_node
 
-    #* prim = "not", prim | "(", expr, ")" | ref | BIT_FD | conc;
+    # * prim = "not", prim | "(", expr, ")" | ref | BIT_FD | conc;
     def prim(self) -> ast_nodes.ExprElem:
         token = self.get_current_token()
 
-        #* prim = ref;
-        if (token_label := token.label) == 'id':
+        # * prim = ref;
+        if (token_label := token.label) == "id":
             reference: None | ast_nodes.Identifier | ast_nodes.Member = None
 
             identifier = ast_nodes.Identifier(token.lexeme)
             identifier.line_number = token.line_number
             self.advance()
 
-            if self.get_current_token().label == 'dot':
+            if self.get_current_token().label == "dot":
                 self.advance()
 
                 member_access = ast_nodes.Member()
                 member_access.object = identifier
 
-                self.match_label('id')
+                self.match_label("id")
                 token = self.get_current_token()
                 member = ast_nodes.Identifier(token.lexeme)
                 member.line_number = token.line_number
@@ -357,83 +365,83 @@ class Parser:
 
             ref = ast_nodes.Reference(reference)
 
-            if self.get_current_token().label == 'l_bracket':
+            if self.get_current_token().label == "l_bracket":
                 self.advance()
 
-                self.match_label('dec')
+                self.match_label("dec")
                 ref.range_begin = int(self.get_current_token().lexeme)
                 self.advance()
 
-                if self.get_current_token().label == 'colon':
+                if self.get_current_token().label == "colon":
                     self.advance()
-                    self.match_label('dec')
+                    self.match_label("dec")
                     ref.range_end = int(self.get_current_token().lexeme)
                     self.advance()
 
-                self.match_label('r_bracket')
+                self.match_label("r_bracket")
                 self.advance()
 
             return ref
-        #* prim = BIT_FD;
-        elif token_label == 'bit_field':
+        # * prim = BIT_FD;
+        elif token_label == "bit_field":
             value = self.get_current_token().lexeme.strip('"')
             self.advance()
 
             return ast_nodes.BitField(value)
-        #* prim = "not", prim;
-        elif token_label == 'not':
+        # * prim = "not", prim;
+        elif token_label == "not":
             self.advance()
 
             node = ast_nodes.NotOp()
             node.expr = self.prim()
 
             return node
-        #* prim = "(", expr, ")";
-        elif token_label == 'l_paren':
+        # * prim = "(", expr, ")";
+        elif token_label == "l_paren":
             self.advance()
             expr = self.expr()
-            self.match_label('r_paren')
+            self.match_label("r_paren")
             self.advance()
 
             return expr
-        #* prim = conc;
-        elif token_label == 'l_angle':
+        # * prim = conc;
+        elif token_label == "l_angle":
             self.advance()
             concatenation = ast_nodes.Concatenation()
 
             concatenation.add_expr(self.expr())
 
-            while self.get_current_token().label == 'comma':
+            while self.get_current_token().label == "comma":
                 self.advance()
                 concatenation.add_expr(self.expr())
 
-            self.match_label('r_angle')
+            self.match_label("r_angle")
             self.advance()
 
             return concatenation
         else:
-            raise SyntacticalError(token.line_number, 'Expected primary.')
+            raise SyntacticalError(token.line_number, "Expected primary.")
 
-    #* inst = 'sub', ID, ['as' ID],';';
+    # * inst = 'sub', ID, ['as' ID],';';
     def inst(self):
-        self.match_label('sub')
+        self.match_label("sub")
         instance = ast_nodes.Instance()
         instance.line_number = self.get_current_token().line_number
         self.advance()
 
-        self.match_label('id')
+        self.match_label("id")
         instance.comp_id = self.get_current_token().lexeme
         self.advance()
 
-        if self.get_current_token().label == 'as':
+        if self.get_current_token().label == "as":
             self.advance()
-            self.match_label('id')
+            self.match_label("id")
             instance.sub_alias = self.get_current_token().lexeme
             self.advance()
         else:
             instance.sub_alias = instance.comp_id
 
-        self.match_label('semicolon')
+        self.match_label("semicolon")
         self.advance()
 
         return instance

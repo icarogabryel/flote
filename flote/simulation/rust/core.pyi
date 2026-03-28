@@ -8,7 +8,6 @@ from typing import Dict
 
 __version__: str
 
-
 class Component:
     """
     Wrapper leve para Component Rust.
@@ -68,7 +67,6 @@ class Component:
 
     def __str__(self) -> str: ...
     def __repr__(self) -> str: ...
-
 
 class Renderer:
     """

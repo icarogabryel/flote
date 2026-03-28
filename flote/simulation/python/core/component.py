@@ -3,16 +3,17 @@ from collections import deque
 from .buses import BaseBus
 
 
-class Component():
+class Component:
     """This class represents a component."""
+
     def __init__(self, id_: str) -> None:
         self.id_: str = id_
         self.buses: dict[str, BaseBus] = {}
 
     def __repr__(self):
-        repr = ''
+        repr = ""
         for bus_id, bus in self.buses.items():
-            repr += f'{bus_id}: {bus} {bus.influence_list}\n'
+            repr += f"{bus_id}: {bus} {bus.influence_list}\n"
 
         return repr
 
@@ -21,9 +22,7 @@ class Component():
         This method returns the values of the component as a dictionary.
         The keys are the bit names and the values are the bit values.
         """
-        return {
-            bit_name: str(bit.value) for bit_name, bit in self.buses.items()
-        }
+        return {bit_name: str(bit.value) for bit_name, bit in self.buses.items()}
 
     def stabilize(self):
         """

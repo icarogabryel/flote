@@ -1,19 +1,21 @@
 """
-This module defines the bus representation in the intermediate representation with the Base Bus
-class and its std subclasses.
+This module defines the bus representation in the intermediate representation with the
+Base Bus class and its std subclasses.
 """
+
 from abc import abstractmethod
 from typing import Any, Generic, Optional, TypeVar
 
 from .expr_node import ExprNode
 from .representation import JsonRepresentation
 
-AssignType = TypeVar('AssignType')
-ValueType = TypeVar('ValueType')
+AssignType = TypeVar("AssignType")
+ValueType = TypeVar("ValueType")
 
 
 class BaseBusDto(Generic[AssignType, ValueType], JsonRepresentation):
     """This class represents a bus in the circuit."""
+
     def __init__(self) -> None:
         self.id_: Optional[str] = None  # The id of the bus.
         self.type: Optional[str] = None  # The type of the bus.
@@ -24,9 +26,9 @@ class BaseBusDto(Generic[AssignType, ValueType], JsonRepresentation):
 
     def __str__(self) -> str:
         return (
-            f'id: {self.id_} assign: {self.assignment}'
-            f' IL: {[bus for bus in self.influence_list]}'
-            f' Value: {self.value}'
+            f"id: {self.id_} assign: {self.assignment}"
+            f" IL: {[bus for bus in self.influence_list]}"
+            f" Value: {self.value}"
         )
 
     @abstractmethod
@@ -37,6 +39,7 @@ class BaseBusDto(Generic[AssignType, ValueType], JsonRepresentation):
 
 class BusValueDto(JsonRepresentation):
     """This class represents a value in the circuit."""
+
     def __init__(self, value=None) -> None:
         self.raw_value: Any = self.get_default() if value is None else value
 
@@ -47,12 +50,15 @@ class BusValueDto(JsonRepresentation):
 
 class BusDto(BaseBusDto[ExprNode, BusValueDto]):
     """This class represents a bus in the circuit."""
+
     def __init__(self) -> None:
         super().__init__()
 
     def make_influence_list(self) -> None:
         """This method adds an assignment to the bus."""
-        sensitivity_list = self.assignment.get_sensitivity_list() if self.assignment else []
+        sensitivity_list = (
+            self.assignment.get_sensitivity_list() if self.assignment else []
+        )
 
         for bus in sensitivity_list:
             if self not in bus.influence_list:
@@ -70,8 +76,9 @@ class BusDto(BaseBusDto[ExprNode, BusValueDto]):
 
 class BitBusValueDto(BusValueDto):
     """This class represents a value of a BitBus."""
+
     def __repr__(self):
-        return f'{self.raw_value}'
+        return f"{self.raw_value}"
 
     def get_default(self) -> list[bool]:
         return [False]
@@ -82,9 +89,10 @@ class BitBusValueDto(BusValueDto):
 
 class BitBusDto(BusDto):
     """This class represents a bit bus in the circuit."""
+
     def __init__(self) -> None:
         super().__init__()
-        self.type = 'bit_bus'
+        self.type = "bit_bus"
         self.msb_descending = False
 
     def get_default(self) -> BitBusValueDto:
@@ -100,10 +108,10 @@ class BitBusDto(BusDto):
             assignment_json = self.assignment.to_json()
 
         return {
-            'id': self.id_,
-            'type': self.type,
-            'value': self.value.to_json(),
-            'msb_descending': self.msb_descending,
-            'assignment': assignment_json,
-            'influence_list': [bus.id_ for bus in self.influence_list]
+            "id": self.id_,
+            "type": self.type,
+            "value": self.value.to_json(),
+            "msb_descending": self.msb_descending,
+            "assignment": assignment_json,
+            "influence_list": [bus.id_ for bus in self.influence_list],
         }

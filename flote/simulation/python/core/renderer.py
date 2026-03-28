@@ -21,27 +21,27 @@ class Renderer:
         Returns:
             ExprNode: The rendered expression node.
         """
-        expr_type = j_expr['type']
+        expr_type = j_expr["type"]
 
-        if expr_type == 'const':
-            value = BitBusValue(j_expr['args']['value'])
+        if expr_type == "const":
+            value = BitBusValue(j_expr["args"]["value"])
 
             return eval_nodes.Const(value)
-        elif expr_type == 'ref':
-            bus_id = j_expr['args']['id']
+        elif expr_type == "ref":
+            bus_id = j_expr["args"]["id"]
             bus = self.buffer_bus_dict[bus_id]
 
-            ref_slice_begin = j_expr['args'].get('slice_begin')
-            ref_slice_end = j_expr['args'].get('slice_end')
+            ref_slice_begin = j_expr["args"].get("slice_begin")
+            ref_slice_end = j_expr["args"].get("slice_end")
 
             return eval_nodes.Ref(bus, ref_slice_begin, ref_slice_end)
-        elif expr_type == 'not':
-            expr = self.render_expr(j_expr['args']['expr'])
+        elif expr_type == "not":
+            expr = self.render_expr(j_expr["args"]["expr"])
             assert expr is not None, "Failed to render NOT expression"
 
             return eval_nodes.Not(expr)
-        elif expr_type == 'conc':
-            exprs = j_expr['args']['exprs']
+        elif expr_type == "conc":
+            exprs = j_expr["args"]["exprs"]
             rendered_exprs = []
             for expr in exprs:
                 rendered_expr = self.render_expr(expr)
@@ -49,17 +49,17 @@ class Renderer:
                 rendered_exprs.append(rendered_expr)
 
             return eval_nodes.Conc(rendered_exprs)
-        elif expr_type in ('and', 'or', 'xor', 'nand', 'nor', 'xnor'):
-            l_expr = self.render_expr(j_expr['args']['l_expr'])
-            r_expr = self.render_expr(j_expr['args']['r_expr'])
+        elif expr_type in ("and", "or", "xor", "nand", "nor", "xnor"):
+            l_expr = self.render_expr(j_expr["args"]["l_expr"])
+            r_expr = self.render_expr(j_expr["args"]["r_expr"])
 
             binary_expr_types = {
-                'and': eval_nodes.And,
-                'or': eval_nodes.Or,
-                'xor': eval_nodes.Xor,
-                'nand': eval_nodes.Nand,
-                'nor': eval_nodes.Nor,
-                'xnor': eval_nodes.Xnor,
+                "and": eval_nodes.And,
+                "or": eval_nodes.Or,
+                "xor": eval_nodes.Xor,
+                "nand": eval_nodes.Nand,
+                "nor": eval_nodes.Nor,
+                "xnor": eval_nodes.Xnor,
             }
 
             op_name = expr_type.upper()
@@ -69,7 +69,7 @@ class Renderer:
             return binary_expr_types[expr_type](l_expr, r_expr)
 
         else:
-            assert False, f'Unknown expression type: {expr_type}'
+            assert False, f"Unknown expression type: {expr_type}"
 
     def render(self) -> Component:
         """Render a circuit from an intermediate representation (IR) json string.
@@ -84,37 +84,39 @@ class Renderer:
         # Parse the IR string to get a structured representation
         j_ir = loads(self.ir)
 
-        j_component = j_ir['component']
-        j_component_id = j_component['id']
+        j_component = j_ir["component"]
+        j_component_id = j_component["id"]
         component = Component(j_component_id)
-        j_busses = j_component['busses']
+        j_busses = j_component["busses"]
 
         for j_bus in j_busses:
             bus: BaseBus
-            type = j_bus['type']
+            type = j_bus["type"]
 
             match type:
-                case 'bit_bus':
+                case "bit_bus":
                     bus = BitBus()
-                    bus.id = j_bus['id']
-                    bus.value = BitBusValue(j_bus['value'])
-                    bus.msb_descending = j_bus.get('msb_descending', False)
+                    bus.id = j_bus["id"]
+                    bus.value = BitBusValue(j_bus["value"])
+                    bus.msb_descending = j_bus.get("msb_descending", False)
                 case _:
-                    assert False, 'Invalid IR.'
+                    assert False, "Invalid IR."
 
-            self.buffer_bus_dict[j_bus['id']] = bus
+            self.buffer_bus_dict[j_bus["id"]] = bus
 
         for j_bus in j_busses:
-            bit_bus = self.buffer_bus_dict[j_bus['id']]
+            bit_bus = self.buffer_bus_dict[j_bus["id"]]
 
-            if j_bus['assignment'] is not None:
-                assignment = self.render_expr(j_bus['assignment'])
+            if j_bus["assignment"] is not None:
+                assignment = self.render_expr(j_bus["assignment"])
 
-                assert assignment is not None, f"Failed to render assignment for bus {j_bus['id']}"
+                assert (
+                    assignment is not None
+                ), f"Failed to render assignment for bus {j_bus['id']}"
 
                 bit_bus.assignment = assignment
 
-            for influenced_bus_id in j_bus['influence_list']:
+            for influenced_bus_id in j_bus["influence_list"]:
                 influenced_bus = self.buffer_bus_dict[influenced_bus_id]
 
                 if influenced_bus not in bit_bus.influence_list:

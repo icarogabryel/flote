@@ -1,42 +1,42 @@
-import flote as ft
 from pathlib import Path
 
+import flote as ft
 
 BASE_DIR = Path(__file__).parent.parent.parent
 
 
 def test_rs_latch():
-    latch = ft.elaborate_file(BASE_DIR / 'tests/duts/RsLatch.ft')
+    latch = ft.elaborate_file(BASE_DIR / "tests/duts/RsLatch.ft")
 
     print(latch)
 
-    latch.update({'set': '0', 'rst': '1'})
+    latch.update({"set": "0", "rst": "1"})
     latch.wait(1)
-    latch.update({'set': '0', 'rst': '0'})
+    latch.update({"set": "0", "rst": "0"})
     latch.wait(1)
-    latch.update({'set': '1', 'rst': '0'})
+    latch.update({"set": "1", "rst": "0"})
     latch.wait(1)
-    latch.update({'set': '0', 'rst': '0'})
+    latch.update({"set": "0", "rst": "0"})
     latch.wait(1)
-    latch.update({'set': '1', 'rst': '0'})
+    latch.update({"set": "1", "rst": "0"})
     latch.wait(1)
-    latch.update({'set': '0', 'rst': '0'})
+    latch.update({"set": "0", "rst": "0"})
     latch.wait(1)
-    latch.update({'set': '0', 'rst': '1'})
+    latch.update({"set": "0", "rst": "1"})
     latch.wait(1)
-    latch.update({'set': '0', 'rst': '0'})
+    latch.update({"set": "0", "rst": "0"})
     latch.wait(1)
-    latch.update({'set': '1', 'rst': '0'})
+    latch.update({"set": "1", "rst": "0"})
     latch.wait(1)
-    latch.update({'set': '0', 'rst': '0'})
+    latch.update({"set": "0", "rst": "0"})
     latch.wait(1)
-    latch.update({'set': '0', 'rst': '1'})
+    latch.update({"set": "0", "rst": "1"})
     latch.wait(1)
-    latch.update({'set': '0', 'rst': '0'})
+    latch.update({"set": "0", "rst": "0"})
     latch.wait(1)
 
-    latch.save_vcd('RsLatch.vcd')
+    latch.save_vcd("RsLatch.vcd")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     test_rs_latch()

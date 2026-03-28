@@ -3,26 +3,29 @@ from enum import Enum
 from typing import Optional, Union
 
 
-def _format_child(label: str, child: object, outer_prefix: str = '|  ') -> str:
+def _format_child(label: str, child: object, outer_prefix: str = "|  ") -> str:
     """Format a child node under a labeled parent with correct indentation."""
     child_str = str(child)
-    if '\n' not in child_str:
+    if "\n" not in child_str:
         return f"\n{outer_prefix}|- {label}: {child_str}"
 
-    first_line, rest = child_str.split('\n', 1)
+    first_line, rest = child_str.split("\n", 1)
 
     rest_lines = rest.splitlines()
-    rest_lines_dedent = [line[3:] if line.startswith('|  ') else line for line in rest_lines]
-    rest_dedent = '\n'.join(rest_lines_dedent)
+    rest_lines_dedent = [
+        line[3:] if line.startswith("|  ") else line for line in rest_lines
+    ]
+    rest_dedent = "\n".join(rest_lines_dedent)
 
-    inner_prefix = outer_prefix + '|  '
-    rest_indented = rest_dedent.replace('\n', '\n' + inner_prefix)
+    inner_prefix = outer_prefix + "|  "
+    rest_indented = rest_dedent.replace("\n", "\n" + inner_prefix)
 
     return f"\n{outer_prefix}|- {label}: {first_line}\n{inner_prefix}{rest_indented}"
 
 
 class Connection(Enum):
     """Enum to represent the connection type of a declaration."""
+
     INPUT = -1
     INTERNAL = 0
     OUTPUT = 1
@@ -30,27 +33,28 @@ class Connection(Enum):
 
 class Msb(Enum):
     """Enum to represent the most significant bit (MSB) direction."""
+
     ASCENDING = True
     DESCENDING = False
 
 
-#* AST Nodes
+# * AST Nodes
 class Module:
     def __init__(self) -> None:
         self.comps: list[Component] = []
 
-    def add_comp(self, comp: 'Component'):
+    def add_comp(self, comp: "Component"):
         self.comps.append(comp)
 
     def __repr__(self) -> str:
         return f"Module({self.comps!r})"
 
     def __str__(self) -> str:
-        desc = '|- Module:'
+        desc = "|- Module:"
 
         for comp in self.comps:
-            comp_desc = str(comp).replace('\n', '\n|  ')
-            desc += f'\n|  |- {comp_desc}'
+            comp_desc = str(comp).replace("\n", "\n|  ")
+            desc += f"\n|  |- {comp_desc}"
 
         return desc
 
@@ -69,18 +73,18 @@ class Component:
         return f"Component({self.id_!r}, {self.is_main}, {self.stmts!r})"
 
     def __str__(self) -> str:
-        desc = 'Component:'
+        desc = "Component:"
 
         if self.is_main:
-            desc += ' (main)'
+            desc += " (main)"
 
         if self.id_ is not None:
-            desc += _format_child('id', self.id_)
+            desc += _format_child("id", self.id_)
 
         for stmt in self.stmts:
-            desc += '\n'
-            desc_stmt = str(stmt).replace('\n', '\n|  ')
-            desc += f'|  |- {desc_stmt}'
+            desc += "\n"
+            desc_stmt = str(stmt).replace("\n", "\n|  ")
+            desc += f"|  |- {desc_stmt}"
 
         return desc
 
@@ -89,7 +93,7 @@ class Declaration:
     def __init__(self) -> None:
         self.id_: None | Identifier = None
         self.conn = Connection.INTERNAL
-        self.type = 'bit'
+        self.type = "bit"
         self.dimension: Optional[Dimension] = None
         self.assignment_expression: Optional[ExprElem] = None
         self.line_number = 0
@@ -98,22 +102,22 @@ class Declaration:
         return f"Declaration({self.id_!r}, {self.type!r})"
 
     def __str__(self) -> str:
-        conn_str = 'internal'
+        conn_str = "internal"
         if self.conn == Connection.INPUT:
-            conn_str = 'input'
+            conn_str = "input"
         elif self.conn == Connection.OUTPUT:
-            conn_str = 'output'
+            conn_str = "output"
 
         desc = f"Declaration (type: {self.type}; conn: {conn_str})"
 
         if self.id_ is not None:
-            desc += _format_child('id', self.id_)
+            desc += _format_child("id", self.id_)
 
         if self.dimension:
-            desc += _format_child('dimension', self.dimension)
+            desc += _format_child("dimension", self.dimension)
 
         if self.assignment_expression:
-            desc += _format_child('assign', self.assignment_expression)
+            desc += _format_child("assign", self.assignment_expression)
 
         return desc
 
@@ -161,21 +165,21 @@ class Member(BaseIdentifier):
         return f"Member({self.object!r}, {self.member!r})"
 
     def __str__(self) -> str:
-        desc = 'Member:'
+        desc = "Member:"
 
         if self.object is not None:
-            desc += _format_child('object', self.object)
+            desc += _format_child("object", self.object)
         if self.member is not None:
-            desc += _format_child('member', self.member)
+            desc += _format_child("member", self.member)
 
         return desc
 
     @property
     def full_id(self) -> str:
-        obj_id = self.object.full_id if self.object else ''
-        mem_id = self.member.full_id if self.member else ''
+        obj_id = self.object.full_id if self.object else ""
+        mem_id = self.member.full_id if self.member else ""
 
-        return f'{obj_id}.{mem_id}'
+        return f"{obj_id}.{mem_id}"
 
     @property
     def line_number(self) -> Optional[int]:
@@ -200,10 +204,10 @@ class Dimension:
 
     def __str__(self) -> str:
         msb_name = self.msb.name if self.msb is not None else None
-        return f'Dimension: {self.size}, MSB={msb_name}'
+        return f"Dimension: {self.size}, MSB={msb_name}"
 
 
-ExprElem = Union['Reference', 'BitField', 'UnaryOp', 'BinaryOp', 'Concatenation']
+ExprElem = Union["Reference", "BitField", "UnaryOp", "BinaryOp", "Concatenation"]
 
 
 class Assignment:
@@ -215,9 +219,9 @@ class Assignment:
         return f"Assignment({self.destiny!r}, {self.expr!r})"
 
     def __str__(self) -> str:
-        desc = 'Assignment:'
-        desc += _format_child('destiny', self.destiny)
-        desc += _format_child('expr', self.expr)
+        desc = "Assignment:"
+        desc += _format_child("destiny", self.destiny)
+        desc += _format_child("expr", self.expr)
         return desc
 
 
@@ -229,9 +233,9 @@ class UnaryOp(ABC):
         pass
 
     def __str__(self) -> str:
-        desc = f'{self.__class__.__name__}'
+        desc = f"{self.__class__.__name__}"
         if self.expr is not None:
-            desc += _format_child('expr', self.expr)
+            desc += _format_child("expr", self.expr)
         return desc
 
 
@@ -247,12 +251,12 @@ class BinaryOp(ABC):
         pass
 
     def __str__(self) -> str:
-        desc = f'{self.__class__.__name__}'
+        desc = f"{self.__class__.__name__}"
 
         if self.l_expr is not None:
-            desc += _format_child('l_expr', self.l_expr)
+            desc += _format_child("l_expr", self.l_expr)
         if self.r_expr is not None:
-            desc += _format_child('r_expr', self.r_expr)
+            desc += _format_child("r_expr", self.r_expr)
 
         return desc
 
@@ -292,8 +296,10 @@ class XnorOp(BinaryOp):
         return f"Xnor {self.l_expr!r} {self.r_expr!r}"
 
 
-class Reference():
-    def __init__(self, id_, range_begin: None | int = None, range_end: None | int = None) -> None:
+class Reference:
+    def __init__(
+        self, id_, range_begin: None | int = None, range_end: None | int = None
+    ) -> None:
         self.id_: BaseIdentifier = id_
         self.range_begin: None | int = range_begin
         self.range_end: None | int = range_end
@@ -303,7 +309,7 @@ class Reference():
 
     def __str__(self) -> str:
         desc = f"Reference (range: [{self.range_begin}:{self.range_end}])"
-        desc += _format_child('id', self.id_)
+        desc += _format_child("id", self.id_)
         return desc
 
 
@@ -313,7 +319,7 @@ class BitField:
         self.size = len(value)
 
     def __repr__(self) -> str:
-        return f'BitField: {self.value}'
+        return f"BitField: {self.value}"
 
     def __str__(self) -> str:
         return self.__repr__()
@@ -330,11 +336,11 @@ class Concatenation:
         return f"Concatenation({self.exprs!r})"
 
     def __str__(self) -> str:
-        desc = 'Concatenation:'
+        desc = "Concatenation:"
 
         for expr in self.exprs:
-            expr_desc = str(expr).replace('\n', '\n|  ')
-            desc += f'\n|  |- {expr_desc}'
+            expr_desc = str(expr).replace("\n", "\n|  ")
+            desc += f"\n|  |- {expr_desc}"
 
         return desc
 
@@ -349,4 +355,4 @@ class Instance:
         return f"Instance({self.comp_id!r}, {self.sub_alias!r})"
 
     def __str__(self) -> str:
-        return f'Instance: {self.sub_alias} of {self.comp_id}'
+        return f"Instance: {self.sub_alias} of {self.comp_id}"
