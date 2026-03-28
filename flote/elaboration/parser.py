@@ -80,7 +80,12 @@ class Parser:
         self.advance()
 
         while self.get_current_token().label in FIRST_SETS["stmt"]:
-            component.add_stmt(self.stmt())
+            result = self.stmt()
+            if isinstance(result, list):
+                for stmt in result:
+                    component.add_stmt(stmt)
+            else:
+                component.add_stmt(result)
 
         self.match_label("r_brace")
         self.advance()
@@ -98,36 +103,55 @@ class Parser:
         else:
             assert False, f"Unexpected Token: {label}"
 
-    # * decl = ['in' | 'out'], 'bit', [dimension], ID, ['=', expr], ';';
+    # * decl = ['in' | 'out'], 'bit', [dimension], ID, {',' ID}, ['=', expr], ';';
     def decl(self):
-        declaration = ast_nodes.Declaration()
+        conn = ast_nodes.Connection.INTERNAL
 
         if self.get_current_token().label == "in":
-            declaration.conn = ast_nodes.Connection.INPUT
+            conn = ast_nodes.Connection.INPUT
             self.advance()
         elif self.get_current_token().label == "out":
-            declaration.conn = ast_nodes.Connection.OUTPUT
+            conn = ast_nodes.Connection.OUTPUT
             self.advance()
 
         self.match_label("bit")
-        declaration.line_number = self.get_current_token().line_number
-        declaration.type = "bit"
+        line_number = self.get_current_token().line_number
         self.advance()
+
+        dimension = None
         if self.get_current_token().label == "l_bracket":
-            declaration.dimension = self.dim()
+            dimension = self.dim()
 
         self.match_label("id")
-        declaration.id_ = ast_nodes.Identifier(self.get_current_token().lexeme)
+        identifiers = [ast_nodes.Identifier(self.get_current_token().lexeme)]
         self.advance()
 
+        while self.get_current_token().label == "comma":
+            self.advance()
+            self.match_label("id")
+            identifiers.append(ast_nodes.Identifier(self.get_current_token().lexeme))
+            self.advance()
+
+        assignment_expression = None
         if self.get_current_token().label == "equals":
             self.advance()
-            declaration.assignment_expression = self.expr()
+            assignment_expression = self.expr()
 
         self.match_label("semicolon")
         self.advance()
 
-        return declaration
+        declarations = []
+        for id_ in identifiers:
+            declaration = ast_nodes.Declaration()
+            declaration.conn = conn
+            declaration.line_number = line_number
+            declaration.type = "bit"
+            declaration.dimension = dimension
+            declaration.id_ = id_
+            declaration.assignment_expression = assignment_expression
+            declarations.append(declaration)
+
+        return declarations
 
     # * dim = "[", ["+" | "-"], DEC, "]";
     def dim(self) -> ast_nodes.Dimension:

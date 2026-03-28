@@ -1,7 +1,7 @@
 mod = comp, {comp};
 comp = ["main"], "comp", ID, "{", {stmt}, "}";
 stmt = decl | asmt | inst;
-decl = ["in" | "out"], "bit", ID, [dim], ["=", expr], ";";
+decl = ["in" | "out"], "bit", [dim], ID, {",", ID}, ["=", expr], ";";
 dim = "[", ["+" | "-"], DEC, "]";
 asmt = (ID | memb), "=", expr, ";";
 memb = ID, ["." , ID];
