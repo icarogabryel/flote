@@ -5,7 +5,7 @@ from warnings import warn
 
 from flote.elaboration import ast_nodes
 from flote.elaboration.ir import expr_nodes
-from flote.elaboration.ir.buses import BitBusDto, BitBusValueDto
+from flote.elaboration.ir.buses import BitBusDto
 from flote.elaboration.ir.component import ComponentDto
 from flote.elaboration.symbol_table import BusSymbol, ComponentTable, SymbolTable
 
@@ -398,8 +398,7 @@ class Builder:
             return bus_ref, slice_size
         elif isinstance(expr_elem, ast_nodes.BitField):
             bit_field = expr_elem
-            bit_value = BitBusValueDto(bit_field.value)
-            const = expr_nodes.Const(bit_value)
+            const = expr_nodes.Const(bit_field.value)
 
             return const, bit_field.size
         elif isinstance(expr_elem, ast_nodes.NotOp):
