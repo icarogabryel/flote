@@ -65,7 +65,7 @@ To finish the beta version, the following tasks need to be completed:
 - [ ] Make multi-declaration support
 - [X] Create signal class for waveform dump
 - [X] Publish initial beta package in PyPI
-- [ ] Add multi-dimensional bit signals support
+- [X] Add Array bit signals support
   - [X] Declaration
   - [X] Assignment
   - [X] Operation
@@ -76,28 +76,27 @@ To finish the beta version, the following tasks need to be completed:
   - [X] Error handling for indexing and slicing
   - [X] Concatenation
   - [X] Reverse arrays support
-  - [ ] N-Dimensional arrays
-- [ ] Add sub-components support
+- [X] Add sub-components support
   - [X] Instantiation
   - [X] Connection
   - [X] Error handling for instantiation and connection
-  - [ ] .vcd dump scope support for sub-components
+  - [X] .vcd dump scope support for sub-components
   - [X] Make correct scanning for sub-component IDs
-- [ ] Implement Rust backend for faster simulation
+- [X] Implement Rust backend for faster simulation
   - [X] Create IR (Intermediate Representation) to communicate frontend with backend
-  - [ ] Implement the Rust backend
-- [ ] Implement abstract Python components
+  - [X] Implement the Rust backend
 - [ ] complete Python API
 - [ ] Make automated tests
 - [X] Create GitHub Actions for CI/CD
 - [ ] Create complete documentation
-- [ ] Create VS Code extension for language server support
 - [ ] Make FPGA support
-- [ ] Create import feature
 - [ ] Make oficial Site with GitHub pages
 
 For future releases, the following features are planned:
 
+- [ ] Create import feature
+- [ ] Create VS Code extension for language server support
+- [ ] Implement abstract Python components
 - [ ] Create std libs
 - [ ] Package manager
 - [ ] Add generate statement support
