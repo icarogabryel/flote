@@ -8,7 +8,7 @@ from flote.elaboration.builder import SemanticalError
 
 def _has_rust_backend() -> bool:
     try:
-        from flote.simulation.rust.core import Renderer as _RustRenderer  # noqa: F401
+        from flote.simulation.fpga import Renderer as _RustRenderer  # noqa: F401
     except ImportError:
         return False
     return True
