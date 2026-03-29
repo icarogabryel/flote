@@ -62,7 +62,7 @@ To finish the beta version, the following tasks need to be completed:
 - [X] Improve the algorithm of simulation (n² -> n+e)
 - [X] Improve declaration to accept assignment
 - [X] Make declaration order not necessary
-- [ ] Make multi-declaration support
+- [X] Make multi-declaration support
 - [X] Create signal class for waveform dump
 - [X] Publish initial beta package in PyPI
 - [X] Add Array bit signals support
