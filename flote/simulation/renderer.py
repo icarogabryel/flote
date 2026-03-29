@@ -6,10 +6,9 @@ from .component import Component
 
 
 class Renderer:
-    def __init__(self, ir: str, hls_buses: dict[str, BaseBus] = {}) -> None:
+    def __init__(self, ir: str) -> None:
         self.ir = ir
         self.buffer_bus_dict: dict[str, BaseBus] = {}
-        self.hls_buses = hls_buses
         self.component = self.render()
 
     def render_expr(self, j_expr) -> eval_nodes.Evaluator | None:

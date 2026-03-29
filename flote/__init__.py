@@ -32,7 +32,6 @@ def render(
         except ImportError:
             warn("Rust backend not available, falling back to Python backend.")
 
-    # Build IR with HLS components
     builder = Builder(ast)
     netlist = builder.netlist
 

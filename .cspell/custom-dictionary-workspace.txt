@@ -1,5 +1,8 @@
 # Custom Dictionary Words
+asmt
 duts
+memb
 netlist
+popleft
 subcomponent
 subcomponents

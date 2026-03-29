@@ -29,7 +29,6 @@ Flote is a **hardware description language (HDL)** and **Python framework** desi
 - **🐍 Python Integration**: Write testbenches in Python with full language expressiveness
 - **🔧 Lightweight**: No heavy IDEs required — use any text editor
 - **📊 VCD Output**: Standard waveform output for visualization
-- **🎨 HLS Support**: Create complex components using pure Python
 - **🔄 Event-Driven Simulation**: Efficient simulation with delta-cycle support
 
 ### Quick Example

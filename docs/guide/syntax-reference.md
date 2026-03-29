@@ -272,8 +272,6 @@ sub HalfAdder;
 sub HalfAdder as ha1;
 sub HalfAdder as ha2;
 
-// HLS components (start with @)
-sub @PythonCounter as counter;
 ```
 
 ## Signal Assignment

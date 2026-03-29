@@ -62,27 +62,27 @@ class BusValue(Generic[T]):
         pass
 
     @abstractmethod
-    def __getitem__(self, index):
+    def __getitem__(self, index) -> "BusValue":
         pass
 
     @abstractmethod
-    def __add__(self, other):
+    def __add__(self, other) -> "BusValue":
         pass
 
     @abstractmethod
-    def __invert__(self):
+    def __invert__(self) -> "BusValue":
         pass
 
     @abstractmethod
-    def __and__(self, other):
+    def __and__(self, other) -> "BusValue":
         pass
 
     @abstractmethod
-    def __or__(self, other):
+    def __or__(self, other) -> "BusValue":
         pass
 
     @abstractmethod
-    def __xor__(self, other):
+    def __xor__(self, other) -> "BusValue":
         pass
 
 
