@@ -5,8 +5,8 @@ controlling time in them simulation.
 
 from datetime import datetime
 
-from .simulation.python.core.component import Component as PythonComponent
-from .simulation.rust.core import Component as RustComponent
+from .simulation.component import Component as PythonComponent
+from .simulation.fpga import Component as RustComponent
 
 VERSION = "0.4.0"
 CODENAME = "Gambiarra"

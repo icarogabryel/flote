@@ -17,7 +17,7 @@ classifiers = [
 
 [tool.maturin]
 features = ["pyo3/extension-module"]
-module-name = "flote.simulation.rust.core"
+module-name = "flote.simulation.fpga"
 
 [tool.poetry]
 package-mode = false

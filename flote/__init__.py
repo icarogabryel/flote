@@ -23,7 +23,7 @@ def render(
 ):
     if rust_backend:
         try:
-            from .simulation.rust.core import Renderer as RustRenderer
+            from .simulation.fpga import Renderer as RustRenderer
 
             builder = Builder(ast)
             ir = builder.netlist
@@ -37,7 +37,7 @@ def render(
     netlist = builder.netlist
 
     # Render with Python backend
-    from .simulation.python.core import Renderer as PythonRenderer
+    from .simulation.renderer import Renderer as PythonRenderer
 
     render = PythonRenderer(netlist)
     return render.component

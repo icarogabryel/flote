@@ -1,11 +1,11 @@
 [package]
-name = "simulation-core"
+name = "fpga"
 version = "0.7.0"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [lib]
-name = "core"
+name = "fpga"
 path = "src/lib.rs"
 crate-type = ["cdylib"]
 

@@ -176,7 +176,7 @@ impl Renderer {
 
 /// Módulo Python
 #[pymodule]
-fn core(_py: Python<'_>, m: &Bound<'_, PyModule>) -> PyResult<()> {
+fn fpga(_py: Python<'_>, m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<Component>()?;
     m.add_class::<Renderer>()?;
     m.add("__version__", "0.5.0")?;
