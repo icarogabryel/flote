@@ -5,10 +5,9 @@ controlling time in them simulation.
 
 from datetime import datetime
 
-from .simulation.component import Component as PythonComponent
-from .simulation.fpga import Component as RustComponent
+from .simulation.component import Component
 
-VERSION = "0.4.0"
+VERSION = "0.7.0"
 CODENAME = "Gambiarra"
 VALID_UNITS = ["fs", "ps", "ns", "us", "ms", "s"]
 
@@ -39,7 +38,7 @@ class WaveSample:
 
 
 class TestBench:
-    def __init__(self, component: PythonComponent | RustComponent) -> None:
+    def __init__(self, component: Component) -> None:
         self.s_time: int = 0
         self.time_unit: str = "ns"
         self.samples: list[WaveSample] = []
@@ -78,10 +77,6 @@ class TestBench:
             f"$timescale 1 {self.time_unit} $end\n"
         )
 
-        # Check which backend is being used
-        is_rust = isinstance(self.component, RustComponent)
-
-        # Store metadata including the generated symbol
         # name -> (initial_value, width, msb_descending, symbol)
         bus_meta: dict[str, tuple[str, int, bool, str]] = {}
 
@@ -111,19 +106,11 @@ class TestBench:
                 current = current.children[part]
             current.signals.append((parts[-1], width, msb_descending, symbol))
 
-        if is_rust:
-            buses_info = self.component.busses_info
-            for i, (bit_name, (bit_value, msb_descending)) in enumerate(
-                buses_info.items()
-            ):
-                width = len(bit_value)
-                add_signal(bit_name, bit_value, width, msb_descending, i)
-        else:
-            for i, (bit_name, bit_bus) in enumerate(self.component.buses.items()):
-                width = len(bit_bus.value.raw_value)
-                bit_value = bit_bus.get_vcd_repr()
-                msb_descending = bit_bus.msb_descending
-                add_signal(bit_name, bit_value, width, msb_descending, i)
+        for i, (bit_name, bit_bus) in enumerate(self.component.buses.items()):
+            width = len(bit_bus.value.raw_value)
+            bit_value = bit_bus.get_vcd_repr()
+            msb_descending = bit_bus.msb_descending
+            add_signal(bit_name, bit_value, width, msb_descending, i)
 
         def write_scope(node: ScopeNode, level: int = 0) -> str:
             indent = "\t" * level
@@ -195,21 +182,9 @@ class TestBench:
             f.close()
 
     def update(self, new_values: dict[str, str]) -> None:
-        # Check which backend is being used
-        is_rust = isinstance(self.component, RustComponent)
-        if is_rust:
-            # Rust backend: busses is Dict[str, str]
-            assert isinstance(self.component, RustComponent)
-            sample = WaveSample(self.s_time, [])
-            self.component.update_and_get(new_values)
-            buses_dict = self.component.busses
-            for id, value in buses_dict.items():
-                sample.signals.append(Signal(id, value))
-        else:
-            # Python backend: buses is Dict[str, BaseBus]
-            sample = WaveSample(self.s_time, [])
-            self.component.update_signals(new_values)
-            for id, bus in self.component.buses.items():
-                sample.signals.append(Signal(id, bus.get_vcd_repr()))
+        sample = WaveSample(self.s_time, [])
+        self.component.update_signals(new_values)
+        for id, bus in self.component.buses.items():
+            sample.signals.append(Signal(id, bus.get_vcd_repr()))
 
         self.samples.append(sample)

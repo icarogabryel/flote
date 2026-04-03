@@ -1,9 +1,9 @@
 from pathlib import Path
-from warnings import warn
 
 from .elaboration.builder import Builder
 from .elaboration.parser import Parser
 from .elaboration.scanner import Scanner
+from .simulation.renderer import Renderer
 from .testbench import TestBench
 
 
@@ -17,32 +17,8 @@ class ElaborationError(Exception):
         return self.message
 
 
-def render(
-    ast,
-    rust_backend,
-):
-    if rust_backend:
-        try:
-            from .simulation.fpga import Renderer as RustRenderer
-
-            builder = Builder(ast)
-            ir = builder.netlist
-            render = RustRenderer(ir)
-            return render.component
-        except ImportError:
-            warn("Rust backend not available, falling back to Python backend.")
-
-    builder = Builder(ast)
-    netlist = builder.netlist
-
-    # Render with Python backend
-    from .simulation.renderer import Renderer as PythonRenderer
-
-    render = PythonRenderer(netlist)
-    return render.component
-
-
 def elaborate(code: str, rust_backend=True) -> TestBench:
+    """Elaborate the given code and return a TestBench instance for simulation."""
     # 1. Lexical analysis and token stream generation
     scanner = Scanner(code)
     tokens_stream = scanner.token_stream
@@ -52,15 +28,23 @@ def elaborate(code: str, rust_backend=True) -> TestBench:
     ast = parser.ast
 
     # 3. Semantical analysis and IR generation
-    component = render(ast, rust_backend=rust_backend)
+    builder = Builder(ast)
+    netlist = builder.netlist
 
-    # 4. Creating the testbench and encapsulating the component
+    # 4. Creating the component for simulation
+    render = Renderer(netlist)
+    component = render.component
+
     assert component is not None, "Elaboration failed: component is None"
-    test_bench = TestBench(component)
-    return test_bench
+    testbench = TestBench(component)
+    return testbench
 
 
 def elaborate_file(file_path, rust_backend=True) -> TestBench:
+    """
+    Elaborate the code from the given file path and return a TestBench instance for
+    simulation.
+    """
     p = Path(file_path)
     with p.open("r", encoding="utf-8") as file:
         code = file.read()
@@ -83,3 +67,10 @@ def get_netlist(code: str):
     ast = get_ast(code)
     builder = Builder(ast)
     return builder.netlist
+
+
+def render_netlist(netlist):
+    """Render the given netlist and return the component for simulation."""
+    render = Renderer(netlist)
+    testbench = TestBench(render.component)
+    return testbench

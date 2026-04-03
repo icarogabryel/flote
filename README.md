@@ -52,20 +52,20 @@ Flote is in beta development. You can see the latest releases in [the GitHub rep
 
 To finish the beta version, the following tasks need to be completed:
 
-- [X] Make the component class
+- [X] Make the component class for simulation
 - [X] Make EBNF for the language
 - [X] Make Scanner
 - [X] Make Parser
 - [X] Make Builder
-- [X] Make testbench class
 - [X] Add expressions
+- [X] Make testbench class
+- [X] Create signal class for waveform dump
 - [X] Improve the algorithm of simulation (n² -> n+e)
+- [X] Publish initial beta package in PyPI
 - [X] Improve declaration to accept assignment
 - [X] Make declaration order not necessary
 - [X] Make multi-declaration support
-- [X] Create signal class for waveform dump
-- [X] Publish initial beta package in PyPI
-- [X] Add Array bit signals support
+- [X] Add Arrays signals support
   - [X] Declaration
   - [X] Assignment
   - [X] Operation
@@ -81,34 +81,38 @@ To finish the beta version, the following tasks need to be completed:
   - [X] Connection
   - [X] Error handling for instantiation and connection
   - [X] .vcd dump scope support for sub-components
-  - [X] Make correct scanning for sub-component IDs
-- [X] Implement Rust backend for faster simulation
-  - [X] Create IR (Intermediate Representation) to communicate frontend with backend
-  - [X] Implement the Rust backend
 - [ ] complete Python API
 - [ ] Make automated tests
 - [X] Create GitHub Actions for CI/CD
 - [ ] Create complete documentation
-- [ ] Make FPGA support
 - [ ] Make oficial Site with GitHub pages
 
 For future releases, the following features are planned:
 
+Version 2:
+
+- [ ] Implement abstract Python components
+- [ ] Make FPGA support (Altera and Xilinx)
+- [ ] Implement Rust backend for faster FPGA simulation
 - [ ] Create import feature
 - [ ] Create VS Code extension for language server support
-- [ ] Implement abstract Python components
+- [ ] Add multi-dimensional array support
+
+Version 3:
+
 - [ ] Create std libs
 - [ ] Package manager
 - [ ] Add generate statement support
 - [ ] Add multi-assignment support
 - [ ] Add in-out signals support
-- [ ] Add xbit (0, 1, x, z) support
+- [ ] Add x-bit (0, 1, x, z) support
 - [ ] FPGA superset language
 
 ---
 
 <div align="center">
   <i>Flote is an open-source project developed as part of academic research at Federal University of Piauí and my humble bedroom, Brazil 🇧🇷</i>
+  <br />
   <br />
   <img src="docs/imgs/brazil-mentioned.png" width="25%" alt="Brazil Mentioned"/>
 </div>
