@@ -92,7 +92,7 @@ class Builder:
                 )
             elif isinstance(stmt, ast_nodes.Instance):
                 assert comp.id_ is not None, "Instance component cannot be None."
-                self.vst_inst(stmt, comp.id_.value, component, comp_table)
+                self.vst_inst(stmt, component, comp_table)
 
         return comp_table
 
@@ -464,7 +464,6 @@ class Builder:
     def vst_inst(
         self,
         inst: ast_nodes.Instance,
-        component_id: str,
         component: ComponentDto,
         comp_table: ComponentTable,
     ) -> None:
