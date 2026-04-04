@@ -316,4 +316,3 @@ Code quality tooling:
 - **Influence list**: downstream buses to recompute when a bus changes.
 - **Stabilization**: iterative propagation until no bus value changes.
 - **VCD**: waveform format for digital signal visualization.
-
