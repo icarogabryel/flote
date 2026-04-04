@@ -94,7 +94,7 @@ A camada de IR (`JSON Netlist IR`) funciona como ponte estável entre frontend (
 
 ## 4. Module Responsibilities
 
-## 4.1 API Entry Points (`flote/__init__.py`)
+### 4.1 API Entry Points (`flote/__init__.py`)
 
 - `elaborate(code) -> TestBench`
   - Scanner -> Parser -> Builder -> Renderer -> TestBench
@@ -106,7 +106,7 @@ A camada de IR (`JSON Netlist IR`) funciona como ponte estável entre frontend (
   - `get_netlist`
   - `render_netlist`
 
-## 4.2 Scanner (`elaboration/scanner.py`)
+### 4.2 Scanner (`elaboration/scanner.py`)
 
 - Lexical analysis and token stream generation
 - Handles:
@@ -119,7 +119,7 @@ A camada de IR (`JSON Netlist IR`) funciona como ponte estável entre frontend (
 - Emits `Token(line_number, label, lexeme)`
 - Raises `LexicalError` with line context
 
-## 4.3 Parser (`elaboration/parser.py`)
+### 4.3 Parser (`elaboration/parser.py`)
 
 - Recursive-descent parser using FIRST sets
 - Parses:
@@ -133,7 +133,7 @@ A camada de IR (`JSON Netlist IR`) funciona como ponte estável entre frontend (
 - Outputs AST (`ast_nodes.Module`)
 - Raises `SyntacticalError` with line context
 
-## 4.4 Builder (`elaboration/builder.py`)
+### 4.4 Builder (`elaboration/builder.py`)
 
 Primary semantic stage and netlist generator.
 
@@ -160,7 +160,7 @@ Errors/diagnostics:
 - Raises `SemanticalError` for invalid constructs
 - Emits `UserWarning` for unread/unassigned buses (non-fatal)
 
-## 4.5 IR DTOs (`elaboration/ir/*`)
+### 4.5 IR DTOs (`elaboration/ir/*`)
 
 - `ComponentDto`, `BusDto`, `BitBusDto`
 - Expression nodes (`Ref`, `Const`, `Conc`, ops)
@@ -168,7 +168,7 @@ Errors/diagnostics:
 
 This layer is the contract between elaboration and simulation runtime.
 
-## 4.6 Renderer (`simulation/renderer.py`)
+### 4.6 Renderer (`simulation/renderer.py`)
 
 - Deserializes JSON netlist
 - Creates runtime `Component` and runtime buses
@@ -177,7 +177,7 @@ This layer is the contract between elaboration and simulation runtime.
 
 It is effectively an object graph hydrator from IR.
 
-## 4.7 Runtime Simulation (`simulation/*`)
+### 4.7 Runtime Simulation (`simulation/*`)
 
 - `BaseBus` / `BitBus` store value, assignment evaluator, influence list
 - `BitBusValue` defines bit-vector operations (`~`, `&`, `|`, `^`, concat, slicing)
@@ -185,7 +185,7 @@ It is effectively an object graph hydrator from IR.
 - `Component.stabilize()` propagates updates through a queue (event-like propagation)
 - `Component.update_signals()` applies stimulus and stabilizes
 
-## 4.8 TestBench (`testbench.py`)
+### 4.8 TestBench (`testbench.py`)
 
 - Simulation time control (`wait`, unit config)
 - Sample collection (`WaveSample`, `Signal`)
@@ -234,22 +234,17 @@ sequenceDiagram
 ## 6. Repository Structure (High Value Paths)
 
 ```text
-.
-|-- flote/
-|   |-- __init__.py                     # Public API and orchestration
+|-- flote/                              # Core package
 |   |-- elaboration/                    # Frontend pipeline + semantic validation
-|   |   `-- ir/                         # Netlist and expression DTOs
+|   |   |-- ir/                         # Netlist and expression DTOs
 |   |-- simulation/                     # Runtime model and evaluation engine
-|   `-- testbench.py                    # Timing and VCD output
-|-- examples/                           # Usage scenarios (HalfAdder, FullAdder, ByteAndGate, RSLatch)
+|-- examples/                           # Usage scenarios
 |-- tests/
-|   `-- integration/
-|       `-- test_reverse_indexes.py     # Current automated tests
-|-- docs/                               # MkDocs user documentation and EBNF
-|-- src/
-|   `-- lib.rs                          # Native extension module entry (currently minimal)
-`-- .github/
-  `-- workflows/                      # Wheel build/publish and python workflow
+|   |-- integration/                    # Current automated tests
+|-- docs/                               # MkDocs docs and guides
+|-- src/                                # Native backend crate
+|-- .github/
+|   |-- workflows/                      # CI/CD pipelines
 ```
 
 ## 7. Data Model and Contracts
