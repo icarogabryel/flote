@@ -27,7 +27,8 @@ comp ComponentC {
 **Rules:**
 
 - At least one component must be declared
-- Exactly one component must be marked as `main`
+- If the file has multiple components, exactly one must be marked as `main`
+- If the file has a single component, the `main` keyword is optional
 - Components can appear in any order
 
 ## Component Declaration
@@ -35,22 +36,25 @@ comp ComponentC {
 ### Syntax
 
 ```text
-component ::= ["main"] "comp" identifier "{" component_body "}"
+component ::= ["main"] "comp" identifier "{" {statement} "}"
+
+statement ::= declaration | assignment | instantiation
 ```
 
 ### Examples
 
 ```flote
-// Simple component
+// Single component (main keyword is optional)
 comp SimpleGate {
     in bit a;
     out bit b = not a;
 }
 
-// Main component
+// Multi-component file (main keyword is required)
 main comp TopLevel {
     in bit clock;
     out bit data;
+    sub SimpleGate as gate;
 }
 ```
 
@@ -59,11 +63,11 @@ main comp TopLevel {
 ### Syntax
 
 ```text
-bus_declaration ::= [direction] "bit" identifier [vector] ["=" assignment]
+bus_declaration ::= [direction] "bit" [dimension] identifier {"," identifier} ["=" expression] ";"
 
 direction ::= "in" | "out"
 
-vector ::= "[" ["-"] integer "]"
+dimension ::= "[" ["+" | "-"] integer "]"
 ```
 
 ### Input Signals
@@ -71,7 +75,8 @@ vector ::= "[" ["-"] integer "]"
 ```flote
 in bit single_input;        // Single bit input
 in bit input_bus[8];        // 8-bit input (ascending)
-in bit input_bus[-8];       // 8-bit input (descending)
+in bit input_bus2[+8];      // 8-bit input (explicitly ascending)
+in bit input_bus3[-8];      // 8-bit input (descending)
 ```
 
 ### Output Signals
@@ -87,6 +92,7 @@ out bit output_bus[4] = <a, b, c, d>;
 bit internal;                   // No direction specified
 bit intermediate = a and b;
 bit internal_bus[8];
+bit x, y, z;                   // Multiple signals in one declaration
 ```
 
 ## Vector Indexing
@@ -101,6 +107,14 @@ out bit bit7 = data[7];
 out bit slice = data[2:5];  // Bits 2, 3, 4, 5
 ```
 
+### Ascending Vectors (Explicit)
+
+```flote
+in bit data[+8];  // Same as data[8], indices: 0, 1, 2, 3, 4, 5, 6, 7
+```
+
+The `+` prefix is optional and equivalent to omitting the sign.
+
 ### Descending Vectors
 
 ```flote
@@ -114,7 +128,7 @@ out bit slice = data[5:2];  // Bits 5, 4, 3, 2
 ### Slicing Syntax
 
 ```text
-index ::= identifier "[" integer [":" integer] "]"
+ref ::= (identifier | member) "[" integer [":" integer] "]"
 ```
 
 Examples:
@@ -259,7 +273,7 @@ out bit data[8] = "10101010";
 ### Syntax
 
 ```text
-sub_declaration ::= "sub" identifier ["as" identifier]
+sub_declaration ::= "sub" identifier ["as" identifier] ";"
 ```
 
 ### Examples
@@ -279,7 +293,9 @@ sub HalfAdder as ha2;
 ### To Sub-component Inputs
 
 ```text
-sub_assignment ::= identifier "." identifier "=" assignment
+assignment ::= (identifier | member) "=" expression ";"
+
+member ::= identifier "." identifier
 ```
 
 ```flote
@@ -494,52 +510,33 @@ comp A {
 
 ## Formal Grammar (EBNF)
 
-The complete formal grammar from `docs/flote.ebnf`:
+The complete formal grammar from `docs/grammar/flote.ebnf`:
 
 ```ebnf
-program = component, {component};
+mod = comp, {comp};
+comp = ["main"], "comp", ID, "{", {stmt}, "}";
+stmt = decl | asmt | inst;
+decl = ["in" | "out"], "bit", [dim], ID, {",", ID}, ["=", expr], ";";
+dim = "[", ["+" | "-"], DEC, "]";
+asmt = (ID | memb), "=", expr, ";";
+memb = ID, ["." , ID];
+inst = "sub", ID, ["as", ID],";";
 
-component = ["main"], "comp", identifier, "{", component_body, "}";
+(* Expression rules *)
+expr = term, exprDash;
+exprDash = ("or" | "nor"), term, exprDash | ε;
+term = fact, termDash;
+termDash = ("xor" | "xnor"), fact, termDash | ε;
+fact = prim, factDash;
+factDash = ("and" | "nand"), prim, factDash | ε;
+prim = "not", prim | "(", expr, ")" | ref | BIT_FD | conc;
+ref = (ID | memb), ["[", DEC, [":", DEC ], "]" ];
+conc = "<", expr, {",", expr }, ">";
 
-component_body = {bus_declaration | sub_declaration | sub_assignment};
-
-bus_declaration = [direction], "bit", identifier, [vector], ["=", assignment];
-
-direction = "in" | "out";
-
-vector = "[", ["-"], integer, "]";
-
-sub_declaration = "sub", identifier, ["as", identifier];
-
-sub_assignment = identifier, ".", identifier, "=", assignment;
-
-assignment = logic_or | concatenation;
-
-concatenation = "<", assignment, {",", assignment}, ">";
-
-logic_or = logic_xor, {("or" | "nor"), logic_xor};
-
-logic_xor = logic_and, {("xor" | "xnor"), logic_and};
-
-logic_and = logic_not, {("and" | "nand"), logic_not};
-
-logic_not = "not", logic_not | primary;
-
-primary = literal | index | reference | "(", assignment, ")";
-
-literal = '"', ("0" | "1"), {("0" | "1")}, '"';
-
-index = identifier, "[", integer, [":", integer], "]";
-
-reference = identifier, [".", identifier];
-
-identifier = (letter | "_"), {letter | digit | "_"};
-
-integer = digit, {digit};
-
-letter = "a" | "b" | ... | "z" | "A" | "B" | ... | "Z";
-
-digit = "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9";
+(* Lexical rules *)
+ID = ? @[A-Za-z_]\w* ?;
+DEC = ? 0 | [1-9][0-9]* ?;
+BIT_FD = ? "([01]+)" ?;
 ```
 
 ## Next Steps

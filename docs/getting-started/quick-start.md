@@ -55,29 +55,29 @@ half_adder = ft.elaborate_file('HalfAdder.ft')
 print("Testing 0 + 0")
 half_adder.update({'a': '0', 'b': '0'})
 half_adder.wait(10)
-print(f"  Sum: {half_adder.component.busses['sum'].value}")
-print(f"  Carry: {half_adder.component.busses['carry'].value}")
+print(f"  Sum: {half_adder.component.buses['sum'].value}")
+print(f"  Carry: {half_adder.component.buses['carry'].value}")
 
 # Test case 2: 0 + 1 = 1
 print("\nTesting 0 + 1")
 half_adder.update({'a': '0', 'b': '1'})
 half_adder.wait(10)
-print(f"  Sum: {half_adder.component.busses['sum'].value}")
-print(f"  Carry: {half_adder.component.busses['carry'].value}")
+print(f"  Sum: {half_adder.component.buses['sum'].value}")
+print(f"  Carry: {half_adder.component.buses['carry'].value}")
 
 # Test case 3: 1 + 0 = 1
 print("\nTesting 1 + 0")
 half_adder.update({'a': '1', 'b': '0'})
 half_adder.wait(10)
-print(f"  Sum: {half_adder.component.busses['sum'].value}")
-print(f"  Carry: {half_adder.component.busses['carry'].value}")
+print(f"  Sum: {half_adder.component.buses['sum'].value}")
+print(f"  Carry: {half_adder.component.buses['carry'].value}")
 
 # Test case 4: 1 + 1 = 10 (binary)
 print("\nTesting 1 + 1")
 half_adder.update({'a': '1', 'b': '1'})
 half_adder.wait(10)
-print(f"  Sum: {half_adder.component.busses['sum'].value}")
-print(f"  Carry: {half_adder.component.busses['carry'].value}")
+print(f"  Sum: {half_adder.component.buses['sum'].value}")
+print(f"  Carry: {half_adder.component.buses['carry'].value}")
 
 # Save waveform for visualization
 half_adder.save_vcd('HalfAdder.vcd')
@@ -167,7 +167,7 @@ half_adder.update({'a': '0', 'b': '1'})
 half_adder.wait(10)  # Wait 10 time units
 
 # 4. Read outputs
-value = half_adder.component.busses['sum'].value
+value = half_adder.component.buses['sum'].value
 
 # 5. Generate waveform file
 half_adder.save_vcd('HalfAdder.vcd')
@@ -206,8 +206,8 @@ for a in ['0', '1']:
     for b in ['0', '1']:
         half_adder.update({'a': a, 'b': b})
         half_adder.wait(10)
-        print(f"{a} + {b} = {half_adder.component.busses['carry'].value}"
-              f"{half_adder.component.busses['sum'].value}")
+        print(f"{a} + {b} = {half_adder.component.buses['carry'].value}"
+              f"{half_adder.component.buses['sum'].value}")
 
 half_adder.save_vcd('HalfAdder.vcd')
 ```
@@ -223,8 +223,8 @@ half_adder = ft.elaborate_file('HalfAdder.ft')
 half_adder.update({'a': '1', 'b': '1'})
 half_adder.wait(10)
 
-assert half_adder.component.busses['sum'].value == False, "Sum should be 0"
-assert half_adder.component.busses['carry'].value == True, "Carry should be 1"
+assert half_adder.component.buses['sum'].value == False, "Sum should be 0"
+assert half_adder.component.buses['carry'].value == True, "Carry should be 1"
 
 print("✓ All tests passed!")
 ```

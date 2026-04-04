@@ -21,7 +21,6 @@ This will install:
 
 - Flote language parser and elaborator
 - Python simulation backend
-- Rust simulation backend (pre-compiled binaries)
 - All necessary dependencies
 
 ### Verify Installation
@@ -70,11 +69,11 @@ circuit = ft.elaborate_file('test.ft')
 # Test it
 circuit.update({'a': '0'})
 circuit.wait(10)
-print(f"Input: 0, Output: {circuit.component.busses['b'].value}")
+print(f"Input: 0, Output: {circuit.component.buses['b'].value}")
 
 circuit.update({'a': '1'})
 circuit.wait(10)
-print(f"Input: 1, Output: {circuit.component.busses['b'].value}")
+print(f"Input: 1, Output: {circuit.component.buses['b'].value}")
 ```
 
 ### Run the Test
@@ -130,16 +129,6 @@ pip install --user flote
 ```bash
 python -m pip install flote
 ```
-
-### Rust Backend Not Available
-
-**Problem**: Warning about Rust backend not found
-
-**Solution**: This is usually not critical - Python backend works fine. If you need Rust backend:
-
-1. Check your platform is supported (Windows, Linux x86_64, macOS)
-2. Try reinstalling: `pip install --force-reinstall flote`
-3. Build from source (see above)
 
 ## Platform-Specific Notes
 

@@ -20,7 +20,7 @@ Think of a component as a black box with:
 
 ### Main Component
 
-Every Flote file must have exactly one `main` component - the top-level component:
+When a Flote file has multiple components, exactly one must be marked as `main` — the top-level entry point:
 
 ```flote
 main comp TopLevel {
@@ -29,7 +29,7 @@ main comp TopLevel {
 }
 ```
 
-The `main` keyword designates which component is the entry point for simulation.
+The `main` keyword designates which component is the entry point for simulation. If your file has only one component, the `main` keyword is optional.
 
 ## Signals (Buses)
 
@@ -40,9 +40,10 @@ The `main` keyword designates which component is the entry point for simulation.
 Signals are declared with a direction and type:
 
 ```flote
-in bit a;      // Input signal
-out bit b;     // Output signal
-bit c;         // Internal signal
+in bit a;          // Input signal
+out bit b;         // Output signal
+bit c;             // Internal signal
+bit x, y, z;       // Multiple signals in one declaration
 ```
 
 **Signal Directions:**
@@ -57,8 +58,9 @@ Currently, Flote supports the `bit` type for binary (0/1) signals:
 
 ```flote
 bit signal;    // Single bit
-bit bus[8];    // 8-bit bus
-bit data[-8];  // 8-bit bus (descending indices)
+bit bus[8];    // 8-bit bus (ascending indices)
+bit data[+8];  // 8-bit bus (explicitly ascending)
+bit addr[-8];  // 8-bit bus (descending indices)
 ```
 
 ## Logic Operations
@@ -166,6 +168,7 @@ Multi-bit signals are declared with size:
 
 ```flote
 bit bus[8];     // 8-bit ascending: bus[0] to bus[7]
+bit bus2[+8];   // 8-bit ascending (explicit): bus2[0] to bus2[7]
 bit data[-8];   // 8-bit descending: data[7] to data[0]
 ```
 
