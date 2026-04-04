@@ -40,7 +40,7 @@ def elaborate(code: str, rust_backend=True) -> TestBench:
     return testbench
 
 
-def elaborate_file(file_path, rust_backend=True) -> TestBench:
+def elaborate_file(file_path) -> TestBench:
     """
     Elaborate the code from the given file path and return a TestBench instance for
     simulation.
@@ -49,7 +49,7 @@ def elaborate_file(file_path, rust_backend=True) -> TestBench:
     with p.open("r", encoding="utf-8") as file:
         code = file.read()
 
-    return elaborate(code, rust_backend=rust_backend)
+    return elaborate(code)
 
 
 def get_token_stream(code: str):
