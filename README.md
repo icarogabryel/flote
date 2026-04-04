@@ -48,6 +48,16 @@ The documentation can be found at [flote.readthedocs.io](https://flote.readthedo
 
 Flote is in beta development. You can see the latest releases in [the GitHub repository](https://github.com/icarogabryel/flote/releases).
 
+## 🎁 Buy Me a ~~Coffee~~ Beer
+
+<div align="center">
+  <img src="https://i.postimg.cc/VNND86yt/cold-stone.gif" width="300px" alt="Stone Cold"/>
+</div>
+
+If Flote helps you, consider supporting its development:
+
+[Sponsor on GitHub](https://github.com/sponsors/icarogabryel)
+
 ## 📝 To Do List
 
 To finish the beta version, the following tasks need to be completed:
