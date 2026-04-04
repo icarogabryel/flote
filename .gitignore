@@ -17,3 +17,6 @@ target/
 
 # Wave files
 *.vcd
+
+# MkDocs build output
+site/
