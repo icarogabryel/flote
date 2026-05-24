@@ -11,19 +11,19 @@ First, you need to have Python 3.10, Poetry and Rust toolchain (for building the
 1. Install project dependencies and development dependencies
 
     ```bash
-    poetry install --with dev
+    uv sync
     ```
 
 2. Install git hooks
 
     ```bash
-    poetry run pre-commit install
+    pre-commit install
     ```
 
 3. Install package in editable mode for development
 
     ```bash
-    poetry run maturin develop
+    maturin develop
     ```
 
 ## Build Notes
@@ -33,7 +33,7 @@ Flote uses Maturin with pyo3 for packaging and native bindings.
 To build a local wheel:
 
 ```bash
-poetry run maturin build
+maturin build
 ```
 
 ## Running Quality Checks
@@ -41,7 +41,7 @@ poetry run maturin build
 Make sure that pre-commit hooks are installed and run on each commit. You can also run them manually:
 
 ```bash
-poetry run pre-commit run --all-files
+pre-commit run --all-files
 ```
 
 ## Pull Requests
