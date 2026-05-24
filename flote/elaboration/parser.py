@@ -170,9 +170,9 @@ class Parser:
 
         self.match_label("dec")
         token = self.get_current_token()
-        assert (
-            token.lexeme.isdigit()
-        ), f"Token lexeme '{token.lexeme}' is not a valid integer"
+        assert token.lexeme.isdigit(), (
+            f"Token lexeme '{token.lexeme}' is not a valid integer"
+        )
 
         size = int(token.lexeme)
         # Logically, the lexeme of a decimal token should never be a negative integer.

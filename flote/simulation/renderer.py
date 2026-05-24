@@ -109,9 +109,9 @@ class Renderer:
             if j_bus["assignment"] is not None:
                 assignment = self.render_expr(j_bus["assignment"])
 
-                assert (
-                    assignment is not None
-                ), f"Failed to render assignment for bus {j_bus['id']}"
+                assert assignment is not None, (
+                    f"Failed to render assignment for bus {j_bus['id']}"
+                )
 
                 bit_bus.assignment = assignment
 

@@ -181,8 +181,7 @@ class BitBus(Bus):
     def insert_value(self, value: str) -> None:
         if not re.fullmatch(r"[01]+", value):
             raise SimulationError(
-                f'Invalid value "{value}". Valid values are: '
-                f"{self.get_valid_values()}"
+                f'Invalid value "{value}". Valid values are: {self.get_valid_values()}'
             )
 
         if len(value) != len(self.value.raw_value):

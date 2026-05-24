@@ -283,9 +283,9 @@ class Builder:
             .bus_symbols[assign.destiny.full_id]
             .object
         )
-        assert (
-            bus is not None
-        ), f'Bus object for "{assign.destiny.full_id}" cannot be None.'
+        assert bus is not None, (
+            f'Bus object for "{assign.destiny.full_id}" cannot be None.'
+        )
         bus.assignment = assignment
 
     def vst_expr(
@@ -435,12 +435,12 @@ class Builder:
                 case _:
                     assert False, f"Unhandled binary operation: {expr_elem}"
 
-            assert (
-                expr_elem.l_expr is not None
-            ), "Left expression of operation cannot be None."
-            assert (
-                expr_elem.r_expr is not None
-            ), "Right expression of operation cannot be None."
+            assert expr_elem.l_expr is not None, (
+                "Left expression of operation cannot be None."
+            )
+            assert expr_elem.r_expr is not None, (
+                "Right expression of operation cannot be None."
+            )
             l_expr, l_size = self.vst_expr_elem(
                 expr_elem.l_expr, component_id, component
             )
