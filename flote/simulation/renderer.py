@@ -1,14 +1,14 @@
 from json import loads
 
 from . import eval_nodes
-from .buses import BaseBus, BitBus, BitBusValue
+from .buses import BitBus, BitBusValue
 from .component import Component
 
 
 class Renderer:
     def __init__(self, ir: str) -> None:
         self.ir = ir
-        self.buffer_bus_dict: dict[str, BaseBus] = {}
+        self.buffer_bus_dict: dict = {}
         self.component = self.render()
 
     def render_expr(self, j_expr) -> eval_nodes.Evaluator | None:
@@ -89,7 +89,6 @@ class Renderer:
         j_busses = j_component["busses"]
 
         for j_bus in j_busses:
-            bus: BaseBus
             type = j_bus["type"]
 
             match type:

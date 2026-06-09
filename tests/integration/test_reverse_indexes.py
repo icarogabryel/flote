@@ -7,11 +7,8 @@ from flote.elaboration.builder import SemanticalError
 
 
 def _has_rust_backend() -> bool:
-    try:
-        from flote.simulation.fpga import Renderer as _RustRenderer  # noqa: F401
-    except ImportError:
-        return False
-    return True
+    return False
+
 
 
 def _get_bus_bits(tb, bus_id: str) -> str:

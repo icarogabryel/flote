@@ -1,14 +1,12 @@
 from collections import deque
 
-from .buses import BaseBus
-
 
 class Component:
     """This class represents a component."""
 
     def __init__(self, id_: str) -> None:
         self.id_: str = id_
-        self.buses: dict[str, BaseBus] = {}
+        self.buses: dict = {}
 
     def __repr__(self):
         repr = ""

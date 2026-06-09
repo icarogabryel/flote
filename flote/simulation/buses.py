@@ -2,6 +2,8 @@ import re
 from abc import ABC, abstractmethod
 from typing import Any, Generic, Optional, TypeVar
 
+from typing_extensions import Self
+
 T = TypeVar("T")
 
 
@@ -24,37 +26,15 @@ class SimulationError(Exception):
         return self.message
 
 
-class BaseBus(ABC):
-    """This is the base class for all buses."""
-
-    def __init__(self) -> None:
-        self.id: Optional[str] = None
-        self.assignment: Any = None
-        self.value: Any = None
-        # The list of buses that the current bus depends on.
-        self.influence_list: list["BaseBus"] = []
-        self.msb_descending = False
-
-    @abstractmethod
-    def assign(self) -> None:
-        pass
-
-    @abstractmethod
-    def get_vcd_repr(self) -> str:
-        pass
-
-    def insert_value(self, value) -> None:
-        self.value = value
-
-
 class BusValue(Generic[T]):
-    """This class represents a value in the circuit."""
+    """This class represents the value of a bus in the circuit."""
 
     def __init__(self, value: T | None = None) -> None:
         self.raw_value: T = self.get_default() if value is None else value
 
     @abstractmethod
     def get_default(self) -> T:
+        """This method returns the default value of the bus."""
         pass
 
     @abstractmethod
@@ -62,35 +42,41 @@ class BusValue(Generic[T]):
         pass
 
     @abstractmethod
-    def __getitem__(self, index) -> "BusValue":
+    def __getitem__(self, slice: slice) -> Self:
         pass
 
     @abstractmethod
-    def __add__(self, other) -> "BusValue":
+    def __add__(self, other: Self) -> Self:
+        """Used for concatenation of bus values."""
         pass
 
     @abstractmethod
-    def __invert__(self) -> "BusValue":
+    def __invert__(self) -> Self:
         pass
 
     @abstractmethod
-    def __and__(self, other) -> "BusValue":
+    def __and__(self, other: Self) -> Self:
         pass
 
     @abstractmethod
-    def __or__(self, other) -> "BusValue":
+    def __or__(self, other: Self) -> Self:
         pass
 
     @abstractmethod
-    def __xor__(self, other) -> "BusValue":
+    def __xor__(self, other: Self) -> Self:
         pass
 
 
-class Bus(BaseBus):
+class Bus(Generic[T]):
     """This class represents a concrete bus in the circuit."""
 
     def __init__(self) -> None:
-        super().__init__()
+        self.id: Optional[str] = None
+        self.assignment: Any = None
+        self.value: T = self.get_default()
+        # The list of buses that the current bus depends on.
+        self.influence_list: list[Self] = []
+        self.msb_descending = False
 
     def __str__(self) -> str:
         return (
@@ -102,7 +88,7 @@ class Bus(BaseBus):
         return self.__str__()
 
     @abstractmethod
-    def get_default(self) -> BusValue:
+    def get_default(self) -> T:
         """This method returns the default value of the bus."""
         pass
 
@@ -137,6 +123,7 @@ class BitBusValue(BusValue[list[bool]]):
         return [False]
 
     # * Operators overloading
+
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, BitBusValue):
             return NotImplemented
@@ -145,25 +132,25 @@ class BitBusValue(BusValue[list[bool]]):
     def __getitem__(self, slice: slice) -> "BitBusValue":
         return BitBusValue(self.raw_value[slice])
 
-    def __add__(self, other: "BusValue[list[bool]]") -> "BitBusValue":
+    def __add__(self, other: BusValue[list[bool]]) -> BusValue[list[bool]]:
         return BitBusValue(self.raw_value + other.raw_value)
 
     def __invert__(self) -> "BitBusValue":
         return BitBusValue([not bit for bit in self.raw_value])
 
-    def __and__(self, other: "BusValue[list[bool]]") -> "BitBusValue":
+    def __and__(self, other: BusValue[list[bool]]) -> BusValue[list[bool]]:
         return BitBusValue([a and b for a, b in zip(self.raw_value, other.raw_value)])
 
-    def __or__(self, other: "BusValue[list[bool]]") -> "BitBusValue":
+    def __or__(self, other: BusValue[list[bool]]) -> BusValue[list[bool]]:
         return BitBusValue([a or b for a, b in zip(self.raw_value, other.raw_value)])
 
-    def __xor__(self, other: "BusValue[list[bool]]") -> "BitBusValue":
+    def __xor__(self, other: BusValue[list[bool]]) -> BusValue[list[bool]]:
         return BitBusValue([a ^ b for a, b in zip(self.raw_value, other.raw_value)])
 
     # * End of operators overloading
 
 
-class BitBus(Bus):
+class BitBus(Bus[BitBusValue]):
     """This class represents a bit bus in the circuit."""
 
     def get_default(self) -> BitBusValue:
