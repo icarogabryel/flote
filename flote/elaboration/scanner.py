@@ -39,7 +39,7 @@ SYMBOLS_LABELS = {
 
 
 class LexicalError(Exception):
-    def __init__(self, line_number, message):
+    def __init__(self, line_number: int, message: str):
         self.line_number = line_number
         self.message = message
 
@@ -50,10 +50,10 @@ class LexicalError(Exception):
 class Token:
     """Token class represents a lexical token with a label and a lexeme."""
 
-    def __init__(self, line_number, label, lexeme):
-        self.line_number: int = line_number
-        self.label: str = label
-        self.lexeme: str = lexeme
+    def __init__(self, line_number: int, label: str, lexeme: str):
+        self.line_number = line_number
+        self.label = label
+        self.lexeme = lexeme
 
     def __str__(self):
         return f'({self.line_number}. {self.label} - "{self.lexeme}")'
