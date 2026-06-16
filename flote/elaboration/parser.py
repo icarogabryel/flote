@@ -13,7 +13,7 @@ FIRST_SETS = {
 
 
 class SyntacticalError(Exception):
-    def __init__(self, line_number, message):
+    def __init__(self, line_number: int, message: str):
         self.line_number = line_number
         self.message = message
 
@@ -33,7 +33,7 @@ class Parser:
         """Move to the next token in the token stream."""
         self.current_token = self.token_stream.pop(0)
 
-    def get_current_token(self):
+    def get_current_token(self) -> Token:
         return self.current_token
 
     def match_label(self, expected_label):
@@ -45,14 +45,14 @@ class Parser:
                 f'Unexpected Token. Expected "{expected_label}". Got "{token.label}".',
             )
 
-    def parse(self):
+    def parse(self) -> ast_nodes.Module:
         """Start the parsing process by entering the first rule of the grammar."""
         return self.mod()
 
     # Syntactical Rules
 
     # * mod = comp, {comp};
-    def mod(self):
+    def mod(self) -> ast_nodes.Module:
         module = ast_nodes.Module()
         module.add_comp(self.comp())
 
@@ -233,7 +233,7 @@ class Parser:
         return assignment
 
     # * expr = term, exprDash
-    def expr(self):
+    def expr(self) -> ast_nodes.ExprElem:
         term = self.term()
 
         # If expr' is not an empty production (there are more operators),
@@ -249,7 +249,7 @@ class Parser:
             return term
 
     # * exprDash = ('or' | 'nor'), term, exprDash | ε
-    def expr_dash(self):
+    def expr_dash(self) -> ast_nodes.BinaryOp:
         token = self.get_current_token()
 
         if token.label == "or":
@@ -284,7 +284,7 @@ class Parser:
             return current_node
 
     # * term = fact, termDash
-    def term(self):
+    def term(self) -> ast_nodes.ExprElem:
         factor = self.fact()
 
         if self.get_current_token().label in FIRST_SETS["term_dash"]:
@@ -296,7 +296,7 @@ class Parser:
             return factor
 
     # * termDash = ("xor" | "xnor"), fact, termDash | ε;
-    def term_dash(self):
+    def term_dash(self) -> ast_nodes.BinaryOp:
         token = self.get_current_token()
 
         if token.label == "xor":
@@ -321,7 +321,7 @@ class Parser:
             return current_node
 
     # * fact = prim, factDash;
-    def fact(self):
+    def fact(self) -> ast_nodes.ExprElem:
         primary = self.prim()
 
         if self.get_current_token().label in FIRST_SETS["fact_dash"]:
@@ -333,7 +333,7 @@ class Parser:
             return primary
 
     # * factDash = ("and" | "nand"), prim, factDash | ε;
-    def fact_dash(self):
+    def fact_dash(self) -> ast_nodes.BinaryOp:
         token = self.get_current_token()
 
         if token.label == "and":
