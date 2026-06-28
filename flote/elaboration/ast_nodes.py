@@ -62,9 +62,9 @@ class Module:
 class Component:
     def __init__(self) -> None:
         self.id_: None | Identifier = None
-        self.is_main = False
+        self.is_main: bool = False
         self.stmts: list[Union[Declaration, Assignment, Instance]] = []
-        self.line_number = 0
+        self.line_number: int = 0
 
     def add_stmt(self, stmt):
         self.stmts.append(stmt)
@@ -92,11 +92,11 @@ class Component:
 class Declaration:
     def __init__(self) -> None:
         self.id_: None | Identifier = None
-        self.conn = Connection.INTERNAL
-        self.type = "bit"
+        self.conn: Connection = Connection.INTERNAL
+        self.type: str = "bit"
         self.dimension: Optional[Dimension] = None
         self.assignment_expression: Optional[ExprElem] = None
-        self.line_number = 0
+        self.line_number: int = 0
 
     def __repr__(self) -> str:
         return f"Declaration({self.id_!r}, {self.type!r})"

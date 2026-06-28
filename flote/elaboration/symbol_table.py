@@ -1,3 +1,4 @@
+from flote.elaboration import ast_nodes
 from flote.elaboration.ir.buses import BusDto
 from flote.elaboration.ir.component import ComponentDto
 
@@ -6,7 +7,13 @@ class BusSymbol:
     """Class that represents a bus symbol in the symbol table."""
 
     def __init__(
-        self, type, is_assigned, connection_type, size, object_, msb_descending: bool
+        self,
+        type: str,
+        is_assigned: bool,
+        connection_type: ast_nodes.Connection,
+        size: int,
+        object_: BusDto,
+        msb_descending: bool,
     ):
         self.type = type
         self.is_assigned = is_assigned

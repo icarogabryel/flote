@@ -9,7 +9,7 @@ from .representation import JsonRepresentation
 
 class ExprNode(JsonRepresentation):
     @abstractmethod
-    def get_sensitivity_list(self) -> list:
+    def get_sensitivity_list(self) -> list[BusDto]:
         return []
 
 
@@ -29,7 +29,7 @@ class Ref(ExprNode):
     def __str__(self) -> str:
         return f"Ref ({self.bus.id_})"
 
-    def get_sensitivity_list(self):
+    def get_sensitivity_list(self) -> list[BusDto]:
         return [self.bus]
 
     def to_json(self):
@@ -67,7 +67,7 @@ class Conc(ExprNode):
             "args": {"exprs": [expr.to_json() for expr in self.exprs]},
         }
 
-    def get_sensitivity_list(self):
+    def get_sensitivity_list(self) -> list[BusDto]:
         sensitivity_list: list[BusDto] = []
 
         for expr in self.exprs:
@@ -91,7 +91,7 @@ class Const(ExprNode):
     def to_json(self):
         return {"type": "const", "args": {"value": self.value}}
 
-    def get_sensitivity_list(self):
+    def get_sensitivity_list(self) -> list[BusDto]:
         return []
 
 
@@ -101,7 +101,7 @@ class UnaryOperation(ExprNode):
     def __init__(self, expr: ExprNode) -> None:
         self.expr = expr
 
-    def get_sensitivity_list(self):
+    def get_sensitivity_list(self) -> list[BusDto]:
         return self.expr.get_sensitivity_list()
 
 
