@@ -6,27 +6,24 @@ Base Bus class and its std subclasses.
 from __future__ import annotations
 
 from abc import abstractmethod
-from typing import TYPE_CHECKING, Any, Generic, Optional, TypeVar
+from typing import TYPE_CHECKING, Any, Optional
 
 from .representation import JsonRepresentation
 
 if TYPE_CHECKING:
-    from .expr_nodes import ExprNode  # noqa: F401
-
-AssignType = TypeVar("AssignType")
-ValueType = TypeVar("ValueType")
+    from .expr_nodes import ExprNode
 
 
-class BaseBusDto(Generic[AssignType, ValueType], JsonRepresentation):
+class BusDto(JsonRepresentation):
     """This class represents a bus in the circuit."""
 
     def __init__(self) -> None:
         self.id_: Optional[str] = None  # The id of the bus.
         self.type: Optional[str] = None  # The type of the bus.
-        self.assignment: AssignType | None = None
-        self.value: ValueType = self.get_default()  # The value of the bus.
+        self.assignment: ExprNode | None = None
+        self.value: Any = self.get_default()  # The value of the bus.
         # The list of buses that the current bus depends on.
-        self.influence_list: list[BaseBusDto[AssignType, ValueType]] = []
+        self.influence_list: list[BusDto] = []
 
     def __str__(self) -> str:
         return (
@@ -35,23 +32,11 @@ class BaseBusDto(Generic[AssignType, ValueType], JsonRepresentation):
             f" Value: {self.value}"
         )
 
-    @abstractmethod
-    def get_default(self) -> ValueType:
-        """This method returns the default value of the bus."""
-        pass
-
-
-class BusDto(BaseBusDto["ExprNode", Any]):
-    """This class represents a bus in the circuit."""
-
-    def __init__(self) -> None:
-        super().__init__()
-
     def make_influence_list(self) -> None:
         """This method adds an assignment to the bus."""
-        sensitivity_list = (
-            self.assignment.get_sensitivity_list() if self.assignment else []
-        )
+        sensitivity_list: list[BusDto] = []
+        if self.assignment:
+            sensitivity_list = self.assignment.get_sensitivity_list()
 
         for bus in sensitivity_list:
             if self not in bus.influence_list:
