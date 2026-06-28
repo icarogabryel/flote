@@ -20,7 +20,7 @@ class BusDto(JsonRepresentation):
     def __init__(self) -> None:
         self.id_: Optional[str] = None  # The id of the bus.
         self.type: Optional[str] = None  # The type of the bus.
-        self.assignment: ExprNode | None = None
+        self.assignment: Optional[ExprNode] = None
         self.value: Any = self.get_default()  # The value of the bus.
         # The list of buses that the current bus depends on.
         self.influence_list: list[BusDto] = []
