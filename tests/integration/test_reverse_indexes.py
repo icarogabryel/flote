@@ -10,7 +10,6 @@ def _has_rust_backend() -> bool:
     return False
 
 
-
 def _get_bus_bits(tb, bus_id: str) -> str:
     comp = tb.component
     if hasattr(comp, "busses"):

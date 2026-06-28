@@ -4,21 +4,16 @@ from flote.elaboration.scanner import END_OF_FILE, LexicalError, Scanner, Token
 
 
 def tokens_to_tuples(tokens: list[Token]) -> list[tuple[int, str, str]]:
-    return [
-        (token.line_number, token.label, token.lexeme)
-        for token in tokens
-    ]
+    return [(token.line_number, token.label, token.lexeme) for token in tokens]
 
 
 def test_track_lines_with_comments_and_newlines():
-    code = (
-        """// ignored line
+    code = """// ignored line
         comp Test {
             in bit a;
 
             out bit y = a;
         }"""
-    )
     token_stream = Scanner(code).token_stream
     assert tokens_to_tuples(token_stream) == [
         (2, "comp", "comp"),
@@ -65,9 +60,7 @@ def test_scans_eof_for_empty_or_ignored_input(
         "foo_123",
     ],
 )
-def test_keywords_embedded_in_identifiers_scan_as_identifiers(
-    code: str
-):
+def test_keywords_embedded_in_identifiers_scan_as_identifiers(code: str):
     token_stream = Scanner(code).token_stream
     tuples = [(label, lexeme) for _, label, lexeme in tokens_to_tuples(token_stream)]
     assert tuples == [("id", code), ("EOF", END_OF_FILE)]
