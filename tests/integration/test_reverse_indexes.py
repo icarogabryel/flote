@@ -14,7 +14,7 @@ def _get_bus_bits(tb, bus_id: str) -> str:
     comp = tb.component
     if hasattr(comp, "busses"):
         return comp.busses[bus_id]
-    return comp.buses[bus_id].get_vcd_repr()
+    return comp.buses[bus_id].value.get_vcd_repr()
 
 
 def test_netlist_marks_descending_msb():

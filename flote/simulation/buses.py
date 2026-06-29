@@ -162,9 +162,6 @@ class BitBus(Bus[BitBusValue]):
     def get_valid_values(self) -> list[str]:
         return ["[01]+"]
 
-    def get_vcd_repr(self) -> str:
-        return "".join(["1" if bit else "0" for bit in self.value.raw_value])
-
     def insert_value(self, value: str) -> None:
         if not re.fullmatch(r"[01]+", value):
             raise SimulationError(
