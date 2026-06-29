@@ -1,12 +1,14 @@
 from collections import deque
 
+from flote.simulation.buses import BitBusValue, Bus
+
 
 class Component:
     """This class represents a component."""
 
     def __init__(self, id_: str) -> None:
         self.id_: str = id_
-        self.buses: dict = {}
+        self.buses: dict[str, Bus[BitBusValue]] = {}
 
     def __repr__(self):
         repr = ""

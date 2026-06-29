@@ -8,10 +8,10 @@ from .component import Component
 class Renderer:
     def __init__(self, ir: str) -> None:
         self.ir = ir
-        self.buffer_bus_dict: dict = {}
+        self.buffer_bus_dict = {}
         self.component = self.render()
 
-    def render_expr(self, j_expr) -> eval_nodes.Evaluator | None:
+    def render_expr(self, j_expr: dict) -> eval_nodes.Evaluator | None:
         """Render an expression from an intermediate representation (IR) json string.
 
         Args:
