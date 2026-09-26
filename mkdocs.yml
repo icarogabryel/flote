@@ -7,7 +7,7 @@ repo_name: icarogabryel/flote
 theme:
   name: material
   logo: brand/logo.svg
-  favicon: brand/favicon.ico
+  favicon: brand/favicon.svg
   palette:
     - media: "(prefers-color-scheme: light)"
       scheme: default
