@@ -58,3 +58,5 @@ nav:
   - User Guide:
       - Basic Concepts: guide/basic-concepts.md
       - Syntax Reference: guide/syntax-reference.md
+  - Architecture: ARCHITECTURE.md
+  - Roadmap: ROADMAP.md
