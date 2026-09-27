@@ -7,8 +7,8 @@ from datetime import datetime
 
 from .simulation.component import Component
 
-VERSION = "1.0.0"
-CODENAME = "Bilu"
+VERSION = "0.0.6"
+CODENAME = "Gambiarra"
 VALID_UNITS = ["fs", "ps", "ns", "us", "ms", "s"]
 
 
