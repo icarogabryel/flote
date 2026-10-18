@@ -8,7 +8,6 @@ license = { file = "LICENSE" }
 classifiers = [
     "Programming Language :: Rust",
     "Programming Language :: Python :: Implementation :: CPython",
-    "Programming Language :: Python :: Implementation :: PyPy",
 ]
 
 [build-system]
@@ -27,7 +26,7 @@ dev = [
 
 [tool.maturin]
 features = ["pyo3/extension-module"]
-module-name = "flote.simulation.fpga"
+module-name = "flote.rust_simulation"
 
 [tool.ruff]
 line-length = 88

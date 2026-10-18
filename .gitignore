@@ -7,10 +7,11 @@
 # Python files
 __pycache__/
 .pytest_cache/
-*.py[cod]
 
 # Compiled shared objects
 *.so
+*.pyd
+*.pdb
 
 # Cargo files
 target/
