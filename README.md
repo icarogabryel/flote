@@ -8,7 +8,7 @@
 <br />
 
   <img
-    src="https://img.shields.io/github/stars/icarogabryel/flote?style=flat&logo=github&color=yellow"
+    src="https://img.shields.io/github/stars/icarogabryel/flote?style=flat&color=yellow"
     alt="GitHub Repo stars"
   />
   <img
@@ -129,13 +129,14 @@ Your support helps keep the project alive and thriving.
   <i>
     Flote is an open-source project developed as part of academic research.
   </i>
-
+  <br />
   <i>
    Made
     in Brazil at CESLa (Circuits and Embedded Systems Laboratory) of the Federal
     University of Piauí — and in my humble bedroom.
   </i>
 
+  <br />
   <br />
 
   <img
