@@ -117,6 +117,8 @@ The documentation can be found at
   />
 </div>
 
+<br />
+
 If Flote helps you, consider supporting its development on
 [GitHub Sponsors](https://github.com/sponsors/icarogabryel) or a PIX donation to
 the key `icaro.gabryel@outlook.com` if you are in Brazil.
