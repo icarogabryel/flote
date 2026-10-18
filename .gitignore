@@ -1,23 +1,17 @@
-# IDE files
-.vscode/
-
 # Virtual environment
 .venv/
 
-# Python files
+# Python cache
 __pycache__/
 .pytest_cache/
 
-# Compiled shared objects
+# Compiled objects
 *.so
 *.pyd
 *.pdb
 
 # Cargo files
 target/
-
-# Wave files
-*.vcd
 
 # MkDocs build output
 site/
