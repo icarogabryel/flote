@@ -7,3 +7,5 @@ netlist
 popleft
 subcomponent
 subcomponents
+systemverilog
+Verilog
