@@ -4,7 +4,9 @@ from .buses import BitBusValue, Bus, BusValue, Evaluator
 class Ref(Evaluator):
     """This class represents a reference to a bus in the circuit."""
 
-    def __init__(self, bus: Bus[BitBusValue], range_begin: int | None, range_end: int | None):
+    def __init__(
+        self, bus: Bus[BitBusValue], range_begin: int | None, range_end: int | None
+    ) -> None:
         self.bus = bus
         self.range_begin = range_begin
         self.range_end = range_end

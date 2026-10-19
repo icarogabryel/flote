@@ -1,6 +1,6 @@
 """
-This module have classes responsible for registering the signals values and
-controlling time in them simulation.
+This module have classes responsible for registering the signals values and controlling
+time in them simulation.
 """
 
 from datetime import datetime
