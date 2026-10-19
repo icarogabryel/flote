@@ -23,10 +23,10 @@
     src="https://img.shields.io/github/license/icarogabryel/flote"
     alt="License"
   />
-  <img
+  <!-- <img
     src="https://img.shields.io/github/actions/workflow/status/icarogabryel/flote/CI.yml"
     alt="Build Status"
-  />
+  /> -->
 </div>
 
 ## 🛸 Introduction
