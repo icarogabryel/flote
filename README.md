@@ -87,19 +87,23 @@ flowchart LR
   subgraph BE[Backend]
     direction LR
     F[Renderer] --> G[Simulation Component]
-    G --> H[TestBench]
-    H --> I[VCD dump]
   end
 
   E --> F
+  G --> H[TestBench]
+  H --> I[VCD dump]
 
   classDef frontend fill:#EAF5FF,stroke:#1D70B8,stroke-width:1px,color:#0B3A5B;
   classDef backend fill:#EAFBEA,stroke:#2E7D32,stroke-width:1px,color:#1B5E20;
   classDef bridge fill:#FFF4CC,stroke:#8A6D1A,stroke-width:2px,color:#5D4500;
+  classDef source fill:#F3E8FF,stroke:#7E22CE,stroke-width:1px,color:#581C87;
+  classDef testbench fill:#FFE4E6,stroke:#BE123C,stroke-width:1px,color:#881337;
 
+  class A,I source;
   class B,C,D frontend;
-  class F,G,H,I backend;
+  class F,G backend;
   class E bridge;
+  class H testbench;
 ```
 
 ## 📚 Documentation
