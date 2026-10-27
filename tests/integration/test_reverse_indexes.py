@@ -6,10 +6,6 @@ import flote
 from flote.elaboration.builder import SemanticalError
 
 
-def _has_rust_backend() -> bool:
-    return False
-
-
 def _get_bus_bits(tb, bus_id: str) -> str:
     comp = tb.component
     if hasattr(comp, "busses"):
@@ -54,35 +50,27 @@ def test_invalid_slice_order_on_descending_bus():
         flote.get_netlist(code)
 
 
-@pytest.mark.parametrize("rust_backend", [False, True])
-def test_reverse_index_value(rust_backend: bool):
-    if rust_backend and not _has_rust_backend():
-        pytest.skip("Rust backend not available")
-
+def test_reverse_index_value():
     code = """
     comp Test {
         in bit[-8] a;
         out bit y = a[1];
     }
     """
-    tb = flote.elaborate(code, rust_backend=rust_backend)
+    tb = flote.elaborate(code)
     tb.update({"a": "00000010"})
 
     assert _get_bus_bits(tb, "y") == "1"
 
 
-@pytest.mark.parametrize("rust_backend", [False, True])
-def test_reverse_slice_value(rust_backend: bool):
-    if rust_backend and not _has_rust_backend():
-        pytest.skip("Rust backend not available")
-
+def test_reverse_slice_value():
     code = """
     comp Test {
         in bit[-8] a;
         out bit[2] y = a[1:0];
     }
     """
-    tb = flote.elaborate(code, rust_backend=rust_backend)
+    tb = flote.elaborate(code)
     tb.update({"a": "00000010"})
 
     assert _get_bus_bits(tb, "y") == "10"
