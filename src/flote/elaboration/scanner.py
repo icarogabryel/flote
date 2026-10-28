@@ -43,7 +43,7 @@ class LexicalError(Exception):
         self.line_number = line_number
         self.message = message
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"Lexical error at line {self.line_number}: {self.message}"
 
 
@@ -55,10 +55,10 @@ class Token:
         self.label = label
         self.lexeme = lexeme
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f'({self.line_number}. {self.label} - "{self.lexeme}")'
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return self.__str__()
 
 
@@ -76,7 +76,7 @@ class Scanner:
         self.index = 0  # Current index in the code string
         self.token_stream: list[Token] = self.get_token_stream()
 
-    def advance(self):
+    def advance(self) -> None:
         """
         Advance the index to the next character and update line number if necessary.
         """
@@ -92,7 +92,7 @@ class Scanner:
     def is_eof(self) -> bool:
         return True if self.get_char() == END_OF_FILE else False
 
-    def skip_ignored(self):
+    def skip_ignored(self) -> None:
         """
         Skip ignored characters and comments until a non-ignored character or
         END_OF_FILE is found.
