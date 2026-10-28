@@ -9,6 +9,7 @@ classifiers = [
     "Programming Language :: Rust",
     "Programming Language :: Python :: Implementation :: CPython",
 ]
+dependencies = []
 
 [build-system]
 requires = ["maturin>=1.13,<2.0"]
@@ -18,10 +19,10 @@ build-backend = "maturin"
 dev = [
     "maturin>=1.13.3",
     "mkdocs-material>=9.7.6",
+    "mypy>=2.4.0",
     "pre-commit>=4.6.0",
     "pytest>=9.0.3",
     "ruff>=0.15.14",
-    "ty>=0.0.45",
 ]
 
 [tool.maturin]
@@ -34,3 +35,8 @@ target-version = "py310"
 
 [tool.ruff.lint]
 select = ["E", "F", "I"]
+
+[tool.mypy]
+python_version = "3.10"
+strict = true
+files = ["src/flote"]

@@ -3,13 +3,19 @@ repos:
     hooks:
       - id: ruff-check
         name: ruff check
-        entry: poetry run ruff check
+        entry: uv run ruff check
         args: [--fix]
         language: system
         types_or: [python, pyi]
 
       - id: ruff-format
         name: ruff format
-        entry: poetry run ruff format
+        entry: uv run ruff format
+        language: system
+        types_or: [python, pyi]
+
+      - id: mypy
+        name: Mypy
+        entry: uv run mypy
         language: system
         types_or: [python, pyi]
