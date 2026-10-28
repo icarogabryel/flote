@@ -26,7 +26,7 @@ def test_skip_ignored(
     code: str,
     expected_index: int,
     expected_line: int,
-):
+) -> None:
     scanner.code = code + END_OF_FILE
 
     scanner.skip_ignored()
@@ -48,7 +48,7 @@ def test_advance(
     code: str,
     expected_index: int,
     expected_line: int,
-):
+) -> None:
     scanner.code = code + END_OF_FILE
 
     scanner.advance()
@@ -70,7 +70,7 @@ def test_get_token_stream(
     scanner: Scanner,
     code: str,
     expected_tokens: list[tuple[str, str, int]],
-):
+) -> None:
     scanner.code = code + END_OF_FILE
     scanner.index = 0
     scanner.line_number = 1
@@ -98,7 +98,7 @@ def test_scan_lexeme(
     code: str,
     expected_lexeme: str,
     expected_index: int,
-):
+) -> None:
     scanner.code = code + END_OF_FILE
 
     lexeme = scanner.scan_lexeme()
@@ -125,7 +125,7 @@ def test_get_token(
     expected_label: str,
     expected_lexeme: str,
     expected_line: int,
-):
+) -> None:
     scanner.code = code + END_OF_FILE
 
     token = scanner.get_token()
@@ -149,11 +149,11 @@ class TestScanner:
     )
     def test_scans_eof_for_empty_or_ignored_input(
         self, code: str, expected: list[tuple[int, str, str]]
-    ):
+    ) -> None:
         token_stream = Scanner(code).token_stream
         assert tokens_to_tuples(token_stream) == expected
 
-    def test_track_lines_with_comments_and_newlines(self):
+    def test_track_lines_with_comments_and_newlines(self) -> None:
         code = """// ignored line
             comp Test {
                 in bit a;  // ignored comment
@@ -187,7 +187,9 @@ class TestScanner:
             "bit_field",
         ],
     )
-    def test_keywords_embedded_in_identifiers_scan_as_identifiers(self, code: str):
+    def test_keywords_embedded_in_identifiers_scan_as_identifiers(
+        self, code: str
+    ) -> None:
         token_stream = Scanner(code).token_stream
         tuples = [
             (label, lexeme) for _, label, lexeme in tokens_to_tuples(token_stream)
@@ -201,7 +203,7 @@ class TestScanner:
             "007",
         ],
     )
-    def test_rejects_decimal_numbers_with_leading_zero(self, code: str):
+    def test_rejects_decimal_numbers_with_leading_zero(self, code: str) -> None:
         with pytest.raises(LexicalError, match="Decimal number can not begin with 0"):
             Scanner(code)
 
@@ -213,7 +215,7 @@ class TestScanner:
             "$",
         ],
     )
-    def test_rejects_invalid_characters(self, code: str):
+    def test_rejects_invalid_characters(self, code: str) -> None:
         with pytest.raises(LexicalError, match="Invalid character"):
             Scanner(code)
 
@@ -226,6 +228,6 @@ class TestScanner:
             "123abc",
         ],
     )
-    def test_rejects_invalid_lexemes(self, code: str):
+    def test_rejects_invalid_lexemes(self, code: str) -> None:
         with pytest.raises(LexicalError, match="Invalid lexeme"):
             Scanner(code)
