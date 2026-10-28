@@ -135,7 +135,6 @@ class Scanner:
     def get_token(self) -> Token:
         """Get the next token from the code."""
         self.skip_ignored()
-        token = None
 
         if self.is_eof():  # First, check if we reached the end of the code.
             token = Token(self.line_number, "EOF", END_OF_FILE)
@@ -180,7 +179,7 @@ class Scanner:
         """
         Generate the token stream by repeatedly calling get_token until EOF is reached.
         """
-        token_stream = []
+        token_stream: list[Token] = []
 
         while True:
             token = self.get_token()
