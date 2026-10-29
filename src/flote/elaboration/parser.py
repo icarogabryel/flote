@@ -385,25 +385,25 @@ class Parser:
             else:
                 reference = identifier
 
-            ref = ast_nodes.Reference(reference)
-
+            range_begin = None
+            range_end = None
             if self.get_current_token().label == "l_bracket":
                 self.advance()
 
                 self.match_label("dec")
-                ref.range_begin = int(self.get_current_token().lexeme)
+                range_begin = int(self.get_current_token().lexeme)
                 self.advance()
 
                 if self.get_current_token().label == "colon":
                     self.advance()
                     self.match_label("dec")
-                    ref.range_end = int(self.get_current_token().lexeme)
+                    range_end = int(self.get_current_token().lexeme)
                     self.advance()
 
                 self.match_label("r_bracket")
                 self.advance()
 
-            return ref
+            return ast_nodes.Reference(reference, range_begin, range_end)
         # prim = BIT_FD;
         elif token_label == "bit_field":
             value = self.get_current_token().lexeme.strip('"')

@@ -275,12 +275,11 @@ class XnorOp(BinaryOp):
 
 class Reference:
     def __init__(
-        self,
-        identifier: BaseIdentifier,
+        self, identifier: BaseIdentifier, range_begin: None | int, range_end: None | int
     ) -> None:
         self.id_ = identifier
-        self.range_begin: None | int = None
-        self.range_end: None | int = None
+        self.range_begin = range_begin
+        self.range_end = range_end
 
     def __repr__(self) -> str:
         return f"Reference: {self.id_!r}[{self.range_begin}:{self.range_end}]"
