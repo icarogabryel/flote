@@ -55,6 +55,9 @@ class Token:
         self.label = label
         self.lexeme = lexeme
 
+    def get_id_info(self) -> tuple[str, int]:
+        return self.lexeme, self.line_number
+
     def __str__(self) -> str:
         return f'({self.line_number}. {self.label} - "{self.lexeme}")'
 

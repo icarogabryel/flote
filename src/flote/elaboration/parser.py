@@ -73,7 +73,7 @@ class Parser:
         line_number = self.get_current_token().line_number
         self.advance()
         self.match_label("id")
-        identifier = ast_nodes.Identifier(self.get_current_token().lexeme)
+        identifier = ast_nodes.Identifier(*self.get_current_token().get_id_info())
         self.advance()
         self.match_label("l_brace")
         self.advance()
@@ -127,13 +127,15 @@ class Parser:
             dimension = self.dim()
 
         self.match_label("id")
-        identifiers = [ast_nodes.Identifier(self.get_current_token().lexeme)]
+        identifiers = [ast_nodes.Identifier(*self.get_current_token().get_id_info())]
         self.advance()
 
         while self.get_current_token().label == "comma":
             self.advance()
             self.match_label("id")
-            identifiers.append(ast_nodes.Identifier(self.get_current_token().lexeme))
+            identifiers.append(
+                ast_nodes.Identifier(*self.get_current_token().get_id_info())
+            )
             self.advance()
 
         assignment_expression = None
@@ -194,9 +196,7 @@ class Parser:
         destiny: None | ast_nodes.Identifier | ast_nodes.Member = None
 
         self.match_label("id")
-        token = self.get_current_token()
-        identifier = ast_nodes.Identifier(token.lexeme)
-        identifier.line_number = token.line_number
+        identifier = ast_nodes.Identifier(*self.get_current_token().get_id_info())
         self.advance()
 
         if self.get_current_token().label == "dot":
@@ -206,9 +206,7 @@ class Parser:
             member_access.object = identifier
 
             self.match_label("id")
-            token = self.get_current_token()
-            member = ast_nodes.Identifier(token.lexeme)
-            member.line_number = token.line_number
+            member = ast_nodes.Identifier(*self.get_current_token().get_id_info())
             self.advance()
 
             member_access.member = member
@@ -363,10 +361,7 @@ class Parser:
         if (token_label := token.label) == "not":
             self.advance()
 
-            node = ast_nodes.NotOp()
-            node.expr = self.prim()
-
-            return node
+            return ast_nodes.NotOp(self.prim())
         # prim = "(", expr, ")";
         elif token_label == "l_paren":
             self.advance()
@@ -379,8 +374,7 @@ class Parser:
         elif token_label == "id":
             reference: None | ast_nodes.Identifier | ast_nodes.Member = None
 
-            identifier = ast_nodes.Identifier(token.lexeme)
-            identifier.line_number = token.line_number
+            identifier = ast_nodes.Identifier(token.lexeme, token.line_number)
             self.advance()
 
             if self.get_current_token().label == "dot":
@@ -391,13 +385,12 @@ class Parser:
 
                 self.match_label("id")
                 token = self.get_current_token()
-                member = ast_nodes.Identifier(token.lexeme)
-                member.line_number = token.line_number
+                member = ast_nodes.Identifier(token.lexeme, token.line_number)
                 self.advance()
 
                 member_access.member = member
 
-                reference = member_access
+                reference = member_access  # TODO change name
             else:
                 reference = identifier
 

@@ -144,9 +144,10 @@ class BaseIdentifier(ABC):
 
 
 class Identifier(BaseIdentifier):  # TODO put line number in constructor
-    def __init__(self, value: str) -> None:
+    def __init__(self, value: str, line_number: int) -> None:
         super().__init__()
         self.value = value
+        self.line_number = line_number
 
     def __repr__(self) -> str:
         return f'Identifier: "{self.value}"'
@@ -227,24 +228,21 @@ class Assignment:
 
 
 class UnaryOp(ABC):
-    def __init__(self) -> None:  # TODO add line number?
-        self.expr: None | ExprElem = None  # TODO put in constructor?
+    def __init__(self, expr: ExprElem) -> None:
+        self.expr = expr
 
     @abstractmethod
     def __repr__(self) -> str:
         pass
 
     def __str__(self) -> str:
-        desc = f"{self.__class__.__name__}"
-        if self.expr is not None:
-            desc += _format_child("expr", self.expr)
-        return desc
+        return f"{self.__class__.__name__}"
 
 
 # Binary op can't have all attributes in constructor because of the left recursion
 class BinaryOp(ABC):
     def __init__(self, line_number: int) -> None:
-        self.line_number = line_number  # TODO see if still used
+        self.line_number = line_number  # Used in the Builder
         self.l_expr: None | ExprElem = None
         self.r_expr: None | ExprElem = None
 
