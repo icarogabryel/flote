@@ -126,16 +126,8 @@ class Declaration:
 
 
 class BaseIdentifier(ABC):
-    def __init__(self) -> None:
-        self._line_number: None | int = None
-
-    @property
-    def line_number(self) -> None | int:
-        return self._line_number
-
-    @line_number.setter
-    def line_number(self, value: None | int) -> None:
-        self._line_number = value
+    def __init__(self, line_number: int) -> None:
+        self.line_number = line_number
 
     @property
     @abstractmethod
@@ -143,11 +135,10 @@ class BaseIdentifier(ABC):
         pass
 
 
-class Identifier(BaseIdentifier):  # TODO put line number in constructor
+class Identifier(BaseIdentifier):
     def __init__(self, value: str, line_number: int) -> None:
-        super().__init__()
+        super().__init__(line_number)
         self.value = value
-        self.line_number = line_number
 
     def __repr__(self) -> str:
         return f'Identifier: "{self.value}"'
@@ -160,41 +151,27 @@ class Identifier(BaseIdentifier):  # TODO put line number in constructor
         return self.value
 
 
-class Member(BaseIdentifier):  # TODO Check if is possible to make a constructor
-    def __init__(self) -> None:
-        self.object: None | Identifier = None
-        self.member: None | Identifier = None
+class MemberAccess(BaseIdentifier):
+    def __init__(self, object_: Identifier, member: Identifier) -> None:
+        super().__init__(object_.line_number)
+        self.object_ = object_
+        self.member = member
 
     def __repr__(self) -> str:
-        return f"Member({self.object!r}, {self.member!r})"
+        return f"Member({self.object_!r}, {self.member!r})"
 
     def __str__(self) -> str:
-        desc = "Member:"
-
-        if self.object is not None:
-            desc += _format_child("object", self.object)
-        if self.member is not None:
-            desc += _format_child("member", self.member)
+        desc = (
+            "Member:"
+            + _format_child("object", self.object_)
+            + _format_child("member", self.member)
+        )
 
         return desc
 
     @property
     def full_id(self) -> str:
-        obj_id = self.object.full_id if self.object else ""
-        mem_id = self.member.full_id if self.member else ""
-
-        return f"{obj_id}.{mem_id}"
-
-    @property
-    def line_number(self) -> None | int:
-        if self.object and self.object.line_number:
-            return self.object.line_number
-
-        return None
-
-    @line_number.setter
-    def line_number(self, value: None | int) -> None:
-        assert False, "Cannot set line_number on Member directly."
+        return f"{self.object_.value}.{self.member.value}"
 
 
 class Dimension:
@@ -299,13 +276,11 @@ class XnorOp(BinaryOp):
 class Reference:
     def __init__(
         self,
-        id_: BaseIdentifier,
-        range_begin: None | int = None,
-        range_end: None | int = None,
+        identifier: BaseIdentifier,
     ) -> None:
-        self.id_: BaseIdentifier = id_
-        self.range_begin: None | int = range_begin
-        self.range_end: None | int = range_end
+        self.id_ = identifier
+        self.range_begin: None | int = None
+        self.range_end: None | int = None
 
     def __repr__(self) -> str:
         return f"Reference: {self.id_!r}[{self.range_begin}:{self.range_end}]"

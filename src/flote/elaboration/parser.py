@@ -191,27 +191,23 @@ class Parser:
 
         return ast_nodes.Dimension(msb, size)
 
-    # asmt = (ID | memb), "=", expr, ";";
+    # asmt = (ID | mbac), "=", expr, ";";
     def asmt(self) -> ast_nodes.Assignment:
-        destiny: None | ast_nodes.Identifier | ast_nodes.Member = None
+        destiny: None | ast_nodes.Identifier | ast_nodes.MemberAccess = None
 
         self.match_label("id")
         identifier = ast_nodes.Identifier(*self.get_current_token().get_id_info())
         self.advance()
 
         if self.get_current_token().label == "dot":
+            object_ = identifier
             self.advance()
-
-            member_access = ast_nodes.Member()
-            member_access.object = identifier
 
             self.match_label("id")
             member = ast_nodes.Identifier(*self.get_current_token().get_id_info())
             self.advance()
 
-            member_access.member = member
-
-            destiny = member_access  # TODO change name
+            destiny = ast_nodes.MemberAccess(object_, member)
         else:
             destiny = identifier
 
@@ -372,25 +368,20 @@ class Parser:
             return expr
         # prim = ref;
         elif token_label == "id":
-            reference: None | ast_nodes.Identifier | ast_nodes.Member = None
+            reference: None | ast_nodes.Identifier | ast_nodes.MemberAccess = None
 
             identifier = ast_nodes.Identifier(token.lexeme, token.line_number)
             self.advance()
 
             if self.get_current_token().label == "dot":
+                object_ = identifier
                 self.advance()
-
-                member_access = ast_nodes.Member()
-                member_access.object = identifier
 
                 self.match_label("id")
-                token = self.get_current_token()
-                member = ast_nodes.Identifier(token.lexeme, token.line_number)
+                member = ast_nodes.Identifier(*self.get_current_token().get_id_info())
                 self.advance()
 
-                member_access.member = member
-
-                reference = member_access  # TODO change name
+                reference = ast_nodes.MemberAccess(object_, member)
             else:
                 reference = identifier
 
