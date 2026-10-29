@@ -64,7 +64,7 @@ class Component:
         line_number: int,
         is_main: bool,
         statements: list["Declaration |Assignment | Instance"],
-    ):
+    ) -> None:
         self.identifier = identifier
         self.line_number = line_number
         self.is_main = is_main

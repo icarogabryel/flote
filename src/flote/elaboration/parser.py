@@ -13,7 +13,7 @@ FIRST_SETS = {
 
 
 class SyntacticalError(Exception):
-    def __init__(self, line_number: int, message: str):
+    def __init__(self, line_number: int, message: str) -> None:
         self.line_number = line_number
         self.message = message
 
