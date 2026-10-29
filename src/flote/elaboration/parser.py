@@ -17,7 +17,7 @@ class SyntacticalError(Exception):
         self.line_number = line_number
         self.message = message
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"Syntactical Error at line {self.line_number}: {self.message}"
 
 
@@ -29,14 +29,15 @@ class Parser:
         self.current_token = self.token_stream.pop(0)
         self.ast = self.parse()
 
-    def advance(self):
+    def advance(self) -> None:
         """Move to the next token in the token stream."""
         self.current_token = self.token_stream.pop(0)
 
     def get_current_token(self) -> Token:
         return self.current_token
 
-    def match_label(self, expected_label):
+    def match_label(self, expected_label: str) -> None:
+        """Validate that the current token matches the expected label."""
         token = self.get_current_token()
 
         if token.label != expected_label:
@@ -51,49 +52,52 @@ class Parser:
 
     # Syntactical Rules
 
-    # * mod = comp, {comp};
+    # mod = comp, {comp};
     def mod(self) -> ast_nodes.Module:
-        module = ast_nodes.Module()
-        module.add_comp(self.comp())
+        components: list[ast_nodes.Component] = [self.comp()]
 
         while self.get_current_token().label in FIRST_SETS["comp"]:
-            module.add_comp(self.comp())
+            components.append(self.comp())
 
         self.match_label("EOF")
-        return module
+        return ast_nodes.Module(components)
 
-    # * comp = ['main'], 'comp', ID, '{', {stmt}, '}'
-    def comp(self):
-        component = ast_nodes.Component()
-
+    # comp = ['main'], 'comp', ID, '{', {stmt}, '}'
+    def comp(self) -> ast_nodes.Component:
+        is_main = False
         if self.get_current_token().label == "main":
-            component.is_main = True
+            is_main = True
             self.advance()
 
         self.match_label("comp")
-        component.line_number = self.get_current_token().line_number
+        line_number = self.get_current_token().line_number
         self.advance()
         self.match_label("id")
-        component.id_ = ast_nodes.Identifier(self.get_current_token().lexeme)
+        identifier = ast_nodes.Identifier(self.get_current_token().lexeme)
         self.advance()
         self.match_label("l_brace")
         self.advance()
 
+        statements: list[
+            ast_nodes.Declaration | ast_nodes.Assignment | ast_nodes.Instance
+        ] = []
         while self.get_current_token().label in FIRST_SETS["stmt"]:
             result = self.stmt()
-            if isinstance(result, list):
+            if isinstance(result, list):  # decl() always return a list of Declaration
                 for stmt in result:
-                    component.add_stmt(stmt)
+                    statements.append(stmt)
             else:
-                component.add_stmt(result)
+                statements.append(result)
 
         self.match_label("r_brace")
         self.advance()
 
-        return component
+        return ast_nodes.Component(identifier, line_number, is_main, statements)
 
-    # * stmt = decl | asmt | inst
-    def stmt(self):
+    # stmt = decl | asmt | inst
+    def stmt(
+        self,
+    ) -> list[ast_nodes.Declaration] | ast_nodes.Assignment | ast_nodes.Instance:
         if (label := self.get_current_token().label) in FIRST_SETS["decl"]:
             return self.decl()
         elif label == "id":
@@ -103,16 +107,16 @@ class Parser:
         else:
             assert False, f"Unexpected Token: {label}"
 
-    # * decl = ['in' | 'out'], 'bit', [dimension], ID, {',' ID}, ['=', expr], ';';
-    def decl(self):
-        conn = ast_nodes.Connection.INTERNAL
-
+    # decl = ['in' | 'out'], 'bit', [dim], ID, {',' ID}, ['=', expr], ';';
+    def decl(self) -> list[ast_nodes.Declaration]:
         if self.get_current_token().label == "in":
             conn = ast_nodes.Connection.INPUT
             self.advance()
         elif self.get_current_token().label == "out":
             conn = ast_nodes.Connection.OUTPUT
             self.advance()
+        else:
+            conn = ast_nodes.Connection.INTERNAL
 
         self.match_label("bit")
         line_number = self.get_current_token().line_number
@@ -140,24 +144,21 @@ class Parser:
         self.match_label("semicolon")
         self.advance()
 
-        declarations = []
+        declarations: list[ast_nodes.Declaration] = []
         for id_ in identifiers:
-            declaration = ast_nodes.Declaration()
-            declaration.conn = conn
-            declaration.line_number = line_number
-            declaration.type = "bit"
-            declaration.dimension = dimension
-            declaration.id_ = id_
-            declaration.assignment_expression = assignment_expression
+            declaration = ast_nodes.Declaration(
+                id_, line_number, conn, "bit", dimension, assignment_expression
+            )
             declarations.append(declaration)
 
         return declarations
 
-    # * dim = "[", ["+" | "-"], DEC, "]";
+    # dim = "[", ["+" | "-"], DEC, "]";
     def dim(self) -> ast_nodes.Dimension:
         self.match_label("l_bracket")
         self.advance()
 
+        # minus -> descending | plus or none -> ascending
         if (current_token := self.get_current_token().label) in ["plus", "minus"]:
             msb = (
                 ast_nodes.Msb.DESCENDING
@@ -173,7 +174,6 @@ class Parser:
         assert token.lexeme.isdigit(), (
             f"Token lexeme '{token.lexeme}' is not a valid integer"
         )
-
         size = int(token.lexeme)
         # Logically, the lexeme of a decimal token should never be a negative integer.
         assert size >= 0, "Dimension size must be non-negative"
@@ -183,16 +183,14 @@ class Parser:
                 token.line_number, "Dimension size must be positive."
             )
 
-        dimension = ast_nodes.Dimension(size, msb)
-
         self.advance()
         self.match_label("r_bracket")
         self.advance()
 
-        return dimension
+        return ast_nodes.Dimension(msb, size)
 
-    # * asmt = (ID | memb), "=", expr, ";";
-    def asmt(self):
+    # asmt = (ID | memb), "=", expr, ";";
+    def asmt(self) -> ast_nodes.Assignment:
         destiny: None | ast_nodes.Identifier | ast_nodes.Member = None
 
         self.match_label("id")
@@ -215,24 +213,21 @@ class Parser:
 
             member_access.member = member
 
-            destiny = member_access
+            destiny = member_access  # TODO change name
         else:
             destiny = identifier
-
-        assert destiny is not None
 
         self.match_label("equals")
         self.advance()
 
         expr = self.expr()
+
         self.match_label("semicolon")
         self.advance()
 
-        assignment = ast_nodes.Assignment(destiny, expr)
+        return ast_nodes.Assignment(destiny, expr)
 
-        return assignment
-
-    # * expr = term, exprDash
+    # expr = term, exprDash
     def expr(self) -> ast_nodes.ExprElem:
         term = self.term()
 
@@ -248,10 +243,11 @@ class Parser:
         else:
             return term
 
-    # * exprDash = ('or' | 'nor'), term, exprDash | ε
+    # exprDash = ('or' | 'nor'), term, exprDash | ε
     def expr_dash(self) -> ast_nodes.BinaryOp:
         token = self.get_current_token()
 
+        current_node: ast_nodes.OrOp | ast_nodes.NorOp
         if token.label == "or":
             current_node = ast_nodes.OrOp(self.get_current_token().line_number)
             self.advance()
@@ -283,7 +279,7 @@ class Parser:
             # top routine
             return current_node
 
-    # * term = fact, termDash
+    # term = fact, termDash
     def term(self) -> ast_nodes.ExprElem:
         factor = self.fact()
 
@@ -295,10 +291,11 @@ class Parser:
         else:
             return factor
 
-    # * termDash = ("xor" | "xnor"), fact, termDash | ε;
+    # termDash = ("xor" | "xnor"), fact, termDash | ε;
     def term_dash(self) -> ast_nodes.BinaryOp:
         token = self.get_current_token()
 
+        current_node: ast_nodes.XorOp | ast_nodes.XnorOp
         if token.label == "xor":
             current_node = ast_nodes.XorOp(self.get_current_token().line_number)
             self.advance()
@@ -320,7 +317,7 @@ class Parser:
             current_node.r_expr = factor
             return current_node
 
-    # * fact = prim, factDash;
+    # fact = prim, factDash;
     def fact(self) -> ast_nodes.ExprElem:
         primary = self.prim()
 
@@ -332,10 +329,11 @@ class Parser:
         else:
             return primary
 
-    # * factDash = ("and" | "nand"), prim, factDash | ε;
+    # factDash = ("and" | "nand"), prim, factDash | ε;
     def fact_dash(self) -> ast_nodes.BinaryOp:
         token = self.get_current_token()
 
+        current_node: ast_nodes.AndOp | ast_nodes.NandOp
         if token.label == "and":
             current_node = ast_nodes.AndOp(self.get_current_token().line_number)
             self.advance()
@@ -357,12 +355,28 @@ class Parser:
             current_node.r_expr = primary
             return current_node
 
-    # * prim = "not", prim | "(", expr, ")" | ref | BIT_FD | conc;
+    # prim = "not", prim | "(", expr, ")" | ref | BIT_FD | conc;
     def prim(self) -> ast_nodes.ExprElem:
         token = self.get_current_token()
 
-        # * prim = ref;
-        if (token_label := token.label) == "id":
+        # prim = "not", prim;
+        if (token_label := token.label) == "not":
+            self.advance()
+
+            node = ast_nodes.NotOp()
+            node.expr = self.prim()
+
+            return node
+        # prim = "(", expr, ")";
+        elif token_label == "l_paren":
+            self.advance()
+            expr = self.expr()
+            self.match_label("r_paren")
+            self.advance()
+
+            return expr
+        # prim = ref;
+        elif token_label == "id":
             reference: None | ast_nodes.Identifier | ast_nodes.Member = None
 
             identifier = ast_nodes.Identifier(token.lexeme)
@@ -406,66 +420,48 @@ class Parser:
                 self.advance()
 
             return ref
-        # * prim = BIT_FD;
+        # prim = BIT_FD;
         elif token_label == "bit_field":
             value = self.get_current_token().lexeme.strip('"')
             self.advance()
 
             return ast_nodes.BitField(value)
-        # * prim = "not", prim;
-        elif token_label == "not":
-            self.advance()
-
-            node = ast_nodes.NotOp()
-            node.expr = self.prim()
-
-            return node
-        # * prim = "(", expr, ")";
-        elif token_label == "l_paren":
-            self.advance()
-            expr = self.expr()
-            self.match_label("r_paren")
-            self.advance()
-
-            return expr
-        # * prim = conc;
+        # prim = conc;
         elif token_label == "l_angle":
             self.advance()
-            concatenation = ast_nodes.Concatenation()
 
-            concatenation.add_expr(self.expr())
+            expressions: list[ast_nodes.ExprElem] = []
+            expressions.append(self.expr())
 
             while self.get_current_token().label == "comma":
                 self.advance()
-                concatenation.add_expr(self.expr())
+                expressions.append(self.expr())
 
             self.match_label("r_angle")
             self.advance()
 
-            return concatenation
+            return ast_nodes.Concatenation(expressions)
         else:
             raise SyntacticalError(token.line_number, "Expected primary.")
 
-    # * inst = 'sub', ID, ['as' ID],';';
-    def inst(self):
+    # inst = 'sub', ID, ['as' ID],';';
+    def inst(self) -> ast_nodes.Instance:
         self.match_label("sub")
-        instance = ast_nodes.Instance()
-        instance.line_number = self.get_current_token().line_number
+        line_number = self.get_current_token().line_number
         self.advance()
 
         self.match_label("id")
-        instance.comp_id = self.get_current_token().lexeme
+        identifier = self.get_current_token().lexeme
         self.advance()
 
+        alias = None
         if self.get_current_token().label == "as":
             self.advance()
             self.match_label("id")
-            instance.sub_alias = self.get_current_token().lexeme
+            alias = self.get_current_token().lexeme
             self.advance()
-        else:
-            instance.sub_alias = instance.comp_id
 
         self.match_label("semicolon")
         self.advance()
 
-        return instance
+        return ast_nodes.Instance(identifier, line_number, alias)

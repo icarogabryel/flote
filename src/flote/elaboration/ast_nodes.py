@@ -1,8 +1,9 @@
 from abc import ABC, abstractmethod
 from enum import Enum
-from typing import Optional, Union
+from typing import TypeAlias
 
 
+# TODO refactor function and all __str__ and __repr__ of the nodes
 def _format_child(label: str, child: object, outer_prefix: str = "|  ") -> str:
     """Format a child node under a labeled parent with correct indentation."""
     child_str = str(child)
@@ -40,37 +41,37 @@ class Msb(Enum):
 
 # * AST Nodes
 class Module:
-    def __init__(self) -> None:
-        self.comps: list[Component] = []
-
-    def add_comp(self, comp: "Component"):
-        self.comps.append(comp)
+    def __init__(self, components: list["Component"]) -> None:
+        self.components = components
 
     def __repr__(self) -> str:
-        return f"Module({self.comps!r})"
+        return f"Module({self.components!r})"
 
     def __str__(self) -> str:
         desc = "|- Module:"
 
-        for comp in self.comps:
-            comp_desc = str(comp).replace("\n", "\n|  ")
-            desc += f"\n|  |- {comp_desc}"
+        for component in self.components:
+            component_desc = str(component).replace("\n", "\n|  ")
+            desc += f"\n|  |- {component_desc}"
 
         return desc
 
 
 class Component:
-    def __init__(self) -> None:
-        self.id_: None | Identifier = None
-        self.is_main: bool = False
-        self.stmts: list[Union[Declaration, Assignment, Instance]] = []
-        self.line_number: int = 0
-
-    def add_stmt(self, stmt):
-        self.stmts.append(stmt)
+    def __init__(
+        self,
+        identifier: "Identifier",
+        line_number: int,
+        is_main: bool,
+        statements: list["Declaration |Assignment | Instance"],
+    ):
+        self.identifier = identifier
+        self.line_number = line_number
+        self.is_main = is_main
+        self.statements = statements
 
     def __repr__(self) -> str:
-        return f"Component({self.id_!r}, {self.is_main}, {self.stmts!r})"
+        return f"Component({self.identifier!r}, {self.is_main}, {self.statements!r})"
 
     def __str__(self) -> str:
         desc = "Component:"
@@ -78,10 +79,7 @@ class Component:
         if self.is_main:
             desc += " (main)"
 
-        if self.id_ is not None:
-            desc += _format_child("id", self.id_)
-
-        for stmt in self.stmts:
+        for stmt in self.statements:
             desc += "\n"
             desc_stmt = str(stmt).replace("\n", "\n|  ")
             desc += f"|  |- {desc_stmt}"
@@ -90,28 +88,33 @@ class Component:
 
 
 class Declaration:
-    def __init__(self) -> None:
-        self.id_: None | Identifier = None
-        self.conn: Connection = Connection.INTERNAL
-        self.type: str = "bit"
-        self.dimension: Optional[Dimension] = None
-        self.assignment_expression: Optional[ExprElem] = None
-        self.line_number: int = 0
+    def __init__(
+        self,
+        identifier: "Identifier",
+        line_number: int,
+        connection: Connection,
+        type_: str,
+        dimension: "None | Dimension",
+        assignment_expression: "None | ExprElem",
+    ) -> None:
+        self.identifier = identifier
+        self.line_number = line_number
+        self.connection = connection
+        self.type_ = type_
+        self.dimension = dimension
+        self.assignment_expression = assignment_expression
 
     def __repr__(self) -> str:
-        return f"Declaration({self.id_!r}, {self.type!r})"
+        return f"Declaration({self.identifier!r}, {self.type_!r})"
 
     def __str__(self) -> str:
         conn_str = "internal"
-        if self.conn == Connection.INPUT:
+        if self.connection == Connection.INPUT:
             conn_str = "input"
-        elif self.conn == Connection.OUTPUT:
+        elif self.connection == Connection.OUTPUT:
             conn_str = "output"
 
-        desc = f"Declaration (type: {self.type}; conn: {conn_str})"
-
-        if self.id_ is not None:
-            desc += _format_child("id", self.id_)
+        desc = f"Declaration (type: {self.type_}; conn: {conn_str})"
 
         if self.dimension:
             desc += _format_child("dimension", self.dimension)
@@ -124,14 +127,14 @@ class Declaration:
 
 class BaseIdentifier(ABC):
     def __init__(self) -> None:
-        self._line_number: Optional[int] = None
+        self._line_number: None | int = None
 
     @property
-    def line_number(self) -> Optional[int]:
+    def line_number(self) -> None | int:
         return self._line_number
 
     @line_number.setter
-    def line_number(self, value: Optional[int]) -> None:
+    def line_number(self, value: None | int) -> None:
         self._line_number = value
 
     @property
@@ -140,7 +143,7 @@ class BaseIdentifier(ABC):
         pass
 
 
-class Identifier(BaseIdentifier):
+class Identifier(BaseIdentifier):  # TODO put line number in constructor
     def __init__(self, value: str) -> None:
         super().__init__()
         self.value = value
@@ -156,10 +159,10 @@ class Identifier(BaseIdentifier):
         return self.value
 
 
-class Member(BaseIdentifier):
+class Member(BaseIdentifier):  # TODO Check if is possible to make a constructor
     def __init__(self) -> None:
-        self.object: Optional[Identifier] = None
-        self.member: Optional[Identifier] = None
+        self.object: None | Identifier = None
+        self.member: None | Identifier = None
 
     def __repr__(self) -> str:
         return f"Member({self.object!r}, {self.member!r})"
@@ -182,32 +185,30 @@ class Member(BaseIdentifier):
         return f"{obj_id}.{mem_id}"
 
     @property
-    def line_number(self) -> Optional[int]:
+    def line_number(self) -> None | int:
         if self.object and self.object.line_number:
             return self.object.line_number
 
         return None
 
     @line_number.setter
-    def line_number(self, value: Optional[int]) -> None:
+    def line_number(self, value: None | int) -> None:
         assert False, "Cannot set line_number on Member directly."
 
 
 class Dimension:
-    def __init__(self, size=1, msb=Msb.ASCENDING) -> None:
-        self.size: int = size
-        self.msb: Optional[Msb] = msb
+    def __init__(self, msb: Msb, size: int) -> None:
+        self.msb = msb
+        self.size = size
 
     def __repr__(self) -> str:
-        msb_name = self.msb.name if self.msb is not None else None
-        return f"Dimension(size={self.size}, MSB={msb_name})"
+        return f"Dimension(size={self.size}, MSB={self.msb.name})"
 
     def __str__(self) -> str:
-        msb_name = self.msb.name if self.msb is not None else None
-        return f"Dimension: {self.size}, MSB={msb_name}"
+        return f"Dimension: {self.size}, MSB={self.msb.name}"
 
 
-ExprElem = Union["Reference", "BitField", "UnaryOp", "BinaryOp", "Concatenation"]
+ExprElem: TypeAlias = "Reference | BitField | UnaryOp | BinaryOp | Concatenation"
 
 
 class Assignment:
@@ -226,7 +227,8 @@ class Assignment:
 
 
 class UnaryOp(ABC):
-    expr: Optional[ExprElem] = None
+    def __init__(self) -> None:  # TODO add line number?
+        self.expr: None | ExprElem = None  # TODO put in constructor?
 
     @abstractmethod
     def __repr__(self) -> str:
@@ -239,12 +241,12 @@ class UnaryOp(ABC):
         return desc
 
 
+# Binary op can't have all attributes in constructor because of the left recursion
 class BinaryOp(ABC):
-    l_expr: Optional[ExprElem] = None
-    r_expr: Optional[ExprElem] = None
-
     def __init__(self, line_number: int) -> None:
-        self.line_number = line_number
+        self.line_number = line_number  # TODO see if still used
+        self.l_expr: None | ExprElem = None
+        self.r_expr: None | ExprElem = None
 
     @abstractmethod
     def __repr__(self) -> str:
@@ -298,7 +300,10 @@ class XnorOp(BinaryOp):
 
 class Reference:
     def __init__(
-        self, id_, range_begin: None | int = None, range_end: None | int = None
+        self,
+        id_: BaseIdentifier,
+        range_begin: None | int = None,
+        range_end: None | int = None,
     ) -> None:
         self.id_: BaseIdentifier = id_
         self.range_begin: None | int = range_begin
@@ -326,19 +331,16 @@ class BitField:
 
 
 class Concatenation:
-    def __init__(self) -> None:
-        self.exprs: list[ExprElem] = []
-
-    def add_expr(self, elem: ExprElem) -> None:
-        self.exprs.append(elem)
+    def __init__(self, expressions: list[ExprElem]) -> None:
+        self.expressions = expressions
 
     def __repr__(self) -> str:
-        return f"Concatenation({self.exprs!r})"
+        return f"Concatenation({self.expressions!r})"
 
     def __str__(self) -> str:
         desc = "Concatenation:"
 
-        for expr in self.exprs:
+        for expr in self.expressions:
             expr_desc = str(expr).replace("\n", "\n|  ")
             desc += f"\n|  |- {expr_desc}"
 
@@ -346,13 +348,13 @@ class Concatenation:
 
 
 class Instance:
-    def __init__(self) -> None:
-        self.comp_id: Optional[str] = None
-        self.sub_alias: Optional[str] = None
-        self.line_number: Optional[int] = None
+    def __init__(self, identifier: str, line_number: int, alias: None | str) -> None:
+        self.identifier = identifier
+        self.line_number = line_number
+        self.alias = alias
 
     def __repr__(self) -> str:
-        return f"Instance({self.comp_id!r}, {self.sub_alias!r})"
+        return f"Instance({self.identifier!r}, Alis:{self.alias!r})"
 
     def __str__(self) -> str:
-        return f"Instance: {self.sub_alias} of {self.comp_id}"
+        return self.__repr__()
