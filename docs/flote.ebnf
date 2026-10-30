@@ -1,0 +1,24 @@
+mod = comp, {comp};
+comp = ["main"], "comp", ID, "{", {stmt}, "}";
+stmt = decl | asmt | inst;
+decl = ["in" | "out"], "bit", [dim], ID, {",", ID}, ["=", expr], ";";
+dim = "[", ["+" | "-"], DEC, "]";
+asmt = (ID | mbac), "=", expr, ";";
+mbac = ID, ["." , ID];
+inst = "sub", ID, ["as", ID],";";
+
+(* Expression rules *)
+expr = term, exprDash;
+exprDash = ("or" | "nor"), term, exprDash | ε;
+term = fact, termDash;
+termDash = ("xor" | "xnor"), fact, termDash | ε;
+fact = prim, factDash;
+factDash = ("and" | "nand"), prim, factDash | ε;
+prim = "not", prim | "(", expr, ")" | ref | BIT_FD | conc;
+ref = (ID | mbac), ["[", DEC, [":", DEC ], "]" ];
+conc = "<", expr, {",", expr }, ">";
+
+(* Lexical rules - Regex *)
+ID = ? @[A-Za-z_]\w* ?;
+DEC = ? 0 | [1-9][0-9]* ?;
+BIT_FD = ? "([01]+)" ?;
