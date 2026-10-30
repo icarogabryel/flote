@@ -1,4 +1,4 @@
-"""Module containing the base class for JSON representation."""
+"""Module containing the base classes for representations."""
 
 from abc import ABC, abstractmethod
 from typing import Any

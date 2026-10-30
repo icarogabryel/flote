@@ -1,19 +1,22 @@
 """This module defines the expression nodes used in the assignment of a bus."""
 
+# TODO refactor __str__ and __repr__ of this module
+# TODO refactor names to complete names
+
 from abc import abstractmethod
-from typing import Any
+from typing import Any, TypeAlias
 
-from .buses import BusDto
-from .representation import JsonRepresentation
+from flote.elaboration.ir.buses import BusDto
+from flote.elaboration.ir.representation import JsonRepresentation
 
 
-class ExprNode(JsonRepresentation):
+class ExpressionNode(JsonRepresentation):
     @abstractmethod
     def get_sensitivity_list(self) -> list[BusDto]:
         return []
 
 
-class Ref(ExprNode):
+class Ref(ExpressionNode):
     """This class represents a reference to a bus in the circuit."""
 
     def __init__(
@@ -24,29 +27,29 @@ class Ref(ExprNode):
         self.slice_end = slice_end
 
     def __repr__(self) -> str:
-        return f"Ref({self.bus.id_})"
+        return f"Ref({self.bus.identifier})"
 
     def __str__(self) -> str:
-        return f"Ref ({self.bus.id_})"
+        return f"Ref ({self.bus.identifier})"
 
     def get_sensitivity_list(self) -> list[BusDto]:
         return [self.bus]
 
-    def to_json(self):
+    def to_json(self) -> dict[str, Any]:
         return {
             "type": "ref",
             "args": {
-                "id": self.bus.id_,
+                "id": self.bus.identifier,
                 "slice_begin": self.slice_begin,
                 "slice_end": self.slice_end,
             },
         }
 
 
-class Conc(ExprNode):
+class Conc(ExpressionNode):
     """This class represents a concatenation of expressions."""
 
-    def __init__(self, exprs: list[ExprNode]) -> None:
+    def __init__(self, exprs: list[ExpressionNode]) -> None:
         self.exprs = exprs
 
     def __repr__(self) -> str:
@@ -61,7 +64,7 @@ class Conc(ExprNode):
 
         return desc
 
-    def to_json(self):
+    def to_json(self) -> dict[str, Any]:
         return {
             "type": "conc",
             "args": {"exprs": [expr.to_json() for expr in self.exprs]},
@@ -76,7 +79,7 @@ class Conc(ExprNode):
         return sensitivity_list
 
 
-class Const(ExprNode):
+class Const(ExpressionNode):
     """This class represents a constant value in the circuit."""
 
     def __init__(self, value: Any) -> None:
@@ -88,31 +91,31 @@ class Const(ExprNode):
     def __str__(self) -> str:
         return f"Const ({self.value})"
 
-    def to_json(self):
+    def to_json(self) -> dict[str, Any]:
         return {"type": "const", "args": {"value": self.value}}
 
     def get_sensitivity_list(self) -> list[BusDto]:
         return []
 
 
-class UnaryOperation(ExprNode):
+class UnaryOperation(ExpressionNode):
     """Base class for all unary operations."""
 
-    def __init__(self, expr: ExprNode) -> None:
+    def __init__(self, expr: ExpressionNode) -> None:
         self.expr = expr
 
     def get_sensitivity_list(self) -> list[BusDto]:
         return self.expr.get_sensitivity_list()
 
 
-class BinaryOperation(ExprNode):
+class BinaryOperation(ExpressionNode):
     """Base class for all binary operations."""
 
-    def __init__(self, l_expr: ExprNode, r_expr: ExprNode) -> None:
+    def __init__(self, l_expr: ExpressionNode, r_expr: ExpressionNode) -> None:
         self.l_expr = l_expr
         self.r_expr = r_expr
 
-    def get_sensitivity_list(self):
+    def get_sensitivity_list(self) -> list[BusDto]:
         return self.l_expr.get_sensitivity_list() + self.r_expr.get_sensitivity_list()
 
 
@@ -123,7 +126,7 @@ class Not(UnaryOperation):
     def __str__(self) -> str:
         return f"Not ({self.expr})"
 
-    def to_json(self):
+    def to_json(self) -> dict[str, Any]:
         return {"type": "not", "args": {"expr": self.expr.to_json()}}
 
 
@@ -134,7 +137,7 @@ class And(BinaryOperation):
     def __str__(self) -> str:
         return f"And ({self.l_expr}, {self.r_expr})"
 
-    def to_json(self):
+    def to_json(self) -> dict[str, Any]:
         return {
             "type": "and",
             "args": {"l_expr": self.l_expr.to_json(), "r_expr": self.r_expr.to_json()},
@@ -148,7 +151,7 @@ class Or(BinaryOperation):
     def __str__(self) -> str:
         return f"Or ({self.l_expr}, {self.r_expr})"
 
-    def to_json(self):
+    def to_json(self) -> dict[str, Any]:
         return {
             "type": "or",
             "args": {"l_expr": self.l_expr.to_json(), "r_expr": self.r_expr.to_json()},
@@ -162,7 +165,7 @@ class Xor(BinaryOperation):
     def __str__(self) -> str:
         return f"Xor ({self.l_expr}, {self.r_expr})"
 
-    def to_json(self):
+    def to_json(self) -> dict[str, Any]:
         return {
             "type": "xor",
             "args": {"l_expr": self.l_expr.to_json(), "r_expr": self.r_expr.to_json()},
@@ -176,7 +179,7 @@ class Nand(BinaryOperation):
     def __str__(self) -> str:
         return f"Nand ({self.l_expr}, {self.r_expr})"
 
-    def to_json(self):
+    def to_json(self) -> dict[str, Any]:
         return {
             "type": "nand",
             "args": {"l_expr": self.l_expr.to_json(), "r_expr": self.r_expr.to_json()},
@@ -190,7 +193,7 @@ class Nor(BinaryOperation):
     def __str__(self) -> str:
         return f"Nor ({self.l_expr}, {self.r_expr})"
 
-    def to_json(self):
+    def to_json(self) -> dict[str, Any]:
         return {
             "type": "nor",
             "args": {"l_expr": self.l_expr.to_json(), "r_expr": self.r_expr.to_json()},
@@ -204,11 +207,11 @@ class Xnor(BinaryOperation):
     def __str__(self) -> str:
         return f"Xnor ({self.l_expr}, {self.r_expr})"
 
-    def to_json(self):
+    def to_json(self) -> dict[str, Any]:
         return {
             "type": "xnor",
             "args": {"l_expr": self.l_expr.to_json(), "r_expr": self.r_expr.to_json()},
         }
 
 
-Operations = And | Or | Xor | Nand | Nor | Xnor | Not
+Operation: TypeAlias = And | Or | Xor | Nand | Nor | Xnor | Not
