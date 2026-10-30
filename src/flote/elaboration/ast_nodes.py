@@ -95,7 +95,7 @@ class Declaration:
         connection: Connection,
         type_: str,
         dimension: "None | Dimension",
-        assignment_expression: "None | ExprElem",
+        assignment_expression: "None | ExpressionElement",
     ) -> None:
         self.identifier = identifier
         self.line_number = line_number
@@ -186,11 +186,13 @@ class Dimension:
         return f"Dimension: {self.size}, MSB={self.msb.name}"
 
 
-ExprElem: TypeAlias = "Reference | BitField | UnaryOp | BinaryOp | Concatenation"
+ExpressionElement: TypeAlias = (
+    "Reference | BitField | UnaryOp | BinaryOp | Concatenation"
+)
 
 
 class Assignment:
-    def __init__(self, destiny: BaseIdentifier, expr: ExprElem) -> None:
+    def __init__(self, destiny: BaseIdentifier, expr: ExpressionElement) -> None:
         self.destiny = destiny
         self.expr = expr
 
@@ -205,7 +207,7 @@ class Assignment:
 
 
 class UnaryOp(ABC):
-    def __init__(self, expr: ExprElem) -> None:
+    def __init__(self, expr: ExpressionElement) -> None:
         self.expr = expr
 
     @abstractmethod
@@ -220,8 +222,8 @@ class UnaryOp(ABC):
 class BinaryOp(ABC):
     def __init__(self, line_number: int) -> None:
         self.line_number = line_number  # Used in the Builder
-        self.l_expr: None | ExprElem = None
-        self.r_expr: None | ExprElem = None
+        self.l_expr: None | ExpressionElement = None
+        self.r_expr: None | ExpressionElement = None
 
     @abstractmethod
     def __repr__(self) -> str:
@@ -303,7 +305,7 @@ class BitField:
 
 
 class Concatenation:
-    def __init__(self, expressions: list[ExprElem]) -> None:
+    def __init__(self, expressions: list[ExpressionElement]) -> None:
         self.expressions = expressions
 
     def __repr__(self) -> str:

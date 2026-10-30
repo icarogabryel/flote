@@ -222,7 +222,7 @@ class Parser:
         return ast_nodes.Assignment(destiny, expr)
 
     # expr = term, exprDash
-    def expr(self) -> ast_nodes.ExprElem:
+    def expr(self) -> ast_nodes.ExpressionElement:
         term = self.term()
 
         # If expr' is not an empty production (there are more operators),
@@ -274,7 +274,7 @@ class Parser:
             return current_node
 
     # term = fact, termDash
-    def term(self) -> ast_nodes.ExprElem:
+    def term(self) -> ast_nodes.ExpressionElement:
         factor = self.fact()
 
         if self.get_current_token().label in FIRST_SETS["term_dash"]:
@@ -312,7 +312,7 @@ class Parser:
             return current_node
 
     # fact = prim, factDash;
-    def fact(self) -> ast_nodes.ExprElem:
+    def fact(self) -> ast_nodes.ExpressionElement:
         primary = self.prim()
 
         if self.get_current_token().label in FIRST_SETS["fact_dash"]:
@@ -350,7 +350,7 @@ class Parser:
             return current_node
 
     # prim = "not", prim | "(", expr, ")" | ref | BIT_FD | conc;
-    def prim(self) -> ast_nodes.ExprElem:
+    def prim(self) -> ast_nodes.ExpressionElement:
         token = self.get_current_token()
 
         # prim = "not", prim;
@@ -414,7 +414,7 @@ class Parser:
         elif token_label == "l_angle":
             self.advance()
 
-            expressions: list[ast_nodes.ExprElem] = []
+            expressions: list[ast_nodes.ExpressionElement] = []
             expressions.append(self.expr())
 
             while self.get_current_token().label == "comma":
