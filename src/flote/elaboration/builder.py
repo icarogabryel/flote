@@ -120,18 +120,18 @@ class Builder:
                 ):
                     warn(f'Bus "{bus_id}" is never read', UserWarning)
 
-    def vst_mod(self, module_note: ast_nodes.Module) -> ComponentDto:
+    def vst_mod(self, module_node: ast_nodes.Module) -> ComponentDto:
         # Fill the components_nodes dictionary
-        for component_node in module_note.components:
+        for component_node in module_node.components:
             self.components_nodes[component_node.identifier.full_id] = component_node
 
-        assert len(module_note.components) > 0, (
+        assert len(module_node.components) > 0, (
             "Parser should block modules with no components"
         )
 
-        if len(module_note.components) == 1:
-            component_dto = self.vst_comp(module_note.components[0])
-            self.components[module_note.components[0].identifier.full_id] = (
+        if len(module_node.components) == 1:
+            component_dto = self.vst_comp(module_node.components[0])
+            self.components[module_node.components[0].identifier.full_id] = (
                 component_dto
             )
 
@@ -140,7 +140,7 @@ class Builder:
             main_component: None | ComponentDto = None
 
             # Search for the main component
-            for component_node in module_note.components:
+            for component_node in module_node.components:
                 if component_node.is_main:
                     if main_component:
                         raise SemanticalError(
@@ -194,29 +194,32 @@ class Builder:
 
     def vst_decl(
         self,
-        decl: ast_nodes.Declaration,
+        declaration_node: ast_nodes.Declaration,
         component_dto: ComponentDto,
     ) -> None:
         component_id = component_dto.identifier
         assert (
-            decl.identifier.full_id
+            declaration_node.identifier.full_id
             in self.symbol_table.component_symbols[component_id].bus_symbols.keys()
-        ), f'Bus "{decl.identifier}" has not been declared.'
+        ), f'Bus "{declaration_node.identifier}" has not been declared.'
         bus_symbol = self.symbol_table.component_symbols[component_id].bus_symbols[
-            decl.identifier.full_id
+            declaration_node.identifier.full_id
         ]
 
-        if decl.assignment_expression:
+        if declaration_node.assignment_expression:
             # Create the bus assignment
-            assignment, size = self.vst_expr(decl.assignment_expression, component_dto)
+            assignment, size = self.vst_expr(
+                declaration_node.assignment_expression, component_dto
+            )
 
             if size != bus_symbol.size:
                 raise SemanticalError(
                     (
-                        f"Assignment size ({size}) does not match bus size "
-                        f'({bus_symbol.size}) for "{decl.identifier.full_id}".'
+                        f"Assignment size ({size}) does not match bus size ("
+                        f'{bus_symbol.size}) for "'
+                        f'"{declaration_node.identifier.full_id}".'
                     ),
-                    decl.line_number,
+                    declaration_node.line_number,
                 )
 
             bus_symbol.object_.assignment = assignment
@@ -462,18 +465,18 @@ class Builder:
 
     def vst_inst(
         self,
-        instance: ast_nodes.Instance,
+        instance_node: ast_nodes.Instance,
         component_dto: ComponentDto,
         component_symbol: ComponentSymbol,
     ) -> None:
-        sub_id = instance.identifier
-        alias = sub_id if instance.alias is None else instance.alias
+        sub_id = instance_node.identifier
+        alias = sub_id if instance_node.alias is None else instance_node.alias
 
         if sub_id not in self.components:
             if sub_id not in self.components_nodes:
                 raise SemanticalError(
                     f'Component "{sub_id}" has not been declared.',
-                    instance.line_number,
+                    instance_node.line_number,
                 )
             self.components[sub_id] = self.vst_comp(self.components_nodes[sub_id])
 
