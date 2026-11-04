@@ -1,6 +1,6 @@
 from collections import deque
 
-from flote.simulation.buses import BitBusValue, Bus
+from flote.simulation.buses import BitBus
 
 
 class Component:
@@ -8,9 +8,9 @@ class Component:
 
     def __init__(self, id_: str) -> None:
         self.id_: str = id_
-        self.buses: dict[str, Bus[BitBusValue]] = {}
+        self.buses: dict[str, BitBus] = {}
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         repr = ""
         for bus_id, bus in self.buses.items():
             repr += f"{bus_id}: {bus} {bus.influence_list}\n"
@@ -24,7 +24,7 @@ class Component:
         """
         return {bit_name: str(bit.value) for bit_name, bit in self.buses.items()}
 
-    def stabilize(self):
+    def stabilize(self) -> None:
         """
         This method stabilizes the bits of the component.
 

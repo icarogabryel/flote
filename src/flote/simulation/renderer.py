@@ -1,17 +1,18 @@
 from json import loads
+from typing import Any
 
 from . import eval_nodes
-from .buses import BitBus, BitBusValue
+from .buses import BitBus, BitBusValue, Evaluator
 from .component import Component
 
 
 class Renderer:
     def __init__(self, ir: str) -> None:
         self.ir = ir
-        self.buffer_bus_dict = {}
+        self.buffer_bus_dict: dict[str, BitBus] = {}
         self.component = self.render()
 
-    def render_expr(self, j_expr: dict) -> eval_nodes.Evaluator | None:
+    def render_expr(self, j_expr: dict[str, Any]) -> Evaluator | None:
         """Render an expression from an intermediate representation (IR) json string.
 
         Args:
@@ -40,10 +41,11 @@ class Renderer:
 
             return eval_nodes.Not(expr)
         elif expr_type == "conc":
-            exprs = j_expr["args"]["exprs"]
-            rendered_exprs = []
-            for expr in exprs:
-                rendered_expr = self.render_expr(expr)
+            exprs: list[dict[str, Any]] = j_expr["args"]["exprs"]
+            rendered_exprs: list[Evaluator] = []
+            assert isinstance(exprs, list)
+            for expr_json in exprs:
+                rendered_expr = self.render_expr(expr_json)
                 assert rendered_expr is not None, "Failed to render CONCAT expression"
                 rendered_exprs.append(rendered_expr)
 
@@ -52,7 +54,7 @@ class Renderer:
             l_expr = self.render_expr(j_expr["args"]["l_expr"])
             r_expr = self.render_expr(j_expr["args"]["r_expr"])
 
-            binary_expr_types = {
+            binary_expr_types: dict[str, type[eval_nodes.BinaryOperation]] = {
                 "and": eval_nodes.And,
                 "or": eval_nodes.Or,
                 "xor": eval_nodes.Xor,
@@ -86,7 +88,7 @@ class Renderer:
         j_component = j_ir["component"]
         j_component_id = j_component["id"]
         component = Component(j_component_id)
-        j_busses = j_component["busses"]
+        j_busses = j_component["buses"]
 
         for j_bus in j_busses:
             type = j_bus["type"]

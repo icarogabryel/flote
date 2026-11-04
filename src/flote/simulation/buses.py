@@ -11,7 +11,7 @@ class Evaluator(ABC):
     """Base class for all evaluators."""
 
     @abstractmethod
-    def evaluate(self) -> "BusValue":
+    def evaluate(self) -> "BusValue[Any]":
         """Evaluate the expression."""
         pass
 
@@ -98,7 +98,7 @@ class Bus(Generic[T]):
         pass
 
     @abstractmethod
-    def insert_value(self, value) -> None:
+    def insert_value(self, value: str) -> None:
         """This method inserts a value into the bus if it is valid"""
         pass
 
@@ -132,19 +132,19 @@ class BitBusValue(BusValue[list[bool]]):
     def __getitem__(self, slice: slice) -> "BitBusValue":
         return BitBusValue(self.raw_value[slice])
 
-    def __add__(self, other: BusValue[list[bool]]) -> BusValue[list[bool]]:
+    def __add__(self, other: BusValue[list[bool]]) -> "BitBusValue":
         return BitBusValue(self.raw_value + other.raw_value)
 
     def __invert__(self) -> "BitBusValue":
         return BitBusValue([not bit for bit in self.raw_value])
 
-    def __and__(self, other: BusValue[list[bool]]) -> BusValue[list[bool]]:
+    def __and__(self, other: BusValue[list[bool]]) -> "BitBusValue":
         return BitBusValue([a and b for a, b in zip(self.raw_value, other.raw_value)])
 
-    def __or__(self, other: BusValue[list[bool]]) -> BusValue[list[bool]]:
+    def __or__(self, other: BusValue[list[bool]]) -> "BitBusValue":
         return BitBusValue([a or b for a, b in zip(self.raw_value, other.raw_value)])
 
-    def __xor__(self, other: BusValue[list[bool]]) -> BusValue[list[bool]]:
+    def __xor__(self, other: BusValue[list[bool]]) -> "BitBusValue":
         return BitBusValue([a ^ b for a, b in zip(self.raw_value, other.raw_value)])
 
     # * End of operators overloading

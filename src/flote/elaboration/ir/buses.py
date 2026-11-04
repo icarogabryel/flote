@@ -22,7 +22,7 @@ class BusDto(JsonRepresentation):
         self.type_ = type_
         self.assignment: None | ExpressionNode = None
         self.value: Any = self.get_default()
-        # The list of buses that the current bus depends on.
+        # The list of buses that the current bus depends on. TODO is that right?
         self.influence_list: list[BusDto] = []
 
     def __str__(self) -> str:
@@ -33,7 +33,7 @@ class BusDto(JsonRepresentation):
         )
 
     def make_influence_list(self) -> None:
-        """This method adds an assignment to the bus."""
+        """This method adds an assignment to the bus."""  # TODO is that right?
         sensitivity_list: list[BusDto] = []
         if self.assignment:
             sensitivity_list = self.assignment.get_sensitivity_list()
