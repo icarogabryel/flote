@@ -141,13 +141,6 @@ class Builder:
 
             # Search for the main component
             for component_node in module_note.components:
-                if component_node.identifier.full_id in self.components:
-                    # Skip if component already processed in a previous instantiation
-                    continue
-                # Add component to the components dict
-                component_dto = self.vst_comp(component_node)  # TODO do it lazily
-                self.components[component_dto.identifier] = component_dto
-
                 if component_node.is_main:
                     if main_component:
                         raise SemanticalError(
@@ -158,6 +151,9 @@ class Builder:
                             component_node.line_number,
                         )
 
+                    # Add component to the components dict
+                    component_dto = self.vst_comp(component_node)
+                    self.components[component_dto.identifier] = component_dto
                     main_component = component_dto
 
             if not main_component:
