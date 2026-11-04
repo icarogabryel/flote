@@ -470,7 +470,11 @@ class Builder:
         alias = sub_id if instance.alias is None else instance.alias
 
         if sub_id not in self.components:
-            assert sub_id in self.components_nodes, f'Component "{sub_id}" not found.'
+            if sub_id not in self.components_nodes:
+                raise SemanticalError(
+                    f'Component "{sub_id}" has not been declared.',
+                    instance.line_number,
+                )
             self.components[sub_id] = self.vst_comp(self.components_nodes[sub_id])
 
         sub_dto, sub_bus_symbols = deepcopy(
