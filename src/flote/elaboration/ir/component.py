@@ -21,12 +21,6 @@ class ComponentDto(JsonRepresentation):
     def __str__(self) -> str:
         return f"Component {self.identifier}:\n{self.__repr__()}"
 
-    def add_subcomponent(self, subcomponent: "ComponentDto", alias: str) -> None:
-        """Add a subcomponent to this component."""
-        for bus in subcomponent.buses:
-            bus.identifier = f"{alias}.{bus.identifier}"
-            self.buses.append(bus)
-
     def make_netlist(self) -> None:
         """Create influence lists for all buses in the component."""
         for bus in self.buses:

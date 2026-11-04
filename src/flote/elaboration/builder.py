@@ -35,7 +35,7 @@ class Builder:
 
     def get_netlist(self) -> str:
         component = self.vst_mod(self.ast)
-        component.make_netlist()  # TODO see what happens when dumps with no netlist
+        component.make_netlist()
 
         return dumps(component.to_json())
 
@@ -97,9 +97,11 @@ class Builder:
                     msb_descending,
                     bit_bus_dto,
                 )
-            elif isinstance(statement_node, ast_nodes.Instance):  # TODO do it lazily?
-                self.vst_inst(statement_node, component_dto, component_symbol)
+            elif isinstance(statement_node, ast_nodes.Instance):
+                instance_node = statement_node  # Name change for better readability
+                self.vst_inst(instance_node, component_dto, component_symbol)
 
+        component_symbol.object_ = component_dto
         return component_symbol
 
     def check_bus_usage(self) -> None:
@@ -118,27 +120,32 @@ class Builder:
                 ):
                     warn(f'Bus "{bus_id}" is never read', UserWarning)
 
-    def vst_mod(self, mod: ast_nodes.Module) -> ComponentDto:
+    def vst_mod(self, module_note: ast_nodes.Module) -> ComponentDto:
         # Fill the components_nodes dictionary
-        for component_node in mod.components:
+        for component_node in module_note.components:
             self.components_nodes[component_node.identifier.full_id] = component_node
 
-        assert len(mod.components) > 0, "Parser should block modules with no components"
+        assert len(module_note.components) > 0, (
+            "Parser should block modules with no components"
+        )
 
-        if len(mod.components) == 1:
-            component_dto = self.vst_comp(mod.components[0])
-            self.components[mod.components[0].identifier.full_id] = component_dto
+        if len(module_note.components) == 1:
+            component_dto = self.vst_comp(module_note.components[0])
+            self.components[module_note.components[0].identifier.full_id] = (
+                component_dto
+            )
 
             return component_dto
         else:  # If there are multiple components, its assumed one of them is the main
             main_component: None | ComponentDto = None
 
-            for component_node in mod.components:  # Search for the main component
+            # Search for the main component
+            for component_node in module_note.components:
                 if component_node.identifier.full_id in self.components:
                     # Skip if component already processed in a previous instantiation
-                    continue  # TODO try lazy
+                    continue
                 # Add component to the components dict
-                component_dto = self.vst_comp(component_node)
+                component_dto = self.vst_comp(component_node)  # TODO do it lazily
                 self.components[component_dto.identifier] = component_dto
 
                 if component_node.is_main:
@@ -177,16 +184,13 @@ class Builder:
         self.symbol_table.component_symbols[component_identifier] = (
             self.init_component_symbol(component_node, component_dto)
         )
-        self.symbol_table.component_symbols[
-            component_identifier
-        ].object_ = component_dto
 
         for stmt in component_node.statements:
             # Do nothing if the instance is Instance (subcomponent)
             if isinstance(stmt, ast_nodes.Declaration):
-                self.vst_decl(stmt, component_identifier, component_dto)
+                self.vst_decl(stmt, component_dto)
             elif isinstance(stmt, ast_nodes.Assignment):
-                self.vst_assign(stmt, component_identifier, component_dto)
+                self.vst_assign(stmt, component_dto)
             else:
                 pass
 
@@ -195,9 +199,9 @@ class Builder:
     def vst_decl(
         self,
         decl: ast_nodes.Declaration,
-        component_id: str,  # TODO remove, no need
         component_dto: ComponentDto,
     ) -> None:
+        component_id = component_dto.identifier
         assert (
             decl.identifier.full_id
             in self.symbol_table.component_symbols[component_id].bus_symbols.keys()
@@ -208,9 +212,7 @@ class Builder:
 
         if decl.assignment_expression:
             # Create the bus assignment
-            assignment, size = self.vst_expr(
-                decl.assignment_expression, component_id, component_dto
-            )
+            assignment, size = self.vst_expr(decl.assignment_expression, component_dto)
 
             if size != bus_symbol.size:
                 raise SemanticalError(
@@ -228,9 +230,9 @@ class Builder:
     def vst_assign(
         self,
         assignment_node: ast_nodes.Assignment,
-        component_id: str,  # TODO remove, no need
         component_dto: ComponentDto,
     ) -> None:
+        component_id = component_dto.identifier
         assert (
             assignment_node.destiny.full_id
             in self.symbol_table.component_symbols[component_id].bus_symbols.keys()
@@ -269,9 +271,7 @@ class Builder:
                 assignment_node.destiny.line_number,
             )
 
-        assignment, size = self.vst_expr(
-            assignment_node.expr, component_id, component_dto
-        )
+        assignment, size = self.vst_expr(assignment_node.expr, component_dto)
 
         if size != bus_symbol.size:
             raise SemanticalError(
@@ -299,24 +299,19 @@ class Builder:
     def vst_expr(
         self,
         expression_node: ast_nodes.ExpressionElement,
-        component_id: str,  # TODO remove component_id
         component_dto: ComponentDto,
     ) -> Tuple[expression_nodes.ExpressionNode, int]:
-        expression, size = self.vst_expr_elem(
-            expression_node, component_id, component_dto
-        )
-
-        return expression, size
+        return self.vst_expr_elem(expression_node, component_dto)
 
     def vst_expr_elem(
         self,
         expression_element_node: ast_nodes.ExpressionElement,
-        component_id: str,  # TODO remove component_id
         component_dto: ComponentDto,
     ) -> Tuple[expression_nodes.ExpressionNode, int]:
         """
         Visit an expression element, validate it, and return a callable for evaluation.
         """
+        component_id = component_dto.identifier
 
         if isinstance(expression_element_node, ast_nodes.Reference):
             ref = expression_element_node  # Change name for better readability
@@ -409,9 +404,7 @@ class Builder:
 
             return const, bit_field.size  # TODO check size
         elif isinstance(expression_element_node, ast_nodes.NotOp):
-            expr, size = self.vst_expr_elem(
-                expression_element_node.expr, component_id, component_dto
-            )
+            expr, size = self.vst_expr_elem(expression_element_node.expr, component_dto)
 
             return expression_nodes.Not(expr), size
         elif isinstance(expression_element_node, ast_nodes.Concatenation):
@@ -420,7 +413,7 @@ class Builder:
             total_size = 0
 
             for sub_expr in conc.expressions:
-                expr, size = self.vst_expr_elem(sub_expr, component_id, component_dto)
+                expr, size = self.vst_expr_elem(sub_expr, component_dto)
                 exprs.append(expr)
                 total_size += size
 
@@ -452,10 +445,10 @@ class Builder:
                 "Right expression of operation cannot be None."
             )
             l_expr, l_size = self.vst_expr_elem(
-                expression_element_node.l_expr, component_id, component_dto
+                expression_element_node.l_expr, component_dto
             )
             r_expr, r_size = self.vst_expr_elem(
-                expression_element_node.r_expr, component_id, component_dto
+                expression_element_node.r_expr, component_dto
             )
 
             if l_size != r_size:
@@ -473,35 +466,28 @@ class Builder:
 
     def vst_inst(
         self,
-        inst: ast_nodes.Instance,
+        instance: ast_nodes.Instance,
         component_dto: ComponentDto,
         component_symbol: ComponentSymbol,
     ) -> None:
-        # Check if the subcomponent was already processed
-        if inst.identifier not in self.components:
-            assert inst.identifier in self.components_nodes, (
-                f'Component "{inst.identifier}" not found.'
-            )
+        sub_id = instance.identifier
+        alias = sub_id if instance.alias is None else instance.alias
 
-            self.components[inst.identifier] = self.vst_comp(
-                self.components_nodes[inst.identifier]
-            )
+        if sub_id not in self.components:
+            assert sub_id in self.components_nodes, f'Component "{sub_id}" not found.'
+            self.components[sub_id] = self.vst_comp(self.components_nodes[sub_id])
 
-        subcomponent_dto, bottom_buses_symbols = deepcopy(
+        sub_dto, sub_bus_symbols = deepcopy(
             (
-                self.components[inst.identifier],
-                self.symbol_table.component_symbols[inst.identifier].bus_symbols,
+                self.components[sub_id],
+                self.symbol_table.component_symbols[sub_id].bus_symbols,
             )
         )
 
-        for bus_symbol in bottom_buses_symbols.values():
+        for bus_id, bus_symbol in sub_bus_symbols.items():
             bus_symbol.is_lower_lvl = True
+            component_symbol.bus_symbols[f"{alias}.{bus_id}"] = bus_symbol
 
-        # Add the subcomponent's buses to the top component's symbol table
-        alias = inst.identifier if inst.alias is None else inst.alias
-        component_symbol.bus_symbols |= {
-            f"{alias}.{bus_id}": bus_symbol
-            for bus_id, bus_symbol in bottom_buses_symbols.items()
-        }
-
-        component_dto.add_subcomponent(subcomponent_dto, alias)  # TODO verify logic
+        for bus_dto in sub_dto.buses:
+            bus_dto.identifier = f"{alias}.{bus_dto.identifier}"
+            component_dto.buses.append(bus_dto)
