@@ -1,11 +1,13 @@
-from .buses import BitBusValue, Bus, BusValue, Evaluator
+from typing import cast
+
+from flote.simulation.buses import BitBus, BitBusValue, Evaluator
 
 
 class Ref(Evaluator):
     """This class represents a reference to a bus in the circuit."""
 
     def __init__(
-        self, bus: Bus[BitBusValue], range_begin: int | None, range_end: int | None
+        self, bus: BitBus, range_begin: int | None, range_end: int | None
     ) -> None:
         self.bus = bus
         self.range_begin = range_begin
@@ -14,7 +16,7 @@ class Ref(Evaluator):
     def __repr__(self) -> str:
         return f"{self.bus.id}"
 
-    def evaluate(self) -> BusValue:
+    def evaluate(self) -> BitBusValue:
         if self.range_begin is None or self.range_end is None:
             return self.bus.value
 
@@ -25,7 +27,7 @@ class Ref(Evaluator):
             return value[self.range_begin : self.range_end + 1]
 
         size = len(value.raw_value)
-        bits = []
+        bits: list[bool] = []
         step = -1 if self.range_begin >= self.range_end else 1
         for logical_index in range(self.range_begin, self.range_end + step, step):
             internal_index = (size - 1) - logical_index
@@ -43,7 +45,7 @@ class Conc(Evaluator):
     def __repr__(self) -> str:
         return f"Conc({self.exprs})"
 
-    def evaluate(self) -> BusValue:
+    def evaluate(self) -> BitBusValue:
         result = BitBusValue([])
 
         for expr in self.exprs:
@@ -53,13 +55,13 @@ class Conc(Evaluator):
 
 
 class Const(Evaluator):
-    def __init__(self, value: BusValue) -> None:
+    def __init__(self, value: BitBusValue) -> None:
         self.value = value
 
     def __repr__(self) -> str:
         return f"Const({self.value})"
 
-    def evaluate(self) -> BusValue:
+    def evaluate(self) -> BitBusValue:
         return self.value
 
 
@@ -90,56 +92,56 @@ class Not(UnaryOperation):
     def __repr__(self) -> str:
         return f"Not {self.expr}"
 
-    def evaluate(self):
-        return ~self.expr.evaluate()
+    def evaluate(self) -> BitBusValue:
+        return cast(BitBusValue, ~self.expr.evaluate())
 
 
 class And(BinaryOperation):
     def __repr__(self) -> str:
         return f"And {self.l_expr} {self.r_expr}"
 
-    def evaluate(self):
-        return self.l_expr.evaluate() & self.r_expr.evaluate()
+    def evaluate(self) -> BitBusValue:
+        return cast(BitBusValue, self.l_expr.evaluate() & self.r_expr.evaluate())
 
 
 class Or(BinaryOperation):
     def __repr__(self) -> str:
         return f"Or {self.l_expr} {self.r_expr}"
 
-    def evaluate(self):
-        return self.l_expr.evaluate() | self.r_expr.evaluate()
+    def evaluate(self) -> BitBusValue:
+        return cast(BitBusValue, self.l_expr.evaluate() | self.r_expr.evaluate())
 
 
 class Xor(BinaryOperation):
     def __repr__(self) -> str:
         return f"Xor {self.l_expr} {self.r_expr}"
 
-    def evaluate(self):
-        return self.l_expr.evaluate() ^ self.r_expr.evaluate()
+    def evaluate(self) -> BitBusValue:
+        return cast(BitBusValue, self.l_expr.evaluate() ^ self.r_expr.evaluate())
 
 
 class Nand(BinaryOperation):
     def __repr__(self) -> str:
         return f"Nand {self.l_expr} {self.r_expr}"
 
-    def evaluate(self):
-        return ~(self.l_expr.evaluate() & self.r_expr.evaluate())
+    def evaluate(self) -> BitBusValue:
+        return cast(BitBusValue, ~(self.l_expr.evaluate() & self.r_expr.evaluate()))
 
 
 class Nor(BinaryOperation):
     def __repr__(self) -> str:
         return f"Nor {self.l_expr} {self.r_expr}"
 
-    def evaluate(self):
-        return ~(self.l_expr.evaluate() | self.r_expr.evaluate())
+    def evaluate(self) -> BitBusValue:
+        return cast(BitBusValue, ~(self.l_expr.evaluate() | self.r_expr.evaluate()))
 
 
 class Xnor(BinaryOperation):
     def __repr__(self) -> str:
         return f"Xnor {self.l_expr} {self.r_expr}"
 
-    def evaluate(self):
-        return ~(self.l_expr.evaluate() ^ self.r_expr.evaluate())
+    def evaluate(self) -> BitBusValue:
+        return cast(BitBusValue, ~(self.l_expr.evaluate() ^ self.r_expr.evaluate()))
 
 
 Operations = And | Or | Xor | Nand | Nor | Xnor | Not

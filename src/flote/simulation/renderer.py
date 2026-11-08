@@ -1,9 +1,9 @@
 from json import loads
 from typing import Any
 
-from . import eval_nodes
-from .buses import BitBus, BitBusValue, Evaluator
-from .component import Component
+from flote.simulation import eval_nodes
+from flote.simulation.buses import BitBus, BitBusValue, Evaluator
+from flote.simulation.component import Component
 
 
 class Renderer:
@@ -13,14 +13,7 @@ class Renderer:
         self.component = self.render()
 
     def render_expr(self, j_expr: dict[str, Any]) -> Evaluator | None:
-        """Render an expression from an intermediate representation (IR) json string.
-
-        Args:
-            j_expr (dict): The intermediate representation of the expression.
-
-        Returns:
-            ExprNode: The rendered expression node.
-        """
+        """Render an expression from an intermediate representation (IR) json string."""
         expr_type = j_expr["type"]
 
         if expr_type == "const":
@@ -73,14 +66,7 @@ class Renderer:
             assert False, f"Unknown expression type: {expr_type}"
 
     def render(self) -> Component:
-        """Render a circuit from an intermediate representation (IR) json string.
-
-        Args:
-            ir (str): The intermediate representation of the quantum circuit.
-
-        Returns:
-            Circuit: The rendered quantum circuit.
-        """
+        """Render a circuit from an intermediate representation (IR) json string."""
 
         # Parse the IR string to get a structured representation
         j_ir = loads(self.ir)

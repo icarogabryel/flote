@@ -2,11 +2,12 @@
 
 from pathlib import Path
 
-from .elaboration.builder import Builder
-from .elaboration.parser import Parser
-from .elaboration.scanner import Scanner
-from .simulation.renderer import Renderer
-from .testbench import TestBench
+from flote.elaboration.ast_nodes import Module
+from flote.elaboration.builder import Builder
+from flote.elaboration.parser import Parser
+from flote.elaboration.scanner import Scanner, Token
+from flote.simulation.renderer import Renderer
+from flote.testbench import TestBench
 
 
 def elaborate(code: str) -> TestBench:
@@ -32,7 +33,7 @@ def elaborate(code: str) -> TestBench:
     return testbench
 
 
-def elaborate_file(file_path) -> TestBench:
+def elaborate_file(file_path: str) -> TestBench:
     """
     Elaborate the code from the given file path and return a TestBench instance for
     simulation.
@@ -44,24 +45,24 @@ def elaborate_file(file_path) -> TestBench:
     return elaborate(code)
 
 
-def get_token_stream(code: str):
+def get_token_stream(code: str) -> list[Token]:
     scanner = Scanner(code)
     return scanner.token_stream
 
 
-def get_ast(code: str):
+def get_ast(code: str) -> Module:
     token_stream = get_token_stream(code)
     parser = Parser(token_stream)
     return parser.ast
 
 
-def get_netlist(code: str):
+def get_netlist(code: str) -> str:
     ast = get_ast(code)
     builder = Builder(ast)
     return builder.netlist
 
 
-def render_netlist(netlist):
+def render_netlist(netlist: str) -> TestBench:
     """Render the given netlist and return the component for simulation."""
     render = Renderer(netlist)
     testbench = TestBench(render.component)

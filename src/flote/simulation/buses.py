@@ -122,7 +122,7 @@ class BitBusValue(BusValue[list[bool]]):
     def get_default(self) -> list[bool]:
         return [False]
 
-    # * Operators overloading
+    # Operators overloading
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, BitBusValue):
@@ -146,8 +146,6 @@ class BitBusValue(BusValue[list[bool]]):
 
     def __xor__(self, other: BusValue[list[bool]]) -> "BitBusValue":
         return BitBusValue([a ^ b for a, b in zip(self.raw_value, other.raw_value)])
-
-    # * End of operators overloading
 
 
 class BitBus(Bus[BitBusValue]):
