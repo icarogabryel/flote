@@ -1,23 +1,25 @@
 import json
+from typing import Any
 
 import pytest
 
 from flote.simulation import eval_nodes
 from flote.simulation.buses import BitBus, BitBusValue
+from flote.simulation.component import Component
 from flote.simulation.renderer import Renderer
 
 
-def render_component(ir: dict):
+def render_component(ir: dict[str, Any]) -> Component:
     return Renderer(json.dumps(ir)).component
 
 
 def bit_bus(
     id_: str,
     value: list[bool] | None = None,
-    assignment: dict | None = None,
+    assignment: dict[str, Any] | None = None,
     influence_list: list[str] | None = None,
     msb_descending: bool = False,
-) -> dict:
+) -> dict[str, Any]:
     return {
         "id": id_,
         "type": "bit_bus",
@@ -28,7 +30,9 @@ def bit_bus(
     }
 
 
-def ref(id_: str, slice_begin: int | None = None, slice_end: int | None = None) -> dict:
+def ref(
+    id_: str, slice_begin: int | None = None, slice_end: int | None = None
+) -> dict[str, Any]:
     return {
         "type": "ref",
         "args": {
@@ -39,16 +43,16 @@ def ref(id_: str, slice_begin: int | None = None, slice_end: int | None = None) 
     }
 
 
-def const(value: list[bool]) -> dict:
+def const(value: list[bool]) -> dict[str, Any]:
     return {"type": "const", "args": {"value": value}}
 
 
-def test_renders_component_busses_values_and_influence_lists():
+def test_renders_component_busses_values_and_influence_lists() -> None:
     component = render_component(
         {
             "component": {
                 "id": "Test",
-                "busses": [
+                "buses": [
                     bit_bus("a", [True, False], influence_list=["y"]),
                     bit_bus("y", [False, False], msb_descending=True),
                 ],
@@ -66,12 +70,12 @@ def test_renders_component_busses_values_and_influence_lists():
     assert component.buses["y"].msb_descending is True
 
 
-def test_renders_ref_assignment_and_updates_component_values():
+def test_renders_ref_assignment_and_updates_component_values() -> None:
     component = render_component(
         {
             "component": {
                 "id": "Test",
-                "busses": [
+                "buses": [
                     bit_bus("a", influence_list=["y"]),
                     bit_bus("y", assignment=ref("a")),
                 ],
@@ -99,12 +103,12 @@ def test_renders_ref_assignment_and_updates_component_values():
         ("xnor", "00"),
     ],
 )
-def test_renders_binary_operation_assignments(expr_type: str, expected: str):
+def test_renders_binary_operation_assignments(expr_type: str, expected: str) -> None:
     component = render_component(
         {
             "component": {
                 "id": "Test",
-                "busses": [
+                "buses": [
                     bit_bus("a", [True, False], influence_list=["y"]),
                     bit_bus("b", [False, True], influence_list=["y"]),
                     bit_bus(
@@ -125,12 +129,12 @@ def test_renders_binary_operation_assignments(expr_type: str, expected: str):
     assert component.buses["y"].value.get_vcd_repr() == expected
 
 
-def test_renders_not_concatenation_constants_and_slices():
+def test_renders_not_concatenation_constants_and_slices() -> None:
     component = render_component(
         {
             "component": {
                 "id": "Test",
-                "busses": [
+                "buses": [
                     bit_bus(
                         "a",
                         [True, False, True, False],
@@ -162,12 +166,12 @@ def test_renders_not_concatenation_constants_and_slices():
     assert component.buses["y"].value.get_vcd_repr() == "0110"
 
 
-def test_renders_descending_msb_slices():
+def test_renders_descending_msb_slices() -> None:
     component = render_component(
         {
             "component": {
                 "id": "Test",
-                "busses": [
+                "buses": [
                     bit_bus(
                         "a",
                         [False, False, True, False],
@@ -196,6 +200,6 @@ def test_renders_descending_msb_slices():
         (bit_bus("a", assignment={"type": "missing", "args": {}}), "Unknown"),
     ],
 )
-def test_rejects_invalid_ir(bus: dict, message: str):
+def test_rejects_invalid_ir(bus: dict[str, Any], message: str) -> None:
     with pytest.raises(AssertionError, match=message):
-        render_component({"component": {"id": "Test", "busses": [bus]}})
+        render_component({"component": {"id": "Test", "buses": [bus]}})
