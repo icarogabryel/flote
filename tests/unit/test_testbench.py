@@ -38,7 +38,7 @@ def signal_values(tb: FloteTestBench) -> dict[str, str]:
     return {signal.id: signal.value for signal in tb.samples[-1].signals}
 
 
-def test_wait_accumulates_simulation_time():
+def test_wait_accumulates_simulation_time() -> None:
     tb = FloteTestBench(make_component())
 
     tb.wait(5)
@@ -47,7 +47,7 @@ def test_wait_accumulates_simulation_time():
     assert tb.s_time == 12
 
 
-def test_sets_valid_time_unit_and_rejects_invalid_time_unit():
+def test_sets_valid_time_unit_and_rejects_invalid_time_unit() -> None:
     tb = FloteTestBench(make_component())
 
     tb.set_time_unit("ps")
@@ -57,7 +57,7 @@ def test_sets_valid_time_unit_and_rejects_invalid_time_unit():
         tb.set_time_unit("minute")
 
 
-def test_update_records_sample_after_stabilizing_component():
+def test_update_records_sample_after_stabilizing_component() -> None:
     tb = FloteTestBench(make_component())
 
     tb.update({"a": "1"})
@@ -67,7 +67,7 @@ def test_update_records_sample_after_stabilizing_component():
     assert signal_values(tb) == {"a": "1", "y": "1"}
 
 
-def test_update_records_samples_at_current_time():
+def test_update_records_samples_at_current_time() -> None:
     tb = FloteTestBench(make_component())
 
     tb.update({"a": "1"})
@@ -78,7 +78,7 @@ def test_update_records_samples_at_current_time():
     assert signal_values(tb) == {"a": "0", "y": "0"}
 
 
-def test_dump_vcd_without_samples_uses_current_component_values():
+def test_dump_vcd_without_samples_uses_current_component_values() -> None:
     component = Component("Top")
     component.buses = {
         "a": make_bit_bus("a", [True]),
@@ -101,7 +101,7 @@ def test_dump_vcd_without_samples_uses_current_component_values():
     assert '$dumpvars\n1!\nb101 "\nb01 #\n$end\n#3\n' in vcd
 
 
-def test_dump_vcd_writes_nested_scopes_and_only_value_changes():
+def test_dump_vcd_writes_nested_scopes_and_only_value_changes() -> None:
     component = Component("Top")
     component.buses = {
         "child.a": make_bit_bus("child.a", [False]),
@@ -126,7 +126,7 @@ def test_dump_vcd_writes_nested_scopes_and_only_value_changes():
     assert "#10\n0!\n" in vcd
 
 
-def test_save_vcd_writes_dump_to_file():
+def test_save_vcd_writes_dump_to_file() -> None:
     tb = FloteTestBench(make_component())
     expected_vcd = tb.dump_vcd()
 
