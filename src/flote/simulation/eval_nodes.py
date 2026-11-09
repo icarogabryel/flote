@@ -1,5 +1,3 @@
-from typing import cast
-
 from flote.simulation.buses import BitBus, BitBusValue, Evaluator
 
 
@@ -93,7 +91,7 @@ class Not(UnaryOperation):
         return f"Not {self.expr}"
 
     def evaluate(self) -> BitBusValue:
-        return cast(BitBusValue, ~self.expr.evaluate())
+        return ~self.expr.evaluate()
 
 
 class And(BinaryOperation):
@@ -101,7 +99,7 @@ class And(BinaryOperation):
         return f"And {self.l_expr} {self.r_expr}"
 
     def evaluate(self) -> BitBusValue:
-        return cast(BitBusValue, self.l_expr.evaluate() & self.r_expr.evaluate())
+        return self.l_expr.evaluate() & self.r_expr.evaluate()
 
 
 class Or(BinaryOperation):
@@ -109,7 +107,7 @@ class Or(BinaryOperation):
         return f"Or {self.l_expr} {self.r_expr}"
 
     def evaluate(self) -> BitBusValue:
-        return cast(BitBusValue, self.l_expr.evaluate() | self.r_expr.evaluate())
+        return self.l_expr.evaluate() | self.r_expr.evaluate()
 
 
 class Xor(BinaryOperation):
@@ -117,7 +115,7 @@ class Xor(BinaryOperation):
         return f"Xor {self.l_expr} {self.r_expr}"
 
     def evaluate(self) -> BitBusValue:
-        return cast(BitBusValue, self.l_expr.evaluate() ^ self.r_expr.evaluate())
+        return self.l_expr.evaluate() ^ self.r_expr.evaluate()
 
 
 class Nand(BinaryOperation):
@@ -125,7 +123,7 @@ class Nand(BinaryOperation):
         return f"Nand {self.l_expr} {self.r_expr}"
 
     def evaluate(self) -> BitBusValue:
-        return cast(BitBusValue, ~(self.l_expr.evaluate() & self.r_expr.evaluate()))
+        return ~(self.l_expr.evaluate() & self.r_expr.evaluate())
 
 
 class Nor(BinaryOperation):
@@ -133,7 +131,7 @@ class Nor(BinaryOperation):
         return f"Nor {self.l_expr} {self.r_expr}"
 
     def evaluate(self) -> BitBusValue:
-        return cast(BitBusValue, ~(self.l_expr.evaluate() | self.r_expr.evaluate()))
+        return ~(self.l_expr.evaluate() | self.r_expr.evaluate())
 
 
 class Xnor(BinaryOperation):
@@ -141,7 +139,7 @@ class Xnor(BinaryOperation):
         return f"Xnor {self.l_expr} {self.r_expr}"
 
     def evaluate(self) -> BitBusValue:
-        return cast(BitBusValue, ~(self.l_expr.evaluate() ^ self.r_expr.evaluate()))
+        return ~(self.l_expr.evaluate() ^ self.r_expr.evaluate())
 
 
 Operations = And | Or | Xor | Nand | Nor | Xnor | Not

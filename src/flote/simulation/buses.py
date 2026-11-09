@@ -1,17 +1,13 @@
 import re
 from abc import ABC, abstractmethod
-from typing import Any, Generic, Optional, TypeVar
-
-from typing_extensions import Self
-
-T = TypeVar("T")
+from typing import Any, Optional
 
 
 class Evaluator(ABC):
     """Base class for all evaluators."""
 
     @abstractmethod
-    def evaluate(self) -> "BusValue[Any]":
+    def evaluate(self) -> "BitBusValue":
         """Evaluate the expression."""
         pass
 
@@ -26,90 +22,11 @@ class SimulationError(Exception):
         return self.message
 
 
-class BusValue(Generic[T]):
-    """This class represents the value of a bus in the circuit."""
-
-    def __init__(self, value: T | None = None) -> None:
-        self.raw_value: T = self.get_default() if value is None else value
-
-    @abstractmethod
-    def get_default(self) -> T:
-        """This method returns the default value of the bus."""
-        pass
-
-    @abstractmethod
-    def __eq__(self, other: object) -> bool:
-        pass
-
-    @abstractmethod
-    def __getitem__(self, slice: slice) -> Self:
-        pass
-
-    @abstractmethod
-    def __add__(self, other: Self) -> Self:
-        """Used for concatenation of bus values."""
-        pass
-
-    @abstractmethod
-    def __invert__(self) -> Self:
-        pass
-
-    @abstractmethod
-    def __and__(self, other: Self) -> Self:
-        pass
-
-    @abstractmethod
-    def __or__(self, other: Self) -> Self:
-        pass
-
-    @abstractmethod
-    def __xor__(self, other: Self) -> Self:
-        pass
-
-
-class Bus(Generic[T]):
-    """This class represents a concrete bus in the circuit."""
-
-    def __init__(self) -> None:
-        self.id: Optional[str] = None
-        self.assignment: Any = None
-        self.value: T = self.get_default()
-        # The list of buses that the current bus depends on.
-        self.influence_list: list[Self] = []
-        self.msb_descending = False
-
-    def __str__(self) -> str:
-        return (
-            f"id: {self.id} assign: {self.assignment} IL: "
-            f"{[bus.id for bus in self.influence_list]} Value: {self.value}"
-        )
-
-    def __repr__(self) -> str:
-        return self.__str__()
-
-    @abstractmethod
-    def get_default(self) -> T:
-        """This method returns the default value of the bus."""
-        pass
-
-    @abstractmethod
-    def get_valid_values(self) -> list[str]:
-        """This method returns the valid values for the bus."""
-        pass
-
-    @abstractmethod
-    def insert_value(self, value: str) -> None:
-        """This method inserts a value into the bus if it is valid"""
-        pass
-
-    def assign(self) -> None:
-        """Do the assignment of the bus when not None."""
-        if self.assignment:
-            self.value = self.assignment.evaluate()
-
-
-class BitBusValue(BusValue[list[bool]]):
+class BitBusValue:
     """This class represents a value of a BitBus."""
+
+    def __init__(self, value: list[bool] | None = None) -> None:
+        self.raw_value: list[bool] = self.get_default() if value is None else value
 
     def __repr__(self) -> str:
         return f"{self.raw_value}"
@@ -120,6 +37,7 @@ class BitBusValue(BusValue[list[bool]]):
         return value
 
     def get_default(self) -> list[bool]:
+        """This method returns the default value of the bus."""
         return [False]
 
     # Operators overloading
@@ -132,35 +50,56 @@ class BitBusValue(BusValue[list[bool]]):
     def __getitem__(self, slice: slice) -> "BitBusValue":
         return BitBusValue(self.raw_value[slice])
 
-    def __add__(self, other: BusValue[list[bool]]) -> "BitBusValue":
+    def __add__(self, other: "BitBusValue") -> "BitBusValue":
+        """Used for concatenation of bus values."""
         return BitBusValue(self.raw_value + other.raw_value)
 
     def __invert__(self) -> "BitBusValue":
         return BitBusValue([not bit for bit in self.raw_value])
 
-    def __and__(self, other: BusValue[list[bool]]) -> "BitBusValue":
+    def __and__(self, other: "BitBusValue") -> "BitBusValue":
         return BitBusValue([a and b for a, b in zip(self.raw_value, other.raw_value)])
 
-    def __or__(self, other: BusValue[list[bool]]) -> "BitBusValue":
+    def __or__(self, other: "BitBusValue") -> "BitBusValue":
         return BitBusValue([a or b for a, b in zip(self.raw_value, other.raw_value)])
 
-    def __xor__(self, other: BusValue[list[bool]]) -> "BitBusValue":
+    def __xor__(self, other: "BitBusValue") -> "BitBusValue":
         return BitBusValue([a ^ b for a, b in zip(self.raw_value, other.raw_value)])
 
 
-class BitBus(Bus[BitBusValue]):
+class BitBus:
     """This class represents a bit bus in the circuit."""
 
+    def __init__(self) -> None:
+        self.id: Optional[str] = None
+        self.assignment: Any = None
+        self.value: BitBusValue = self.get_default()
+        # The list of buses that the current bus depends on.
+        self.influence_list: list["BitBus"] = []
+        self.msb_descending = False
+
+    def __str__(self) -> str:
+        return (
+            f"id: {self.id} assign: {self.assignment} IL: "
+            f"{[bus.id for bus in self.influence_list]} Value: {self.value}"
+        )
+
+    def __repr__(self) -> str:
+        return self.__str__()
+
     def get_default(self) -> BitBusValue:
+        """This method returns the default value of the bus."""
         return BitBusValue()
 
     def set_dimension(self, dimension: int) -> None:
         self.value = BitBusValue([False] * dimension)
 
     def get_valid_values(self) -> list[str]:
+        """This method returns the valid values for the bus."""
         return ["[01]+"]
 
     def insert_value(self, value: str) -> None:
+        """This method inserts a value into the bus if it is valid"""
         if not re.fullmatch(r"[01]+", value):
             raise SimulationError(
                 f'Invalid value "{value}". Valid values are: {self.get_valid_values()}'
@@ -173,3 +112,8 @@ class BitBus(Bus[BitBusValue]):
             )
 
         self.value = BitBusValue([bool(int(bit)) for bit in value.strip('"')])
+
+    def assign(self) -> None:
+        """Do the assignment of the bus when not None."""
+        if self.assignment:
+            self.value = self.assignment.evaluate()
