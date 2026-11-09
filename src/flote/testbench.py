@@ -59,18 +59,15 @@ class TestBench:
         else:
             self.time_unit = time_unit
 
-    def dump_vcd(self) -> str:
-        """Returns the simulation as the content of a VCD file."""
+    def save_vcd(self, file_path: str) -> None:
+        """Saves the simulation as a VCD file."""
         generator = f"Flote v{VERSION} - {CODENAME}"
-
-        return vcd.dump(
+        content = vcd.dump(
             self.component, self.samples, self.s_time, self.time_unit, generator
         )
 
-    def save_vcd(self, file_path: str) -> None:
-        """This method saves the vcd file."""
         with open(file_path, "w") as f:
-            f.write(self.dump_vcd())
+            f.write(content)
 
     def update(self, new_values: dict[str, str]) -> None:
         sample = WaveSample(self.s_time, [])
