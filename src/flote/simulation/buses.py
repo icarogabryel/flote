@@ -1,6 +1,5 @@
 import re
 from abc import ABC, abstractmethod
-from typing import Any, Optional
 
 
 class Evaluator(ABC):
@@ -71,8 +70,8 @@ class BitBus:
     """This class represents a bit bus in the circuit."""
 
     def __init__(self) -> None:
-        self.id: Optional[str] = None
-        self.assignment: Any = None
+        self.id: None | str = None
+        self.assignment: None | Evaluator = None
         self.value: BitBusValue = self.get_default()
         # The list of buses that the current bus depends on.
         self.influence_list: list["BitBus"] = []
