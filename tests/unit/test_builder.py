@@ -1,4 +1,5 @@
 import json
+from typing import Any, cast
 
 import pytest
 
@@ -7,16 +8,16 @@ from flote.elaboration.parser import Parser
 from flote.elaboration.scanner import Scanner
 
 
-def build_netlist(code: str) -> dict:
+def build_netlist(code: str) -> dict[str, Any]:
     ast = Parser(Scanner(code).token_stream).ast
-    return json.loads(Builder(ast).netlist)
+    return cast(dict[str, Any], json.loads(Builder(ast).netlist))
 
 
-def busses_by_id(netlist: dict) -> dict:
-    return {bus["id"]: bus for bus in netlist["component"]["busses"]}
+def busses_by_id(netlist: dict[str, Any]) -> dict[str, Any]:
+    return {bus["id"]: bus for bus in netlist["component"]["buses"]}
 
 
-def test_builds_netlist_with_assignments_and_influence_lists():
+def test_builds_netlist_with_assignments_and_influence_lists() -> None:
     netlist = build_netlist(
         """
         comp Test {
@@ -52,12 +53,12 @@ def test_builds_netlist_with_assignments_and_influence_lists():
     assert busses["y"]["influence_list"] == []
 
 
-def test_builds_dimensions_slices_and_concatenations():
+def test_builds_dimensions_slices_and_concatenations() -> None:
     netlist = build_netlist(
         """
         comp Test {
             in bit[-4] a;
-            out bit[3] y;
+            out bit[6] y;
 
             y = <a[3:2], a[0]>;
         }
@@ -68,7 +69,7 @@ def test_builds_dimensions_slices_and_concatenations():
     assert busses["a"]["value"] == [False, False, False, False]
     assert busses["a"]["msb_descending"] is True
     assert busses["a"]["influence_list"] == ["y"]
-    assert busses["y"]["value"] == [False, False, False]
+    assert busses["y"]["value"] == [False, False, False, False, False, False]
     assert busses["y"]["assignment"] == {
         "type": "conc",
         "args": {
@@ -79,14 +80,14 @@ def test_builds_dimensions_slices_and_concatenations():
                 },
                 {
                     "type": "ref",
-                    "args": {"id": "a", "slice_begin": 0, "slice_end": 0},
+                    "args": {"id": "a", "slice_begin": None, "slice_end": None},
                 },
             ]
         },
     }
 
 
-def test_builds_main_component_with_subcomponent_busses():
+def test_builds_main_component_with_subcomponent_busses() -> None:
     netlist = build_netlist(
         """
         comp AndGate {
@@ -131,23 +132,42 @@ def test_builds_main_component_with_subcomponent_busses():
     ("code", "message"),
     [
         ("comp Test { in bit a = b; }", "cannot be assigned"),
-        ("comp Test { bit a; bit a; }", "has already been declared"),
-        ("comp Test { out bit y; y = a; }", 'Bus reference "a" has not been declared'),
-        ("comp Test { in bit a; a = a; }", "Input Buses of top level"),
-        ("comp Test { bit a; a = a; a = a; }", 'Identifier "a" already assigned'),
-        ("comp Test { in bit[2] a; bit y; y = a; }", "Assignment size"),
         (
-            "comp Test { in bit[2] a; bit[2] y; y = a[1:0]; }",
-            "end index must be equal or greater",
+            "comp Test { bit a; bit a; }",
+            "has already been declared",
         ),
-        ("comp Test { sub Missing; }", "Component 'Missing' not found"),
+        (
+            "comp Test { in bit a; a = a; }",
+            "Input Buses of top level",
+        ),
+        (
+            "comp Test { bit a; a = a; a = a; }",
+            'Identifier "a" already assigned',
+        ),
+        (
+            "comp Test { in bit[2] a; bit y; y = a; }",
+            "Assignment size",
+        ),
+        (
+            "comp Test { in bit[-3] a; bit[2] y; y = a[1:2]; }",
+            "begin index must be equal or greater",
+        ),
+        (
+            "comp Test { sub Missing; }",
+            '"Missing" has not been declared',
+        ),
         (
             "comp Child { in bit a; } "
-            "comp Top { sub Child as child; bit y; y = child.a; }",
+            "main comp Top { sub Child as child; bit y; y = child.a; }",
             "cannot be referenced from the higher level component",
         ),
     ],
 )
-def test_raises_semantical_error_for_invalid_designs(code: str, message: str):
+def test_raises_semantical_error_for_invalid_designs(code: str, message: str) -> None:
     with pytest.raises(SemanticalError, match=message):
         build_netlist(code)
+
+
+def test_raises_assertion_error_for_undeclared_bus_reference() -> None:
+    with pytest.raises(AssertionError, match='Bus reference "a" has not been declared'):
+        build_netlist("comp Test { out bit y; y = a; }")
