@@ -17,7 +17,7 @@ def only_component(code: str) -> ast_nodes.Component:
 
 def ref_name(expr: ast_nodes.ExpressionElement) -> str:
     assert isinstance(expr, ast_nodes.Reference)
-    return expr.id_.full_id
+    return expr.identifier.full_id
 
 
 def test_parses_main_component_and_additional_components() -> None:
@@ -104,12 +104,12 @@ def test_parses_assignments_to_identifiers_and_members() -> None:
     first, second = comp.statements
     assert isinstance(first, ast_nodes.Assignment)
     assert first.destiny.full_id == "a"
-    assert ref_name(first.expr) == "b"
+    assert ref_name(first.expression) == "b"
 
     assert isinstance(second, ast_nodes.Assignment)
     assert isinstance(second.destiny, ast_nodes.MemberAccess)
     assert second.destiny.full_id == "child.input"
-    assert ref_name(second.expr) == "a"
+    assert ref_name(second.expression) == "a"
 
 
 def test_parses_references_with_indexes_slices_and_members() -> None:
@@ -178,7 +178,7 @@ def test_parses_expression_precedence() -> None:
     )
 
     assert isinstance(comp.statements[0], ast_nodes.Assignment)
-    expr = comp.statements[0].expr
+    expr = comp.statements[0].expression
     assert isinstance(expr, ast_nodes.OrOp)
     assert isinstance(expr.l_expr, ast_nodes.Reference)
     assert ref_name(expr.l_expr) == "a"
@@ -204,13 +204,13 @@ def test_parses_parentheses_not_and_concatenation() -> None:
     )
 
     assert isinstance(comp.statements[0], ast_nodes.Assignment)
-    expr = comp.statements[0].expr
+    expr = comp.statements[0].expression
     assert isinstance(expr, ast_nodes.Concatenation)
     assert len(expr.expressions) == 3
 
     assert isinstance(expr.expressions[0], ast_nodes.NotOp)
-    assert isinstance(expr.expressions[0].expr, ast_nodes.Reference)
-    assert ref_name(expr.expressions[0].expr) == "a"
+    assert isinstance(expr.expressions[0].expression, ast_nodes.Reference)
+    assert ref_name(expr.expressions[0].expression) == "a"
 
     assert isinstance(expr.expressions[1], ast_nodes.OrOp)
     assert isinstance(expr.expressions[1].l_expr, ast_nodes.Reference)

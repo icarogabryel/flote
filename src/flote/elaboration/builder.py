@@ -269,7 +269,7 @@ class Builder:
                 assignment_node.destiny.line_number,
             )
 
-        assignment, size = self.vst_expr(assignment_node.expr, component_dto)
+        assignment, size = self.vst_expr(assignment_node.expression, component_dto)
 
         if size != bus_symbol.size:
             raise SemanticalError(
@@ -314,12 +314,14 @@ class Builder:
         if isinstance(expression_element_node, ast_nodes.Reference):
             ref = expression_element_node  # Change name for better readability
 
-            assert (ref_id := ref.id_.full_id) in self.symbol_table.component_symbols[
-                component_id
-            ].bus_symbols.keys(), f'Bus reference "{ref_id}" has not been declared.'
+            assert (
+                ref_id := ref.identifier.full_id
+            ) in self.symbol_table.component_symbols[component_id].bus_symbols.keys(), (
+                f'Bus reference "{ref_id}" has not been declared.'
+            )
 
             bus_symbol = self.symbol_table.component_symbols[component_id].bus_symbols[
-                expression_element_node.id_.full_id
+                expression_element_node.identifier.full_id
             ]
 
             # Validate subcomponents busses references
@@ -331,7 +333,7 @@ class Builder:
                         f'Input/Internal busses like "{ref_id}" of a subcomponent '
                         f"cannot be referenced from the higher level component."
                     ),
-                    ref.id_.line_number,
+                    ref.identifier.line_number,
                 )
 
             # Validate range
@@ -339,14 +341,14 @@ class Builder:
                 if ref.range_begin >= (size := bus_symbol.size):
                     raise SemanticalError(
                         f'Index [{ref.range_begin}:] out of bounds for "{ref_id}".',
-                        ref.id_.line_number,
+                        ref.identifier.line_number,
                     )
 
                 if ref.range_end:
                     if ref.range_end >= size:
                         raise SemanticalError(
                             f'Index [:{ref.range_end}] out of bounds for "{ref_id}".',
-                            ref.id_.line_number,
+                            ref.identifier.line_number,
                         )
 
                     if bus_symbol.msb_descending:
@@ -357,7 +359,7 @@ class Builder:
                                     "For descending buses, begin index must be equal or"
                                     " greater than the end index."
                                 ),
-                                ref.id_.line_number,
+                                ref.identifier.line_number,
                             )
                     else:
                         if ref.range_begin > ref.range_end:
@@ -367,7 +369,7 @@ class Builder:
                                     "The end index must be equal or greater than to the"
                                     " begin index."
                                 ),
-                                ref.id_.line_number,
+                                ref.identifier.line_number,
                             )
 
                     range_begin = ref.range_begin
@@ -402,7 +404,9 @@ class Builder:
 
             return const, bit_field.size  # TODO check size
         elif isinstance(expression_element_node, ast_nodes.NotOp):
-            expr, size = self.vst_expr_elem(expression_element_node.expr, component_dto)
+            expr, size = self.vst_expr_elem(
+                expression_element_node.expression, component_dto
+            )
 
             return expression_nodes.Not(expr), size
         elif isinstance(expression_element_node, ast_nodes.Concatenation):
