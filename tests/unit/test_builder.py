@@ -128,6 +128,29 @@ def test_builds_main_component_with_subcomponent_busses() -> None:
     }
 
 
+def test_builds_components_that_are_not_used_by_main_component() -> None:
+    ast = Parser(
+        Scanner(
+            """
+            comp Unused {
+                in bit a;
+                out bit y;
+
+                y = a;
+            }
+
+            main comp Top {
+                out bit y = "1";
+            }
+            """
+        ).token_stream
+    ).ast
+
+    builder = Builder(ast)
+
+    assert set(builder.components) == {"Unused", "Top"}
+
+
 @pytest.mark.parametrize(
     ("code", "message"),
     [

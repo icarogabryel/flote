@@ -129,16 +129,18 @@ class Builder:
             "Parser should block modules with no components"
         )
 
+        # Build every component definition, including definitions that are not
+        # instantiated by the main component.
+        for component_node in module_node.components:
+            component_id = component_node.identifier.full_id
+            if component_id not in self.components:
+                self.components[component_id] = self.vst_comp(component_node)
+
+        main_component: None | ComponentDto = None
         if len(module_node.components) == 1:
-            component_dto = self.vst_comp(module_node.components[0])
-            self.components[module_node.components[0].identifier.full_id] = (
-                component_dto
-            )
-
-            return component_dto
+            component_id = module_node.components[0].identifier.full_id
+            main_component = self.components[component_id]
         else:  # If there are multiple components, its assumed one of them is the main
-            main_component: None | ComponentDto = None
-
             # Search for the main component
             for component_node in module_node.components:
                 if component_node.is_main:
@@ -151,10 +153,7 @@ class Builder:
                             component_node.line_number,
                         )
 
-                    # Add component to the components dict
-                    component_dto = self.vst_comp(component_node)
-                    self.components[component_dto.identifier] = component_dto
-                    main_component = component_dto
+                    main_component = self.components[component_node.identifier.full_id]
 
             if not main_component:
                 raise SemanticalError(
