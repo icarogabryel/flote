@@ -54,7 +54,7 @@ def _expression_to_json(expression_dto: expression.ExpressionDto) -> dict[str, A
     raise TypeError(f"Unsupported expression DTO: {type(expression_dto).__name__}")
 
 
-def _component_to_json(component_dto: component.ComponentDto) -> dict[str, Any]:
+def component_to_json(component_dto: component.ComponentDto) -> dict[str, Any]:
     return {
         "component": {
             "id": component_dto.identifier,
