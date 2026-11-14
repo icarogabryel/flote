@@ -1,19 +1,15 @@
+from __future__ import annotations
+
 import re
-from abc import ABC, abstractmethod
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from flote.simulation.expression import Evaluator
 
 
 def _mask(width: int) -> int:
     """Máscara com `width` bits ligados."""
     return (1 << width) - 1
-
-
-class Evaluator(ABC):
-    """Base class for all evaluators."""
-
-    @abstractmethod
-    def evaluate(self) -> "BitBusValue":
-        """Evaluate the expression."""
-        pass
 
 
 class SimulationError(Exception):

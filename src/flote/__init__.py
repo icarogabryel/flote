@@ -9,7 +9,7 @@ from .api import render_netlist as render_netlist
 # ruff: isort: split
 
 # Structures for manual elaboration
-from .simulation import eval_nodes as eval_nodes
+from .simulation import expression as expression
 from .simulation.buses import BitBus as BitBus
 from .simulation.component import Component as Component
 

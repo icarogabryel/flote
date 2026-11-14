@@ -1,4 +1,15 @@
-from flote.simulation.buses import BitBus, BitBusValue, Evaluator
+from abc import ABC, abstractmethod
+
+from flote.simulation.buses import BitBus, BitBusValue
+
+
+class Evaluator(ABC):
+    """Base class for all evaluators."""
+
+    @abstractmethod
+    def evaluate(self) -> BitBusValue:
+        """Evaluate the expression."""
+        pass
 
 
 class Ref(Evaluator):

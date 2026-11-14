@@ -1,7 +1,7 @@
-from flote.ir import expression
+from flote.ir import expression as ir_expression
 from flote.ir.component import ComponentDto
-from flote.simulation import eval_nodes
-from flote.simulation.buses import BitBus, BitBusValue, Evaluator
+from flote.simulation import expression
+from flote.simulation.buses import BitBus, BitBusValue
 from flote.simulation.component import Component
 
 
@@ -20,33 +20,33 @@ class Renderer:
         self.buffer_bus_dict: dict[str, BitBus] = {}
         self.component = self.render()
 
-    def render_expr(self, expr: expression.ExpressionDto) -> Evaluator:
+    def render_expr(self, expr: ir_expression.ExpressionDto) -> expression.Evaluator:
         """Render an expression from the dataclass intermediate representation."""
-        if isinstance(expr, expression.ConstDto):
+        if isinstance(expr, ir_expression.ConstDto):
             value = bools_to_value(expr.value)
 
-            return eval_nodes.Const(value)
-        elif isinstance(expr, expression.RefDto):
+            return expression.Const(value)
+        elif isinstance(expr, ir_expression.RefDto):
             bus = self.buffer_bus_dict[expr.bus.identifier]
-            return eval_nodes.Ref(bus, expr.slice_begin, expr.slice_end)
-        elif isinstance(expr, expression.NotDto):
-            return eval_nodes.Not(self.render_expr(expr.expr))
-        elif isinstance(expr, expression.ConcDto):
-            rendered_exprs: list[Evaluator] = []
+            return expression.Ref(bus, expr.slice_begin, expr.slice_end)
+        elif isinstance(expr, ir_expression.NotDto):
+            return expression.Not(self.render_expr(expr.expr))
+        elif isinstance(expr, ir_expression.ConcDto):
+            rendered_exprs: list[expression.Evaluator] = []
             for sub_expr in expr.exprs:
                 rendered_exprs.append(self.render_expr(sub_expr))
-            return eval_nodes.Conc(rendered_exprs)
-        elif isinstance(expr, expression.BinaryOperationDto):
+            return expression.Conc(rendered_exprs)
+        elif isinstance(expr, ir_expression.BinaryOperationDto):
             binary_expr_types: dict[
-                type[expression.BinaryOperationDto],
-                type[eval_nodes.BinaryOperation],
+                type[ir_expression.BinaryOperationDto],
+                type[expression.BinaryOperation],
             ] = {
-                expression.AndDto: eval_nodes.And,
-                expression.OrDto: eval_nodes.Or,
-                expression.XorDto: eval_nodes.Xor,
-                expression.NandDto: eval_nodes.Nand,
-                expression.NorDto: eval_nodes.Nor,
-                expression.XnorDto: eval_nodes.Xnor,
+                ir_expression.AndDto: expression.And,
+                ir_expression.OrDto: expression.Or,
+                ir_expression.XorDto: expression.Xor,
+                ir_expression.NandDto: expression.Nand,
+                ir_expression.NorDto: expression.Nor,
+                ir_expression.XnorDto: expression.Xnor,
             }
             for expression_type, evaluator_type in binary_expr_types.items():
                 if isinstance(expr, expression_type):
