@@ -11,5 +11,5 @@ from flote.ir.buses import BitBusDto
 class ComponentDto:
     """Data-only representation of a component."""
 
-    identifier: str
+    id_: str
     buses: list[BitBusDto]

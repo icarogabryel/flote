@@ -59,7 +59,7 @@ class Renderer:
 
     def render(self) -> Component:
         """Render a circuit from a dataclass intermediate representation."""
-        component = Component(self.ir.identifier)
+        component = Component(self.ir.id_)
 
         for ir_bus in self.ir.buses:
             bus = BitBus()

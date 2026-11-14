@@ -57,7 +57,7 @@ def _expression_to_json(expression_dto: expression.ExpressionDto) -> dict[str, A
 def component_to_json(component_dto: component.ComponentDto) -> dict[str, Any]:
     return {
         "component": {
-            "id": component_dto.identifier,
+            "id": component_dto.id_,
             "buses": [
                 {
                     "id": bus.identifier,
