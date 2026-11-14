@@ -5,7 +5,6 @@ Base Bus class and its std subclasses.
 
 # TODO refactor __str__ and __repr__ of this module
 
-from abc import abstractmethod
 from typing import TYPE_CHECKING, Any
 
 from flote.elaboration.ir.representation import JsonRepresentation
@@ -14,16 +13,19 @@ if TYPE_CHECKING:
     from .expression_nodes import ExpressionNode
 
 
-class BusDto(JsonRepresentation):
-    """This abstract class represents a bus in the circuit."""
+class BitBusDto(JsonRepresentation):
+    """This class represents a bit bus in the circuit."""
 
-    def __init__(self, identifier: str, type_: str) -> None:
+    type_ = "bit_bus"
+
+    def __init__(self, identifier: str, dimension: int, msb_descending: bool) -> None:
         self.identifier = identifier
-        self.type_ = type_
+        self.dimension = dimension
+        self.msb_descending = msb_descending
         self.assignment: None | ExpressionNode = None
-        self.value: Any = self.get_default()
+        self.value: list[bool] = [False] * dimension
         # The list of buses that the current bus depends on. TODO is that right?
-        self.influence_list: list[BusDto] = []
+        self.influence_list: list[BitBusDto] = []
 
     def __str__(self) -> str:
         return (
@@ -34,34 +36,13 @@ class BusDto(JsonRepresentation):
 
     def make_influence_list(self) -> None:
         """This method adds an assignment to the bus."""  # TODO is that right?
-        sensitivity_list: list[BusDto] = []
+        sensitivity_list: list[BitBusDto] = []
         if self.assignment:
             sensitivity_list = self.assignment.get_sensitivity_list()
 
         for bus in sensitivity_list:
             if self not in bus.influence_list:
                 bus.influence_list.append(self)
-
-    @abstractmethod
-    def get_default(self) -> Any:
-        """This method returns the default value of the bus."""
-        pass
-
-    @abstractmethod
-    def to_json(self) -> dict[str, Any]:
-        pass
-
-
-class BitBusDto(BusDto):
-    """This class represents a bit bus in the circuit."""
-
-    def __init__(self, identifier: str, dimension: int, msb_descending: bool) -> None:
-        self.dimension = dimension
-        super().__init__(identifier, "bit_bus")
-        self.msb_descending = msb_descending
-
-    def get_default(self) -> list[bool]:
-        return [False] * self.dimension
 
     def to_json(self) -> dict[str, Any]:
         if self.assignment is None:

@@ -6,13 +6,13 @@
 from abc import abstractmethod
 from typing import Any, TypeAlias
 
-from flote.elaboration.ir.buses import BusDto
+from flote.elaboration.ir.buses import BitBusDto
 from flote.elaboration.ir.representation import JsonRepresentation
 
 
 class ExpressionNode(JsonRepresentation):
     @abstractmethod
-    def get_sensitivity_list(self) -> list[BusDto]:
+    def get_sensitivity_list(self) -> list[BitBusDto]:
         return []
 
 
@@ -20,7 +20,7 @@ class Ref(ExpressionNode):
     """This class represents a reference to a bus in the circuit."""
 
     def __init__(
-        self, bus: BusDto, slice_begin: int | None, slice_end: int | None
+        self, bus: BitBusDto, slice_begin: int | None, slice_end: int | None
     ) -> None:
         self.bus = bus
         self.slice_begin = slice_begin
@@ -32,7 +32,7 @@ class Ref(ExpressionNode):
     def __str__(self) -> str:
         return f"Ref ({self.bus.identifier})"
 
-    def get_sensitivity_list(self) -> list[BusDto]:
+    def get_sensitivity_list(self) -> list[BitBusDto]:
         return [self.bus]
 
     def to_json(self) -> dict[str, Any]:
@@ -70,8 +70,8 @@ class Conc(ExpressionNode):
             "args": {"exprs": [expr.to_json() for expr in self.exprs]},
         }
 
-    def get_sensitivity_list(self) -> list[BusDto]:
-        sensitivity_list: list[BusDto] = []
+    def get_sensitivity_list(self) -> list[BitBusDto]:
+        sensitivity_list: list[BitBusDto] = []
 
         for expr in self.exprs:
             sensitivity_list += expr.get_sensitivity_list()
@@ -94,7 +94,7 @@ class Const(ExpressionNode):
     def to_json(self) -> dict[str, Any]:
         return {"type": "const", "args": {"value": self.value}}
 
-    def get_sensitivity_list(self) -> list[BusDto]:
+    def get_sensitivity_list(self) -> list[BitBusDto]:
         return []
 
 
@@ -104,7 +104,7 @@ class UnaryOperation(ExpressionNode):
     def __init__(self, expr: ExpressionNode) -> None:
         self.expr = expr
 
-    def get_sensitivity_list(self) -> list[BusDto]:
+    def get_sensitivity_list(self) -> list[BitBusDto]:
         return self.expr.get_sensitivity_list()
 
 
@@ -115,7 +115,7 @@ class BinaryOperation(ExpressionNode):
         self.l_expr = l_expr
         self.r_expr = r_expr
 
-    def get_sensitivity_list(self) -> list[BusDto]:
+    def get_sensitivity_list(self) -> list[BitBusDto]:
         return self.l_expr.get_sensitivity_list() + self.r_expr.get_sensitivity_list()
 
 

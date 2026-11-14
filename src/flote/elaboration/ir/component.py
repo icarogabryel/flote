@@ -4,7 +4,7 @@
 
 from typing import Any
 
-from flote.elaboration.ir.buses import BusDto
+from flote.elaboration.ir.buses import BitBusDto
 from flote.elaboration.ir.representation import JsonRepresentation
 
 
@@ -13,7 +13,7 @@ class ComponentDto(JsonRepresentation):
 
     def __init__(self, identifier: str) -> None:
         self.identifier: str = identifier
-        self.buses: list[BusDto] = []
+        self.buses: list[BitBusDto] = []
 
     def __repr__(self) -> str:
         return "\n".join([bus.__str__() for bus in self.buses])

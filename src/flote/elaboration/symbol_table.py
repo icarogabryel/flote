@@ -1,5 +1,5 @@
 from flote.elaboration import ast_nodes
-from flote.elaboration.ir.buses import BusDto
+from flote.elaboration.ir.buses import BitBusDto
 from flote.elaboration.ir.component import ComponentDto
 
 # TODO refactor __str__ and __repr__ of this module
@@ -15,7 +15,7 @@ class BusSymbol:
         connection_type: ast_nodes.Connection,
         size: int,
         msb_descending: bool,
-        object_: BusDto,
+        object_: BitBusDto,
     ) -> None:
         self.type = type
         self.is_assigned = is_assigned
