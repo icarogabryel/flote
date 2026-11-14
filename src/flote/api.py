@@ -8,7 +8,7 @@ from flote.elaboration.builder import Builder
 from flote.elaboration.parser import Parser
 from flote.elaboration.scanner import Scanner, Token
 from flote.ir.component import ComponentDto
-from flote.representations.json_representation import component_to_json
+from flote.representations.json import component_to_json
 from flote.simulation.renderer import Renderer
 from flote.testbench import TestBench
 
