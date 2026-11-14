@@ -10,7 +10,7 @@ def _expression_to_json(expression_dto: expression.ExpressionDto) -> dict[str, A
         return {
             "type": "ref",
             "args": {
-                "id": expression_dto.bus.identifier,
+                "id": expression_dto.bus,
                 "slice_begin": expression_dto.slice_begin,
                 "slice_end": expression_dto.slice_end,
             },
@@ -70,8 +70,7 @@ def component_to_json(component_dto: component.ComponentDto) -> dict[str, Any]:
                         else _expression_to_json(bus.assignment)
                     ),
                     "influence_list": [
-                        influenced_bus.identifier
-                        for influenced_bus in bus.influence_list
+                        influenced_bus for influenced_bus in bus.influence_list
                     ],
                 }
                 for bus in component_dto.buses

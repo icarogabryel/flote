@@ -26,7 +26,7 @@ class Renderer:
 
             return expression.Const(value)
         elif isinstance(expr, ir_expression.RefDto):
-            bus = self.buffer_bus_dict[expr.bus.identifier]
+            bus = self.buffer_bus_dict[expr.bus]
             return expression.Ref(bus, expr.slice_begin, expr.slice_end)
         elif isinstance(expr, ir_expression.NotDto):
             return expression.Not(self.render_expr(expr.expr))
@@ -74,7 +74,7 @@ class Renderer:
                 bit_bus.assignment = self.render_expr(ir_bus.assignment)
 
             for influenced_ir_bus in ir_bus.influence_list:
-                influenced_bus = self.buffer_bus_dict[influenced_ir_bus.identifier]
+                influenced_bus = self.buffer_bus_dict[influenced_ir_bus]
                 if influenced_bus not in bit_bus.influence_list:
                     bit_bus.influence_list.append(influenced_bus)
 

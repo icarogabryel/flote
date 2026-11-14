@@ -16,4 +16,4 @@ class BitBusDto:
     msb_descending: bool
     assignment: ExpressionDto | None
     value: str
-    influence_list: list[BitBusDto] = field(default_factory=lambda: list[BitBusDto]())
+    influence_list: list[str] = field(default_factory=lambda: list[str]())

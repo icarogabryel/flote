@@ -1,6 +1,5 @@
 """Functions for the API."""
 
-from json import dumps
 from pathlib import Path
 
 from flote.elaboration.ast_nodes import Module
@@ -8,7 +7,6 @@ from flote.elaboration.builder import Builder
 from flote.elaboration.parser import Parser
 from flote.elaboration.scanner import Scanner, Token
 from flote.ir.component import ComponentDto
-from flote.representations.json import component_to_json
 from flote.simulation.renderer import Renderer
 from flote.testbench import TestBench
 
@@ -59,10 +57,10 @@ def get_ast(code: str) -> Module:
     return parser.ast
 
 
-def get_netlist(code: str) -> str:
+def get_netlist(code: str) -> ComponentDto:
     ast = get_ast(code)
     builder = Builder(ast)
-    return dumps(component_to_json(builder.component_dto))
+    return builder.component_dto
 
 
 def render_netlist(netlist: ComponentDto) -> TestBench:

@@ -14,7 +14,7 @@ from flote.ir.expression import (
 
 def calculate_sensitivity_list(
     expression: ExpressionDto | None,
-) -> list[BitBusDto]:
+) -> list[str]:
     """Return the buses referenced by an expression."""
     if expression is None or isinstance(expression, ConstDto):
         return []
@@ -23,7 +23,7 @@ def calculate_sensitivity_list(
         return [expression.bus]
 
     if isinstance(expression, ConcDto):
-        sensitivity_list: list[BitBusDto] = []
+        sensitivity_list: list[str] = []
         for expr in expression.exprs:
             sensitivity_list.extend(calculate_sensitivity_list(expr))
         return sensitivity_list
@@ -40,21 +40,22 @@ def calculate_sensitivity_list(
 
 
 def calculate_influence_list(
-    bus: BitBusDto,
-    sensitivity_list: list[BitBusDto],
+    bus_identifier: str,
+    sensitivity_list: list[str],
+    buses_by_id: dict[str, BitBusDto],
 ) -> None:
     """Add the assigned bus to each bus in its sensitivity list."""
-    for sensitive_bus in sensitivity_list:
-        if not any(
-            influenced_bus is bus for influenced_bus in sensitive_bus.influence_list
-        ):
-            sensitive_bus.influence_list.append(bus)
+    for sensitive_bus_id in sensitivity_list:
+        sensitive_bus = buses_by_id[sensitive_bus_id]
+        if bus_identifier not in sensitive_bus.influence_list:
+            sensitive_bus.influence_list.append(bus_identifier)
 
 
 def make_netlist(component: ComponentDto) -> ComponentDto:
     """Populate influence lists from the component's bus assignments."""
+    buses_by_id = {bus.identifier: bus for bus in component.buses}
     for bus in component.buses:
         sensitivity_list = calculate_sensitivity_list(bus.assignment)
-        calculate_influence_list(bus, sensitivity_list)
+        calculate_influence_list(bus.identifier, sensitivity_list, buses_by_id)
 
     return component

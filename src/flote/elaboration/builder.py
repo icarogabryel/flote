@@ -398,7 +398,7 @@ class Builder:
             assert bus is not None, f'Bus object for "{ref_id}" cannot be None.'
 
             bus_ref = expression.RefDto(
-                bus,
+                bus.identifier,
                 slice_begin,
                 slice_end,
             )
