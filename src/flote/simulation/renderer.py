@@ -6,6 +6,15 @@ from flote.simulation.buses import BitBus, BitBusValue, Evaluator
 from flote.simulation.component import Component
 
 
+def bools_to_value(bits: list[bool]) -> BitBusValue:  # TODO check if has better way?
+    """Convert the IR bit list (index 0 = MSB) into a BitBusValue."""
+    number = 0
+    for bit in bits:
+        number = (number << 1) | bool(bit)
+
+    return BitBusValue(len(bits), number)
+
+
 class Renderer:
     def __init__(self, ir: str) -> None:
         self.ir = ir
@@ -17,7 +26,7 @@ class Renderer:
         expr_type = j_expr["type"]
 
         if expr_type == "const":
-            value = BitBusValue(j_expr["args"]["value"])
+            value = bools_to_value(j_expr["args"]["value"])
 
             return eval_nodes.Const(value)
         elif expr_type == "ref":
@@ -83,7 +92,7 @@ class Renderer:
                 case "bit_bus":
                     bus = BitBus()
                     bus.id = j_bus["id"]
-                    bus.value = BitBusValue(j_bus["value"])
+                    bus.value = bools_to_value(j_bus["value"])
                     bus.msb_descending = j_bus.get("msb_descending", False)
                 case _:
                     assert False, "Invalid IR."
