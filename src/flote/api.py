@@ -6,6 +6,7 @@ from flote.elaboration.ast_nodes import Module
 from flote.elaboration.builder import Builder
 from flote.elaboration.parser import Parser
 from flote.elaboration.scanner import Scanner, Token
+from flote.ir.component import ComponentDto
 from flote.simulation.renderer import Renderer
 from flote.testbench import TestBench
 
@@ -22,7 +23,7 @@ def elaborate(code: str) -> TestBench:
 
     # 3. Semantical analysis and IR generation
     builder = Builder(ast)
-    netlist = builder.netlist
+    netlist = builder.component_dto
 
     # 4. Creating the component for simulation
     render = Renderer(netlist)
@@ -56,13 +57,13 @@ def get_ast(code: str) -> Module:
     return parser.ast
 
 
-def get_netlist(code: str) -> str:
+def get_netlist(code: str) -> ComponentDto:
     ast = get_ast(code)
     builder = Builder(ast)
-    return builder.netlist
+    return builder.component_dto
 
 
-def render_netlist(netlist: str) -> TestBench:
+def render_netlist(netlist: ComponentDto) -> TestBench:
     """Render the given netlist and return the component for simulation."""
     render = Renderer(netlist)
     testbench = TestBench(render.component)

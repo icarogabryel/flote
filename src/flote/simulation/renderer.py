@@ -1,6 +1,5 @@
-from json import loads
-from typing import Any
-
+from flote.ir import expression
+from flote.ir.component import ComponentDto
 from flote.simulation import eval_nodes
 from flote.simulation.buses import BitBus, BitBusValue, Evaluator
 from flote.simulation.component import Component
@@ -16,104 +15,67 @@ def bools_to_value(bits: list[bool]) -> BitBusValue:  # TODO check if has better
 
 
 class Renderer:
-    def __init__(self, ir: str) -> None:
+    def __init__(self, ir: ComponentDto) -> None:
         self.ir = ir
         self.buffer_bus_dict: dict[str, BitBus] = {}
         self.component = self.render()
 
-    def render_expr(self, j_expr: dict[str, Any]) -> Evaluator | None:
-        """Render an expression from an intermediate representation (IR) json string."""
-        expr_type = j_expr["type"]
-
-        if expr_type == "const":
-            value = bools_to_value(j_expr["args"]["value"])
+    def render_expr(self, expr: expression.ExpressionDto) -> Evaluator:
+        """Render an expression from the dataclass intermediate representation."""
+        if isinstance(expr, expression.ConstDto):
+            value = bools_to_value(expr.value)
 
             return eval_nodes.Const(value)
-        elif expr_type == "ref":
-            bus_id = j_expr["args"]["id"]
-            bus = self.buffer_bus_dict[bus_id]
-
-            ref_slice_begin = j_expr["args"].get("slice_begin")
-            ref_slice_end = j_expr["args"].get("slice_end")
-
-            return eval_nodes.Ref(bus, ref_slice_begin, ref_slice_end)
-        elif expr_type == "not":
-            expr = self.render_expr(j_expr["args"]["expr"])
-            assert expr is not None, "Failed to render NOT expression"
-
-            return eval_nodes.Not(expr)
-        elif expr_type == "conc":
-            exprs: list[dict[str, Any]] = j_expr["args"]["exprs"]
+        elif isinstance(expr, expression.RefDto):
+            bus = self.buffer_bus_dict[expr.bus.identifier]
+            return eval_nodes.Ref(bus, expr.slice_begin, expr.slice_end)
+        elif isinstance(expr, expression.NotDto):
+            return eval_nodes.Not(self.render_expr(expr.expr))
+        elif isinstance(expr, expression.ConcDto):
             rendered_exprs: list[Evaluator] = []
-            assert isinstance(exprs, list)
-            for expr_json in exprs:
-                rendered_expr = self.render_expr(expr_json)
-                assert rendered_expr is not None, "Failed to render CONCAT expression"
-                rendered_exprs.append(rendered_expr)
-
+            for sub_expr in expr.exprs:
+                rendered_exprs.append(self.render_expr(sub_expr))
             return eval_nodes.Conc(rendered_exprs)
-        elif expr_type in ("and", "or", "xor", "nand", "nor", "xnor"):
-            l_expr = self.render_expr(j_expr["args"]["l_expr"])
-            r_expr = self.render_expr(j_expr["args"]["r_expr"])
-
-            binary_expr_types: dict[str, type[eval_nodes.BinaryOperation]] = {
-                "and": eval_nodes.And,
-                "or": eval_nodes.Or,
-                "xor": eval_nodes.Xor,
-                "nand": eval_nodes.Nand,
-                "nor": eval_nodes.Nor,
-                "xnor": eval_nodes.Xnor,
+        elif isinstance(expr, expression.BinaryOperationDto):
+            binary_expr_types: dict[
+                type[expression.BinaryOperationDto],
+                type[eval_nodes.BinaryOperation],
+            ] = {
+                expression.AndDto: eval_nodes.And,
+                expression.OrDto: eval_nodes.Or,
+                expression.XorDto: eval_nodes.Xor,
+                expression.NandDto: eval_nodes.Nand,
+                expression.NorDto: eval_nodes.Nor,
+                expression.XnorDto: eval_nodes.Xnor,
             }
+            for expression_type, evaluator_type in binary_expr_types.items():
+                if isinstance(expr, expression_type):
+                    return evaluator_type(
+                        self.render_expr(expr.l_expr),
+                        self.render_expr(expr.r_expr),
+                    )
 
-            op_name = expr_type.upper()
-            assert l_expr is not None, f"Failed to render {op_name} left expression"
-            assert r_expr is not None, f"Failed to render {op_name} right expression"
-
-            return binary_expr_types[expr_type](l_expr, r_expr)
-
-        else:
-            assert False, f"Unknown expression type: {expr_type}"
+        raise TypeError(f"Unknown expression DTO: {type(expr).__name__}")
 
     def render(self) -> Component:
-        """Render a circuit from an intermediate representation (IR) json string."""
+        """Render a circuit from a dataclass intermediate representation."""
+        component = Component(self.ir.identifier)
 
-        # Parse the IR string to get a structured representation
-        j_ir = loads(self.ir)
+        for ir_bus in self.ir.buses:
+            bus = BitBus()
+            bus.id = ir_bus.identifier
+            bus.value = bools_to_value(ir_bus.value)
+            bus.msb_descending = ir_bus.msb_descending
+            self.buffer_bus_dict[ir_bus.identifier] = bus
 
-        j_component = j_ir["component"]
-        j_component_id = j_component["id"]
-        component = Component(j_component_id)
-        j_busses = j_component["buses"]
+        for ir_bus in self.ir.buses:
+            bit_bus = self.buffer_bus_dict[ir_bus.identifier]
 
-        for j_bus in j_busses:
-            type = j_bus["type"]
+            if ir_bus.assignment is not None:
+                bit_bus.assignment = self.render_expr(ir_bus.assignment)
 
-            match type:
-                case "bit_bus":
-                    bus = BitBus()
-                    bus.id = j_bus["id"]
-                    bus.value = bools_to_value(j_bus["value"])
-                    bus.msb_descending = j_bus.get("msb_descending", False)
-                case _:
-                    assert False, "Invalid IR."
-
-            self.buffer_bus_dict[j_bus["id"]] = bus
-
-        for j_bus in j_busses:
-            bit_bus = self.buffer_bus_dict[j_bus["id"]]
-
-            if j_bus["assignment"] is not None:
-                assignment = self.render_expr(j_bus["assignment"])
-
-                assert assignment is not None, (
-                    f"Failed to render assignment for bus {j_bus['id']}"
-                )
-
-                bit_bus.assignment = assignment
-
-            for influenced_bus_id in j_bus["influence_list"]:
-                influenced_bus = self.buffer_bus_dict[influenced_bus_id]
-
+            for influenced_ir_bus in ir_bus.influence_list:
+                influenced_bus = self.buffer_bus_dict[influenced_ir_bus.identifier]
                 if influenced_bus not in bit_bus.influence_list:
                     bit_bus.influence_list.append(influenced_bus)
 

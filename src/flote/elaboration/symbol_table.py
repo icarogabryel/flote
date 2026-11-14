@@ -1,6 +1,6 @@
 from flote.elaboration import ast_nodes
-from flote.elaboration.ir.buses import BitBusDto
-from flote.elaboration.ir.component import ComponentDto
+from flote.ir.buses import BitBusDto
+from flote.ir.component import ComponentDto
 
 # TODO refactor __str__ and __repr__ of this module
 

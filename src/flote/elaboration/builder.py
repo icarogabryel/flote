@@ -1,13 +1,13 @@
 from copy import deepcopy
-from json import dumps
 from typing import Tuple
 from warnings import warn
 
 from flote.elaboration import ast_nodes
-from flote.elaboration.ir import expression_nodes
-from flote.elaboration.ir.buses import BitBusDto
-from flote.elaboration.ir.component import ComponentDto
+from flote.elaboration.netlist import make_netlist
 from flote.elaboration.symbol_table import BusSymbol, ComponentSymbol, SymbolTable
+from flote.ir import expression
+from flote.ir.buses import BitBusDto
+from flote.ir.component import ComponentDto
 
 
 class SemanticalError(Exception):
@@ -31,16 +31,16 @@ class Builder:
         self.symbol_table: SymbolTable = SymbolTable()
         self.components: dict[str, ComponentDto] = {}
         self.components_nodes: dict[str, ast_nodes.Component] = {}
-        self.netlist: str = self.get_netlist()
+        self.component_dto: ComponentDto = self.get_component_dto()
 
-    def get_netlist(self) -> str:
+    def get_component_dto(self) -> ComponentDto:
         component = self.vst_mod(self.ast)
-        component.make_netlist()
-
-        return dumps(component.to_json())
+        return make_netlist(component)
 
     def init_component_symbol(
-        self, component_node: ast_nodes.Component, component_dto: ComponentDto
+        self,
+        component_node: ast_nodes.Component,
+        component_dto: ComponentDto,
     ) -> ComponentSymbol:
         """Get the component symbol table."""
         component_symbol: ComponentSymbol = ComponentSymbol()
@@ -87,7 +87,13 @@ class Builder:
                     msb_descending = False
 
                 bit_bus_id = declaration_node.identifier.full_id
-                bit_bus_dto = BitBusDto(bit_bus_id, size, msb_descending)
+                bit_bus_dto = BitBusDto(
+                    bit_bus_id,
+                    size,
+                    msb_descending,
+                    None,
+                    [False] * size,
+                )
 
                 component_symbol.bus_symbols[bit_bus_id] = BusSymbol(
                     declaration_node.type_,
@@ -174,7 +180,7 @@ class Builder:
             )
 
         component_identifier = component_node.identifier.full_id
-        component_dto = ComponentDto(component_identifier)
+        component_dto = ComponentDto(component_identifier, [])
 
         self.symbol_table.component_symbols[component_identifier] = (
             self.init_component_symbol(component_node, component_dto)
@@ -298,14 +304,14 @@ class Builder:
         self,
         expression_node: ast_nodes.ExpressionElement,
         component_dto: ComponentDto,
-    ) -> Tuple[expression_nodes.ExpressionNode, int]:
+    ) -> Tuple[expression.ExpressionDto, int]:
         return self.vst_expr_elem(expression_node, component_dto)
 
     def vst_expr_elem(
         self,
         expression_element_node: ast_nodes.ExpressionElement,
         component_dto: ComponentDto,
-    ) -> Tuple[expression_nodes.ExpressionNode, int]:
+    ) -> Tuple[expression.ExpressionDto, int]:
         """
         Visit an expression element, validate it, and return a callable for evaluation.
         """
@@ -391,7 +397,7 @@ class Builder:
             bus = bus_symbol.object_
             assert bus is not None, f'Bus object for "{ref_id}" cannot be None.'
 
-            bus_ref = expression_nodes.Ref(
+            bus_ref = expression.RefDto(
                 bus,
                 slice_begin,
                 slice_end,
@@ -400,7 +406,7 @@ class Builder:
             return bus_ref, slice_size
         elif isinstance(expression_element_node, ast_nodes.BitField):
             bit_field = expression_element_node
-            const = expression_nodes.Const(bit_field.value)
+            const = expression.ConstDto(bit_field.value)
 
             return const, bit_field.size  # TODO check size
         elif isinstance(expression_element_node, ast_nodes.NotOp):
@@ -408,10 +414,10 @@ class Builder:
                 expression_element_node.expression, component_dto
             )
 
-            return expression_nodes.Not(expr), size
+            return expression.NotDto(expr), size
         elif isinstance(expression_element_node, ast_nodes.Concatenation):
             conc = expression_element_node
-            exprs: list[expression_nodes.ExpressionNode] = []
+            exprs: list[expression.ExpressionDto] = []
             total_size = 0
 
             for sub_expr in conc.expressions:
@@ -419,24 +425,24 @@ class Builder:
                 exprs.append(expr)
                 total_size += size
 
-            return expression_nodes.Conc(exprs), total_size
+            return expression.ConcDto(exprs), total_size
         elif isinstance(expression_element_node, ast_nodes.BinaryOp):
-            op_node: type[expression_nodes.BinaryOperation]
+            op_node: type[expression.BinaryOperationDto]
             match expression_element_node:
                 case ast_nodes.AndOp():
-                    op_node = expression_nodes.And
+                    op_node = expression.AndDto
                 case ast_nodes.OrOp():
-                    op_node = expression_nodes.Or
+                    op_node = expression.OrDto
                 case ast_nodes.XorOp():
-                    op_node = expression_nodes.Xor
+                    op_node = expression.XorDto
                 case ast_nodes.NandOp():
-                    op_node = expression_nodes.Nand
+                    op_node = expression.NandDto
                 case ast_nodes.NorOp():
-                    op_node = expression_nodes.Nor
+                    op_node = expression.NorDto
                 case ast_nodes.XnorOp():
-                    op_node = expression_nodes.Xnor
+                    op_node = expression.XnorDto
                 case _:
-                    assert False, (
+                    raise AssertionError(
                         f"Unhandled binary operation: {expression_element_node}"
                     )
 
