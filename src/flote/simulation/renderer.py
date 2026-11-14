@@ -5,13 +5,12 @@ from flote.simulation.buses import BitBus, BitBusValue
 from flote.simulation.component import Component
 
 
-def bools_to_value(bits: list[bool]) -> BitBusValue:  # TODO check if has better way?
-    """Convert the IR bit list (index 0 = MSB) into a BitBusValue."""
-    number = 0
-    for bit in bits:
-        number = (number << 1) | bool(bit)
+def string_to_value(bits: str) -> BitBusValue:
+    """Convert the IR binary string (index 0 = MSB) into a BitBusValue."""
+    if not bits or any(bit not in "01" for bit in bits):
+        raise ValueError(f'Invalid binary value "{bits}".')
 
-    return BitBusValue(len(bits), number)
+    return BitBusValue(len(bits), int(bits, 2))
 
 
 class Renderer:
@@ -23,7 +22,7 @@ class Renderer:
     def render_expr(self, expr: ir_expression.ExpressionDto) -> expression.Evaluator:
         """Render an expression from the dataclass intermediate representation."""
         if isinstance(expr, ir_expression.ConstDto):
-            value = bools_to_value(expr.value)
+            value = string_to_value(expr.value)
 
             return expression.Const(value)
         elif isinstance(expr, ir_expression.RefDto):
@@ -64,7 +63,7 @@ class Renderer:
         for ir_bus in self.ir.buses:
             bus = BitBus()
             bus.id = ir_bus.identifier
-            bus.value = bools_to_value(ir_bus.value)
+            bus.value = string_to_value(ir_bus.value)
             bus.msb_descending = ir_bus.msb_descending
             self.buffer_bus_dict[ir_bus.identifier] = bus
 

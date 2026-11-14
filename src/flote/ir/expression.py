@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, TypeAlias
+from typing import TYPE_CHECKING, TypeAlias
 
 if TYPE_CHECKING:
     from flote.ir.buses import BitBusDto
@@ -34,7 +34,7 @@ class ConcDto(ExpressionDto):
 class ConstDto(ExpressionDto):
     """Data-only representation of a constant."""
 
-    value: Any
+    value: str
 
 
 @dataclass

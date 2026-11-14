@@ -92,7 +92,7 @@ class Builder:
                     size,
                     msb_descending,
                     None,
-                    [False] * size,
+                    "0" * size,
                 )
 
                 component_symbol.bus_symbols[bit_bus_id] = BusSymbol(
@@ -202,7 +202,7 @@ class Builder:
         declaration_node: ast_nodes.Declaration,
         component_dto: ComponentDto,
     ) -> None:
-        component_id = component_dto.identifier
+        component_id = component_dto.id_
         assert (
             declaration_node.identifier.full_id
             in self.symbol_table.component_symbols[component_id].bus_symbols.keys()
@@ -236,7 +236,7 @@ class Builder:
         assignment_node: ast_nodes.Assignment,
         component_dto: ComponentDto,
     ) -> None:
-        component_id = component_dto.identifier
+        component_id = component_dto.id_
         assert (
             assignment_node.destiny.full_id
             in self.symbol_table.component_symbols[component_id].bus_symbols.keys()
@@ -315,7 +315,7 @@ class Builder:
         """
         Visit an expression element, validate it, and return a callable for evaluation.
         """
-        component_id = component_dto.identifier
+        component_id = component_dto.id_
 
         if isinstance(expression_element_node, ast_nodes.Reference):
             ref = expression_element_node  # Change name for better readability
